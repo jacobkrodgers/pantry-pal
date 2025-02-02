@@ -66,7 +66,6 @@ export async function delete_api_key(apiKey: string):
         }
         });
 
-        console.log(deletedKey)
         return deletedKey;
     }
     catch
