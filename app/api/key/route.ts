@@ -65,8 +65,8 @@ export async function POST(req: Request): Promise<NextResponse>
  */
 export async function DELETE(req: Request): Promise<NextResponse>
 {
-    const headersList = await headers()
-    const apiKey = headersList.get('api-key')
+    const headersList = await headers();
+    const apiKey = headersList.get('X-API-Key');
 
 
     if (apiKey)
@@ -75,7 +75,7 @@ export async function DELETE(req: Request): Promise<NextResponse>
         
         // Check if successful, otherwise provided API key might be stale
         if (deleteKeyResponse.status != 500)
-            return NextResponse.json(deleteKeyResponse.payload, {status: deleteKeyResponse.status})
+            return NextResponse.json(deleteKeyResponse.payload, {status: deleteKeyResponse.status});
     }
 
     // Check if credentials were provided in the body
@@ -96,7 +96,7 @@ export async function DELETE(req: Request): Promise<NextResponse>
     // Check if username and password are included in request body
     if (!(username && password))
     {
-        return NextResponse.json("Bad Request - Missing Username or Password, Missing or Stale api-key Header Value", {status: 400})
+        return NextResponse.json("Bad Request - Missing Username or Password, Missing or Stale api-key Header Value", {status: 400});
     };
 
     // Sanitize input
@@ -106,7 +106,7 @@ export async function DELETE(req: Request): Promise<NextResponse>
     // Ensure username and password are valid. Not strictly necessary but can save database queries.
     if (!(loginValidationSchema.validate({username: username, password: password})))
     {
-        return NextResponse.json("Bad Request - Invalid Username or Password", {status: 400})
+        return NextResponse.json("Bad Request - Invalid Username or Password", {status: 400});
     };
     
     // Verify user and delete API key
