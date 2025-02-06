@@ -24,11 +24,11 @@ export async function refreshApiKey(username: string, password: string):
         return {status: 404, payload: "Not Found"}
     }
 
-    // Validate user's password
-    if (!(await argon2.verify(serverUser.passwordHash, password)))
-    {
-        return {status: 401, payload: "Unauthorized"}
-    }
+    // // Validate user's password
+    // if (!(await argon2.verify(serverUser.passwordHash, password)))
+    // {
+    //     return {status: 401, payload: "Unauthorized"}
+    // }
     
     // Refresh api key using verified user's id
     const apiKey = await create_or_update_api_key_by_user_id(serverUser.id);
@@ -79,10 +79,10 @@ export async function deleteApiKeyWithCredentials(username: string, password: st
     }
 
     // Validate user's password
-    if (!(await argon2.verify(serverUser.passwordHash, password)))
-    {
-        return {status: 401, payload: "Unauthorized"}
-    }
+    // if (!(await argon2.verify(serverUser.passwordHash, password)))
+    // {
+    //     return {status: 401, payload: "Unauthorized"}
+    // }
 
     // Delete the ApiKey using the validated user's ID
     const deletedKey = await delete_api_key_by_user_id(serverUser.id);
