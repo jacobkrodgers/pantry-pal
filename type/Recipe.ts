@@ -12,7 +12,7 @@ export type Recipe = {
     cookTime: string,
     dateAdded: Date,
     dateUpdated: Date,
-    dietCompatability: Diet[],
+    dietCompatibility: Diet[],
     user: User,
     userId: string
 }
@@ -25,5 +25,6 @@ export type Ingredient = {
 }
 
 export type Diet = {
-    name: string
+    name: string,
+    id: string
 }
