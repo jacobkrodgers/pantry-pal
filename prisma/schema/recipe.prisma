@@ -1,54 +1,30 @@
 // Models related to recipes
 
-model Recipes {
-    id                  String          @id @default(uuid())
-    name                String          @unique
-    ingredients         Ingredient[]
-    instructions        String
-    author              Owner
-    prepTime            String
-    cookTime            String
-    dateAdded           String
-    dateUpdated         String
-    dietCompatability   String
-}
-
-model Ingredient {
-
-}
-
-model Owner {
-
-}
-
 model Recipe {
   id                String        @id @default(uuid())
   name              String
-  ingredients       Ingredient[]  @relation("RecipeIngredients")
+  ingredients       Ingredient[]  @relation("RecipeIngredient")
   instructions      String
   prepTime          String        
   cookTime          String        
   dateAdded         DateTime      @default(now())
   dateUpdated       DateTime      @updatedAt
   dietCompatibility Diet[]        @relation("RecipeDiet")
-  owner             User          @relation("UserRecipes")
+  user              User          @relation(fields: [userId], references: [id])
+  userId            String        @unique
 }
 
 model Ingredient {
-  name            String
+  id              String          @id @default(uuid())
+  name            String          @unique
   quantityUnit    String
   quantity        Int
   form            String
-  recipe          Recipe[]        @relation("RecipeIngredients")
-}
-
-model User {
-  id       String   @id @default(uuid())
-  username String   @unique
-  recipes  Recipe[] @relation("UserRecipes")
+  recipes         Recipe[]        @relation("RecipeIngredient")
 }
 
 model Diet {
+  id       String   @id @default(uuid())
   name     String   @unique
   recipes  Recipe[] @relation("RecipeDiet")
 }

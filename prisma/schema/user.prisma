@@ -6,6 +6,7 @@ model User {
     username     String  @unique
     passwordHash String
     ApiKey       ApiKey?
+    recipes      Recipe[]
 }
 
 model ApiKey {

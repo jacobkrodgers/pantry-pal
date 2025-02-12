@@ -4,13 +4,17 @@ export type User = {
 };
 
 export type Recipe = {
+    id: string,
     name: string,
-    owner: User,
     ingredients: Ingredient[],
     instructions: string,
     prepTime: string,
     cookTime: string,
-    dietCompatability: Diet[]
+    dateAdded: Date,
+    dateUpdated: Date,
+    dietCompatability: Diet[],
+    user: User,
+    userId: string
 }
 
 export type Ingredient = {

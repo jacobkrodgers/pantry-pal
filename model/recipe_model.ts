@@ -4,12 +4,12 @@ import { User, Recipe } from "@/type/Recipe";
 
 
 
-export async function find_recipe_by_owner(owner: User):
+export async function find_recipe_by_owner(user: User):
     Promise<Recipe | null>
 {
     const recipes = await prisma.recipe.findMany({
         where: {
-            owner: owner,
+            user: user,
         },
     });
 
