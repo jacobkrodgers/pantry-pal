@@ -2,6 +2,53 @@ import * as argon2 from "argon2";
 import { find_server_user_by_username, create_or_update_api_key_by_user_id, delete_api_key, delete_api_key_by_user_id } from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
 import { UserControllerResponse } from "@/type/User";
+import { prisma } from "@/prisma/prismaClient";
+
+
+/**
+ * Creates a new user in the database after hashing the password.
+ * @summary Creates a new user.
+ * @param userData - The user's provided username, email, and password.
+ * @returns response - A response object that returns the user ID if successful.
+ * @returns response - A response containing an HTTP status code and error message.
+ */
+export async function createUser(userData: { username: string; email: string; password: string }):
+    Promise<UserControllerResponse | GenericAPIResponse>
+{
+    const { username, email, password } = userData;
+
+    // Check if the username or email is already taken
+    const existingUser = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { username: username },
+                { email: email }
+            ]
+        }
+    });
+
+    if (existingUser) {
+        return { status: 409, payload: "Conflict - Username or Email already exists" };
+    }
+
+    // Hash password before storing
+    const passwordHash = await argon2.hash(password);
+
+    // Create new user in the database
+    const newUser = await prisma.user.create({
+        data: {
+            username: username,
+            email: email,
+            passwordHash: passwordHash,
+        }
+    });
+
+    if (!newUser) {
+        return { status: 500, payload: "Internal Server Error - Failed to create user" };
+    }
+
+    return { status: 201, payload: { userId: newUser.id } };
+}
 
 /**
  * Verifies the user's provided credentials and deletes the user's API key (if one exists) before
