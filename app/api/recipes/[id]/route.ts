@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // Check if the recipe ID is valid
     try {
         // Extract the recipe ID from the URL
-        const { id } = params;
+        const { id } = await params;
         await recipeIdSchema.validateAsync({ id });
 
         // Extract the API key from the request headers
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         // Extract the recipe ID from the URL
-        const { id } = params;
+        const { id } = await params;
         await recipeIdSchema.validateAsync({ id });
 
         // Extract the API key from the request headers

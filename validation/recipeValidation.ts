@@ -26,6 +26,7 @@ export const recipeUpdateSchema = Joi.object({
   name: Joi.string().optional(),
   ingredients: Joi.array().items(
     Joi.object({
+      id: Joi.string().uuid().required(), 
       name: Joi.string().required(),
       quantityUnit: Joi.string().required(),
       quantity: Joi.number().required(),
@@ -39,3 +40,4 @@ export const recipeUpdateSchema = Joi.object({
     Joi.string().valid("vegan", "vegetarian", "carnivore", "omnivore")
   ).optional()
 });
+

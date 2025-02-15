@@ -103,8 +103,10 @@ export async function create_or_update_recipe_by_user_id(
                 cookTime,
                 dateUpdated,
                 dietCompatibility: {
-                    connect: dietCompatibility.map(diet => ({id: diet.id})),
-                },
+                    connect: dietCompatibility.map(diet =>
+                      typeof diet === 'string' ? { id: diet } : { id: diet.id } // Handle both string and object input
+                    ),
+                  }                  
             },
             include: {
                 ingredients: true,
