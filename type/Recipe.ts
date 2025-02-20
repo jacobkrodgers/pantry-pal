@@ -1,8 +1,3 @@
-export type User = {
-    username: string,
-    id: string
-};
-
 export type Recipe = {
     id: string,
     name: string,
@@ -13,8 +8,7 @@ export type Recipe = {
     dateAdded: Date,
     dateUpdated: Date,
     dietCompatibility: Diet[],
-    user: User,
-    userId: string
+    authorUsername: string
 }
 
 export type Ingredient = {
@@ -27,4 +21,9 @@ export type Ingredient = {
 export type Diet = {
     name: string,
     id: string
+}
+
+export type RecipeControllerResponse = {
+    status: number;
+    payload: Recipe | Ingredient[] | string;
 }

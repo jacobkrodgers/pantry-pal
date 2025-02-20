@@ -9,14 +9,6 @@ export const recipeIdSchema = Joi.object({
 });
 
 /**
- * JOI schema for validating the API key provided in the request headers.
- * @summary Validates that the API key is a valid UUID.
- */
-export const apiKeySchema = Joi.object({
-  apiKey: Joi.string().uuid().required()
-});
-
-/**
  * JOI schema for validating the recipe update payload.
  * This schema allows updating of the following fields: name, ingredients, instructions, prepTime,
  * cookTime, and dietCompatibility. Fields such as owner and dateAdded are not permitted.
