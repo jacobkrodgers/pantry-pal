@@ -99,3 +99,20 @@ export async function create_or_update_api_key_by_user_id(userId: string):
 
     return apiKey;
 }
+
+/**
+ * Verifies the provided API key by looking it up in the database.
+ * @param apiKey - The API key to verify.
+ * @returns The associated user if the API key exists; otherwise, null.
+ */
+export async function verify_api_key(
+    apiKey: string
+  ): Promise<ServerUser | null> {
+    const keyRecord = await prisma.apiKey.findUnique({
+      where: { apiKey },
+      include: { user: true },
+    });
+    // If the key exists, return the associated user
+    return keyRecord ? keyRecord.user : null;
+  }
+  

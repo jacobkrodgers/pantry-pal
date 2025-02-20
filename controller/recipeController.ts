@@ -1,101 +1,67 @@
-// controller/recipeController.ts
-import { prisma } from '@/prisma/dbClient';
-import { Recipe } from '@/type/Recipe';
-import { create_or_update_recipe_by_user_id } from '@/model/recipe_model';
+import { Recipe } from "@/type/Recipe";
+import {
+  find_recipe_by_id,
+  update_recipe_by_id,
+  delete_recipe_by_id,
+} from "@/model/recipe_model";
+import { verify_api_key } from "@/model/userModel";
+import { ServerUser } from "@/type/User"; // adjust import if needed
 
 /**
- * Retrieves a specific recipe by its UUID.
+ * Retrieves a recipe by its UUID.
  * @summary Get a specific recipe by ID.
- * @param id - The UUID of the recipe to retrieve.
+ * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
- * @returns A promise that resolves to the recipe if found, otherwise null.
+ * @returns A promise resolving to the recipe if found, or null.
+ * @throws Error if the API key is invalid.
  */
-export async function getRecipeById(id: string, apiKey: string): Promise<Recipe | null> {
-    // Retrieve the recipe by its UUID.
-    const recipe = await prisma.recipe.findUnique({
-        where: { id },
-        include: {
-            ingredients: true,
-            dietCompatibility: true,
-            user: true,
-        },
-    });
-
-    return recipe;
+export async function getRecipeById(
+  id: string,
+  apiKey: string
+): Promise<Recipe | null> {
+  const user: ServerUser | null = await verify_api_key(apiKey);
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  return await find_recipe_by_id(id);
 }
 
 /**
- * Updates a specific recipe by its UUID.
- * Non-editable fields such as the owner and dateAdded are preserved.
- * Note: API key verification is not implemented in this function.
+ * Updates an existing recipe by its UUID.
  * @summary Update a specific recipe by ID.
- * @param id - The UUID of the recipe to update.
+ * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
- * @param updateData - An object containing the updated recipe details.
- * @returns A promise that resolves to the updated recipe if successful, otherwise null.
+ * @param updateData - An object containing updated recipe details.
+ * @returns A promise resolving to the updated recipe, or null.
+ * @throws Error if the API key is invalid.
  */
 export async function updateRecipe(
-    id: string,
-    apiKey: string,
-    updateData: any
+  id: string,
+  apiKey: string,
+  updateData: any
 ): Promise<Recipe | null> {
-    // Retrieve the existing recipe.
-    const existingRecipe = await prisma.recipe.findUnique({
-        where: { id },
-    });
-
-    if (!existingRecipe) {
-        return null;
-    }
-
-    // Use the existing recipe's userId for the update.
-    const updatedRecipe = await create_or_update_recipe_by_user_id(
-        existingRecipe.userId,
-        updateData.name,
-        updateData.ingredients,
-        updateData.instructions,
-        updateData.prepTime,
-        updateData.cookTime,
-        existingRecipe.dateAdded,       // Preserve original dateAdded
-        updateData.dietCompatibility,
-        id,                             // Specify recipeId for update.
-        new Date()                      // Set dateUpdated to current date.
-    );
-
-    return updatedRecipe;
+  const user: ServerUser | null = await verify_api_key(apiKey);
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  return await update_recipe_by_id(id, updateData);
 }
 
 /**
- * Deletes a specific recipe by its UUID.
- * Note: API key verification is not implemented in this function.
+ * Deletes a recipe by its UUID.
  * @summary Delete a specific recipe by ID.
- * @param id - The UUID of the recipe to delete.
+ * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
- * @returns A promise that resolves to the deleted recipe if successful, otherwise null.
+ * @returns A promise resolving to the deleted recipe, or null.
+ * @throws Error if the API key is invalid.
  */
 export async function deleteRecipe(
-    id: string,
-    apiKey: string
+  id: string,
+  apiKey: string
 ): Promise<Recipe | null> {
-    // Retrieve the recipe to verify it exists.
-    const recipe = await prisma.recipe.findUnique({
-        where: { id },
-        include: { user: true },
-    });
-
-    if (!recipe) {
-        return null;
-    }
-
-    // Delete the recipe.
-    const deletedRecipe = await prisma.recipe.delete({
-        where: { id },
-        include: {
-            ingredients: true,
-            dietCompatibility: true,
-            user: true,
-        },
-    });
-
-    return deletedRecipe;
+  const user: ServerUser | null = await verify_api_key(apiKey);
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  return await delete_recipe_by_id(id);
 }
