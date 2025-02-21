@@ -18,7 +18,7 @@ model Ingredient {
   id              String          @id @default(uuid())
   name            String          @unique
   quantityUnit    String
-  quantity        Int
+  quantity        Float
   form            String
   recipes         Recipe[]        @relation("RecipeIngredient")
 }

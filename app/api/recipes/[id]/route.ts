@@ -1,8 +1,12 @@
 // app/api/recipes/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getRecipeById, updateRecipe, deleteRecipe } from "@/controller/recipeController";
+import {
+  getRecipeById,
+  updateRecipe,
+  deleteRecipe,
+} from "@/controller/recipeController";
 import { uuidSchema } from "@/validation/uuidValidation";
-import { recipeUpdateSchema} from "@/validation/recipeValidation";
+import { recipeUpdateSchema } from "@/validation/recipeValidation";
 
 /**
  * GET /api/recipes/{id} - Retrieves a recipe.
@@ -11,50 +15,48 @@ import { recipeUpdateSchema} from "@/validation/recipeValidation";
  * @param params - An object with the recipe id.
  * @returns JSON with recipe data or an error message.
  */
-export async function GET(req: Request, {params}: {params: {id: string}}):
-    Promise<NextResponse>
-{
-    let id: string;
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  let id: string;
 
-    // Get ID from path parameters
-    try 
-    {
-        id = await params.id;
-        if (!id) throw new Error();
-    }
-    catch
-    {
-        return NextResponse.json("Not Found", {status: 404});
-    }
+  // Get ID from path parameters.
+  try {
+    const resolvedParams = await params;
+    id = resolvedParams.id;
+    if (!id) throw new Error();
+  } catch {
+    return NextResponse.json("Not Found", { status: 404 });
+  }
 
-    // Ensure recipe ID is a UUID
-    let { error } =  await uuidSchema.validate({ id });
-    if (error)
-    {
-        return NextResponse.json("Bad Request - Invalid Recipe ID", {status: 400})
-    } 
+  // Validate that the recipe ID is a UUID.
+  let { error } = await uuidSchema.validate({ uuid: id });
+  if (error) {
+    return NextResponse.json("Bad Request - Invalid Recipe ID", {
+      status: 400,
+    });
+  }
 
-    // Get API Key from user's request header
-    let apiKey: string | null;
-    try
-    {
-        apiKey = req.headers.get("X-API-Key");
-        if (!apiKey) throw new Error();
-    }
-    catch
-    {
-        return NextResponse.json("Not Authorized", {status: 401});
-    }
+  // Get API key from request header and trim it.
+  const rawApiKey = req.headers.get("X-API-Key");
+  const apiKey = rawApiKey ? rawApiKey.trim() : null;
+  if (!apiKey) {
+    return NextResponse.json("Not Authorized", { status: 401 });
+  }
 
-    // Ensure api key is a UUID
-    ({error} = await uuidSchema.validate({ apiKey }));
-    if (error)
-    {
-        return NextResponse.json("Bad Request - Invalid API Key", {status: 400});
-    }
+  // Validate that the API key is a UUID.
+  ({ error } = await uuidSchema.validate({ uuid: apiKey }));
+  if (error) {
+    return NextResponse.json("Bad Request - Invalid API Key", {
+      status: 400,
+    });
+  }
 
-    const recipeResponse = await getRecipeById(id, apiKey);
-    return NextResponse.json(recipeResponse.payload, { status: recipeResponse.status });
+  const recipeResponse = await getRecipeById(id, apiKey);
+  return NextResponse.json(recipeResponse.payload, {
+    status: recipeResponse.status,
+  });
 }
 
 /**
@@ -64,14 +66,16 @@ export async function GET(req: Request, {params}: {params: {id: string}}):
  * @param params - An object with the recipe id.
  * @returns JSON with the updated recipe or an error message.
  */
-export async function PUT(req: Request, {params}: {params: {id: string}}):
-{
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
     const { id } = await params;
-    await uuidSchema.validateAsync({ id });
+    await uuidSchema.validateAsync({ uuid : id });
 
     const apiKey = req.headers.get("X-API-Key");
-    await apiKeySchema.validateAsync({ apiKey });
+    await uuidSchema.validateAsync({ uuid : apiKey });
 
     const body = await req.json();
     await recipeUpdateSchema.validateAsync(body);
@@ -114,17 +118,26 @@ export async function PUT(req: Request, {params}: {params: {id: string}}):
  * @returns JSON confirming deletion or an error message.
  */
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
+    // Await the dynamic parameters
     const { id } = await params;
-    await recipeIdSchema.validateAsync({ id });
+    await uuidSchema.validateAsync({ uuid: id });
 
-    const apiKey = req.headers.get("X-API-Key");
-    await apiKeySchema.validateAsync({ apiKey });
+    // Get API Key from the request header and trim it
+    const rawApiKey = req.headers.get("X-API-Key");
+    const apiKey = rawApiKey ? rawApiKey.trim() : null;
+    if (!apiKey) {
+      return NextResponse.json("Not Authorized", { status: 401 });
+    }
 
-    const deletionResult = await deleteRecipe(id, apiKey!);
+    // Validate the API Key as a UUID.
+    await uuidSchema.validateAsync({ uuid: apiKey });
+
+    // Call the controller function to delete the recipe.
+    const deletionResult = await deleteRecipe(id, apiKey);
     if (!deletionResult) {
       return NextResponse.json(
         { code: 404, message: "Recipe not found" },

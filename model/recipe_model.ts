@@ -1,11 +1,10 @@
-// model/recipe_model.ts
 import { prisma } from "@/prisma/dbClient";
-import { User, Recipe, Diet } from "@/type/Recipe";
-import { Ingredient } from "@prisma/client";
+import { Recipe, Diet } from "@/type/Recipe";
+import { Ingredient, User } from "@prisma/client";
 
 /**
  * Retrieves recipes created by a specific user.
- * @param user - The user object.
+ * @param user - The user object from Prisma.
  * @returns A promise resolving to an array of recipes or null.
  */
 export async function find_recipe_by_user(
@@ -19,7 +18,10 @@ export async function find_recipe_by_user(
       user: true,
     },
   });
-  return recipes;
+  return recipes.map((recipe) => ({
+    ...recipe,
+    authorUsername: recipe.user.username,
+  }));
 }
 
 /**
@@ -46,7 +48,10 @@ export async function find_recipe_by_restrictions(
       user: true,
     },
   });
-  return recipes;
+  return recipes.map((recipe) => ({
+    ...recipe,
+    authorUsername: recipe.user.username,
+  }));
 }
 
 /**
@@ -55,7 +60,7 @@ export async function find_recipe_by_restrictions(
  * @returns A promise resolving to the recipe if found, otherwise null.
  */
 export async function find_recipe_by_id(id: string): Promise<Recipe | null> {
-  return await prisma.recipe.findUnique({
+  const recipe = await prisma.recipe.findUnique({
     where: { id },
     include: {
       ingredients: true,
@@ -63,6 +68,11 @@ export async function find_recipe_by_id(id: string): Promise<Recipe | null> {
       user: true,
     },
   });
+  if (!recipe) return null;
+  return {
+    ...recipe,
+    authorUsername: recipe.user.username,
+  };
 }
 
 /**
@@ -114,7 +124,7 @@ export async function update_recipe_by_id(
         })),
       },
       dietCompatibility: {
-        // Replace the current diet compatibility with the new ones.
+        // Replace the current diet compatibility associations.
         set: updateData.dietCompatibility.map((diet) =>
           typeof diet === "string" ? { id: diet } : { id: diet.id }
         ),
@@ -126,7 +136,10 @@ export async function update_recipe_by_id(
       user: true,
     },
   });
-  return updatedRecipe;
+  return {
+    ...updatedRecipe,
+    authorUsername: updatedRecipe.user.username,
+  };
 }
 
 /**
@@ -135,7 +148,7 @@ export async function update_recipe_by_id(
  * /api/recipes). It creates a new recipe and associates it with the given user.
  * @param userId - The ID of the user creating the recipe.
  * @param createData - An object containing the recipe details.
- * @returns A promise resolving to the newly created recipe.
+ * @returns A promise resolving to the newly created recipe or null if creation fails.
  */
 export async function create_recipe(
   userId: string,
@@ -148,31 +161,45 @@ export async function create_recipe(
     dateAdded: Date;
     dietCompatibility: (Diet | string)[];
   }
-): Promise<Recipe> {
-  const newRecipe = await prisma.recipe.create({
-    data: {
-      name: createData.name,
-      ingredients: {
-        connect: createData.ingredients.map((ing) => ({ id: ing.id })),
+): Promise<Recipe | null> {
+  try {
+    const newRecipe = await prisma.recipe.create({
+      data: {
+        name: createData.name,
+        ingredients: {
+          // Use create to make new ingredients if they don’t exist
+          create: createData.ingredients.map((ing) => ({
+            name: ing.name,
+            quantityUnit: ing.quantityUnit,
+            quantity: ing.quantity,
+            form: ing.form,
+          })),
+        },
+        instructions: createData.instructions,
+        prepTime: createData.prepTime,
+        cookTime: createData.cookTime,
+        dateAdded: createData.dateAdded,
+        user: { connect: { id: userId } },
+        dietCompatibility: {
+          connect: createData.dietCompatibility.map((diet) =>
+            typeof diet === "string" ? { id: diet } : { id: diet.id }
+          ),
+        },
       },
-      instructions: createData.instructions,
-      prepTime: createData.prepTime,
-      cookTime: createData.cookTime,
-      dateAdded: createData.dateAdded,
-      user: { connect: { id: userId } },
-      dietCompatibility: {
-        connect: createData.dietCompatibility.map((diet) =>
-          typeof diet === "string" ? { id: diet } : { id: diet.id }
-        ),
+      include: {
+        ingredients: true,
+        dietCompatibility: true,
+        user: true,
       },
-    },
-    include: {
-      ingredients: true,
-      dietCompatibility: true,
-      user: true,
-    },
-  });
-  return newRecipe;
+    });
+    return {
+      ...newRecipe,
+      authorUsername: newRecipe.user.username,
+    };
+  } catch (error) {
+    console.error("Failed to create recipe:", error);
+    return null;
+  }
 }
 
 /**
@@ -182,17 +209,19 @@ export async function create_recipe(
  *          otherwise null.
  */
 export async function delete_recipe_by_id(id: string): Promise<Recipe | null> {
-  try {
-    const deletedRecipe = await prisma.recipe.delete({
-      where: { id },
-      include: {
-        ingredients: true,
-        dietCompatibility: true,
-        user: true,
-      },
-    });
-    return deletedRecipe;
-  } catch {
-    return null;
-  }
+  const existingRecipe = await prisma.recipe.findUnique({ where: { id } });
+  if (!existingRecipe) return null;
+
+  const deletedRecipe = await prisma.recipe.delete({
+    where: { id },
+    include: {
+      ingredients: true,
+      dietCompatibility: true,
+      user: true,
+    },
+  });
+  return {
+    ...deletedRecipe,
+    authorUsername: deletedRecipe.user.username,
+  };
 }
