@@ -1,5 +1,46 @@
 import { prisma } from "@/prisma/dbClient";
 import { ServerUser, ApiKey } from "@/type/User";
+import argon2 from "argon2";
+
+
+/**
+ * Checks if a user with the given username or email already exists.
+ * @param username - The username to check.
+ * @param email - The email to check.
+ * @returns Boolean indicating whether the user exists.
+ */
+export async function isUserExists(username: string, email: string): Promise<boolean> {
+    const existingUser = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { username: username },
+                { email: email }
+            ],
+        },
+    });
+
+    return existingUser !== null;
+}
+
+
+/**
+ * Creates a new user in the database after hashing the password.
+ * @param username - The username of the new user.
+ * @param email - The email of the new user.
+ * @param password - The plain text password to be hashed and stored.
+ * @returns The created user object.
+ */
+export async function createNewUser(username: string, email: string, password: string) {
+    const passwordHash = await argon2.hash(password);
+
+    return await prisma.user.create({
+        data: {
+            username,
+            email,
+            passwordHash,
+        },
+    });
+}
 
 /**
  * Queries the database for a user given their username. This function is
