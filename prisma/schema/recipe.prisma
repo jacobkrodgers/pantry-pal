@@ -1,0 +1,32 @@
+// Models related to recipes
+
+model Recipe {
+  id           String       @id @default(uuid())
+  name         String
+  ingredients  Ingredient[]
+  instructions String // Colon-separated list
+  prepTime     String
+  cookTime     String
+  dateAdded    DateTime     @default(now())
+  dateUpdated  DateTime     @updatedAt
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  Diet         Diet[]
+
+  @@unique([name, userId]) // Users can't have duplicate recipes with the same name
+}
+
+model Ingredient {
+  id           String   @id @default(uuid())
+  name         String
+  quantityUnit String
+  quantity     Int
+  form         String
+  recipes      Recipe[]
+}
+
+model Diet {
+  id     String   @id @default(uuid())
+  name   String
+  Recipe Recipe[]
+}
