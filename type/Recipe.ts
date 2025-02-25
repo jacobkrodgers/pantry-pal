@@ -7,7 +7,7 @@ export type Recipe = {
     cookTime: string,
     dateAdded: Date,
     dateUpdated: Date,
-    dietCompatibility: Diet[],
+    Diet: Diet[],
     userId: string
 }
 
@@ -26,5 +26,7 @@ export type Diet = {
 
 export type RecipeControllerResponse = {
     status: number;
-    payload: Recipe | Ingredient[] | string;
+    payload: Recipe[] | Recipe | Ingredient[] | string;
 }
+
+export type NewRecipe = Omit<Recipe, "id" | "userId" | "dateAdded" | "dateUpdated">;
