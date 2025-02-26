@@ -1,28 +1,22 @@
 import { prisma } from "@/prisma/dbClient";
-import { Recipe as SanitizedRecipe, Diet } from "@/type/Recipe";
-import { Ingredient, User } from "@prisma/client";
 import { NewRecipe, Recipe } from "@/type/Recipe";
 
 /**
  * Retrieves a recipe by its ID.
  * @param id - The UUID of the recipe.
- * @returns A promise resolving to the raw recipe if found, otherwise null.
+ * @returns A recipe object or null.
  */
-export async function find_recipe_by_id(
-    id: string
-): Promise<RawRecipe | null> {
+export async function find_recipe_by_recipe_id(id: string): 
+    Promise<Recipe | null>
+{
     const recipe = await prisma.recipe.findUnique({
         where: { id },
         include: {
             ingredients: true,
-            dietCompatibility: true,
-            user: true,
+            Diet: true
         },
     });
-    if (!recipe)
-    {
-        return null;
-    }
+
     return recipe;
 }
 
@@ -34,63 +28,129 @@ export async function find_recipe_by_id(
  * updated rather than simply reconnected.
  *
  * @param recipeId - The UUID of the recipe to update.
- * @param updateData - An object containing updated recipe details.
- * @returns A promise resolving to the updated raw recipe if successful,
- *          otherwise null.
+ * @param recipeUpdateData - An object containing updated recipe details.
+ * @returns The updated recipe object or null.
  */
-export async function update_recipe_by_id(
-    recipeId: string,
-    updateData: {
-        name: string;
-        ingredients: Ingredient[];
-        instructions: string;
-        prepTime: string;
-        cookTime: string;
-        dietCompatibility: (Diet | string)[];
-    }
-): Promise<RawRecipe | null> {
-    // Ensure the recipe exists.
-    const existingRecipe = await prisma.recipe.findUnique({
-        where: { id: recipeId },
-    });
-    if (!existingRecipe)
+export async function update_recipe_by_recipe_id(
+    recipeId: string, recipeUpdateData: NewRecipe
+): Promise<Recipe | null> {
+    try
     {
-        return null;
-    }
-
-    const updatedRecipe = await prisma.recipe.update({
-        where: { id: recipeId },
-        data: {
-            name: updateData.name,
-            instructions: updateData.instructions,
-            prepTime: updateData.prepTime,
-            cookTime: updateData.cookTime,
-            ingredients: {
-                // Nested update for each ingredient.
-                update: updateData.ingredients.map((ing) => ({
-                    where: { id: ing.id },
-                    data: {
+        // Fetch the existing recipe
+        const existingRecipe = await prisma.recipe.findUnique({
+            where: { id: recipeId },
+            include: { ingredients: true, Diet: true }
+        });
+        if (!existingRecipe) return null;
+        
+        // Fetch existing ingredients that match provided names and forms
+        const existingIngredients = await prisma.ingredient.findMany({
+            where: {
+                OR: recipeUpdateData.ingredients?.map(ing => ({
+                    name: ing.name,
+                    form: ing.form
+                })) || []
+            }
+        });
+        
+        // Fetch existing diets
+        const validDiets = (recipeUpdateData.Diet ?? [])
+            .map(diet => diet?.name)
+            .filter(name => typeof name === "string" && name.trim() !== "");
+        
+        const existingDiets = await prisma.diet.findMany({
+            where: { name: { in: validDiets } }
+        });
+        
+        // Extract existing ingredient identifiers
+        const existingIngredientMap = new Map(
+            existingIngredients.map(ing => [`${ing.name}-${ing.form}`, ing])
+        );
+        
+        // Separate new ingredients and diets
+        const newIngredients = (recipeUpdateData.ingredients || [])
+            .filter(ing => !existingIngredientMap.has(`${ing.name}-${ing.form}`));
+        
+        const newDiets = validDiets
+            .filter(name => !existingDiets.some(diet => diet.name === name))
+            .map(name => ({ name }));
+        
+        // Update the recipe
+        const updatedRecipeData = await prisma.recipe.update({
+            where: { id: recipeId },
+            data: {
+                name: recipeUpdateData.name ?? existingRecipe.name,
+                instructions: recipeUpdateData.instructions ?? existingRecipe.instructions,
+                prepTime: recipeUpdateData.prepTime ?? existingRecipe.prepTime,
+                cookTime: recipeUpdateData.cookTime ?? existingRecipe.cookTime,
+                ingredients: {
+                    set: [],
+                    connect: existingIngredients.map(ing => ({ id: ing.id })),
+                    create: newIngredients.map(ing => ({
                         name: ing.name,
                         quantityUnit: ing.quantityUnit,
                         quantity: ing.quantity,
-                        form: ing.form,
-                    },
-                })),
+                        form: ing.form
+                    })),
+                    update: recipeUpdateData.ingredients
+                        ?.map(ing => {
+                            const existingIngredient = existingIngredientMap.get(`${ing.name}-${ing.form}`);
+                            return existingIngredient
+                                ? {
+                                    where: { id: existingIngredient.id },
+                                    data: {
+                                        quantity: ing.quantity,
+                                        quantityUnit: ing.quantityUnit,
+                                        form: ing.form
+                                    }
+                                }
+                                : null;
+                        })
+                        .filter(update => update !== null)
+                },
+                Diet: {
+                    connect: existingDiets.map(diet => ({ id: diet.id })),
+                    create: newDiets
+                }
             },
-            dietCompatibility: {
-                // Replace the current diet compatibility associations.
-                set: updateData.dietCompatibility.map((diet) =>
-                    typeof diet === "string" ? { id: diet } : { id: diet.id }
-                ),
-            },
-        },
+            include: {
+                ingredients: true,
+                Diet: true
+            }
+        });
+
+        return updatedRecipeData;
+    }
+    catch 
+    {
+        return null;
+    }
+}
+
+/**
+ * Deletes a recipe by its ID.
+ * @param id - The UUID of the recipe to delete.
+ * @returns A promise resolving to the deleted raw recipe if successful,
+ *          otherwise null.
+ */
+export async function delete_recipe_by_recipe_id(id: string): 
+    Promise<Recipe | null> 
+{
+    try
+    {
+        const deletedRecipe = await prisma.recipe.delete({
+        where: { id },
         include: {
             ingredients: true,
-            dietCompatibility: true,
-            user: true,
+            Diet: true,
         },
     });
-    return updatedRecipe;
+        return deletedRecipe;
+    }
+    catch
+    {
+        return null;
+    }
 }
 
 /**
@@ -106,7 +166,7 @@ export async function find_recipes_by_user_id(userId: string):
     include: {
       ingredients: true,
       Diet: true,
-    },
+    }
   });
   return recipes;
 }
@@ -191,32 +251,4 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     {
         return null;
     }
-}
-
-/**
- * Deletes a recipe by its ID.
- * @param id - The UUID of the recipe to delete.
- * @returns A promise resolving to the deleted raw recipe if successful,
- *          otherwise null.
- */
-export async function delete_recipe_by_id(
-    id: string
-): Promise<RawRecipe | null> {
-    const existingRecipe = await prisma.recipe.findUnique({
-        where: { id },
-    });
-    if (!existingRecipe)
-    {
-        return null;
-    }
-
-    const deletedRecipe = await prisma.recipe.delete({
-        where: { id },
-        include: {
-            ingredients: true,
-            dietCompatibility: true,
-            user: true,
-        },
-    });
-    return deletedRecipe;
 }

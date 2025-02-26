@@ -1,11 +1,11 @@
 // controller/recipeController.ts
-import {
-    find_recipe_by_id,
-    update_recipe_by_id,
-    delete_recipe_by_id,
-} from "@/model/recipeModel";
+import { find_recipe_by_recipe_id,
+         update_recipe_by_recipe_id,
+         delete_recipe_by_recipe_id,
+         find_recipes_by_user_id,
+         create_recipe_by_user_id } 
+    from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse } from "@/type/Recipe";
-import { find_recipes_by_user_id, create_recipe_by_user_id} from "@/model/recipeModel";
 import { get_user_by_api_key } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { GenericAPIResponse } from "@/type/Generic";
@@ -13,22 +13,21 @@ import { GenericAPIResponse } from "@/type/Generic";
 /**
  * Retrieves a recipe by its ID.
  * @summary Get a specific recipe by ID.
- * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
+ * @param id - The UUID of the recipe.
  * @returns A response object with the recipe if successful,
  *          or an error response.
  */
-export async function getRecipeById(
-    id: string,
-    apiKey: string
-): Promise<RecipeControllerResponse | GenericAPIResponse> {
+export async function getRecipeByRecipeId(apiKey: string, recipeId: string): 
+    Promise<RecipeControllerResponse | GenericAPIResponse> 
+{
     const user: ServerUser | null = await get_user_by_api_key(apiKey);
     if (!user)
     {
         return { payload: "Unauthorized", status: 401 };
     }
 
-    const recipe = await find_recipe_by_id(id);
+    const recipe = await find_recipe_by_recipe_id(recipeId);
     if (!recipe)
     {
         return { payload: "Not Found", status: 404 };
@@ -38,38 +37,23 @@ export async function getRecipeById(
         return { payload: "Forbidden", status: 403 };
     }
 
-    const sanitizedRecipe = sanitizeRecipe(recipe);
-    return { payload: sanitizedRecipe, status: 200 };
+    return { payload: recipe, status: 200 };
 }
 
 /**
  * Updates an existing recipe by its ID.
  * @summary Update a specific recipe by ID.
- * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
- * @param updateData - An object containing updated recipe details.
- *        Ingredients have an optional id property.
+ * @param id - The UUID of the recipe.
+ * @param recipeUpdateData - An object containing updated recipe details.
  * @returns A response object with the updated recipe if successful,
  *          or an error response.
  */
-export async function updateRecipe(
-    id: string,
-    apiKey: string,
-    updateData: {
-        name: string;
-        ingredients: {
-            id: string; // now required
-            name: string;
-            quantityUnit: string;
-            quantity: number;
-            form: string;
-        }[];
-        instructions: string;
-        prepTime: string;
-        cookTime: string;
-        dietCompatibility: (string | { id: string; name: string })[];
-    }
-): Promise<RecipeControllerResponse | GenericAPIResponse> {
+export async function updateRecipeByRecipeId(
+    apiKey: string, recipeId: string, recipeUpdateData: NewRecipe
+):
+    Promise<RecipeControllerResponse | GenericAPIResponse> 
+{
     // Check if the user is authorized.
     const user: ServerUser | null = await get_user_by_api_key(apiKey);
     if (!user)
@@ -78,41 +62,39 @@ export async function updateRecipe(
     }
 
     // Check if the recipe exists.
-    const recipe = await find_recipe_by_id(id);
-    if (!recipe)
+    const originalRecipe = await find_recipe_by_recipe_id(recipeId);
+    if (!originalRecipe)
     {
         return { payload: "Not Found", status: 404 };
     }
 
     // Check if the user is the author of the recipe.
-    if (recipe.userId !== user.id)
+    if (originalRecipe.userId !== user.id)
     {
         return { payload: "Forbidden", status: 403 };
     }
 
     // Update the recipe.
-    const updatedRecipe = await update_recipe_by_id(id, updateData);
+    const updatedRecipe = await update_recipe_by_recipe_id(recipeId, recipeUpdateData);
     if (!updatedRecipe)
     {
         return { payload: "Internal Server Error", status: 500 };
     }
 
-    const sanitizedRecipe = sanitizeRecipe(updatedRecipe);
-    return { payload: sanitizedRecipe, status: 200 };
+    return { payload: updatedRecipe, status: 200 };
 }
 
 /**
  * Deletes a recipe by its ID.
  * @summary Delete a specific recipe by ID.
- * @param id - The UUID of the recipe.
  * @param apiKey - The API key for authentication.
+ * @param id - The UUID of the recipe.
  * @returns A response object confirming deletion if successful,
  *          or an error response.
  */
-export async function deleteRecipe(
-    id: string,
-    apiKey: string
-): Promise<RecipeControllerResponse | GenericAPIResponse> {
+export async function deleteRecipeByRecipeId(apiKey: string, recipeId: string):
+    Promise<RecipeControllerResponse | GenericAPIResponse> 
+{
     // Check if the user is authorized.
     const user: ServerUser | null = await get_user_by_api_key(apiKey);
     if (!user)
@@ -121,7 +103,7 @@ export async function deleteRecipe(
     }
 
     // Check if the recipe exists.
-    const recipe = await find_recipe_by_id(id);
+    const recipe = await find_recipe_by_recipe_id(recipeId);
     if (!recipe)
     {
         return { payload: "Not Found", status: 404 };
@@ -134,7 +116,7 @@ export async function deleteRecipe(
     }
 
     // Delete the recipe.
-    const deletedRecipe = await delete_recipe_by_id(id);
+    const deletedRecipe = await delete_recipe_by_recipe_id(recipeId);
     if (!deletedRecipe)
     {
         return { payload: "Internal Server Error", status: 500 };
