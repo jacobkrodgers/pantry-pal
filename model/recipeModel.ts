@@ -240,15 +240,15 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
             },
             include: {
                 ingredients: true,
-                Diet: true,
-                user: true,
+                Diet: true
             },
         });
 
         return newRecipe;
     }
-    catch
+    catch(e)
     {
+        console.log(e)
         return null;
     }
 }

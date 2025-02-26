@@ -4,7 +4,7 @@ model Recipe {
   id           String       @id @default(uuid())
   name         String
   ingredients  Ingredient[]
-  instructions String // Colon-separated list
+  instructions String       @db.LongText // Colon-separated list
   prepTime     String
   cookTime     String
   dateAdded    DateTime     @default(now())

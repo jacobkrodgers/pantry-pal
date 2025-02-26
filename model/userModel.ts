@@ -42,6 +42,11 @@ export async function create_new_user(username: string, email: string, passwordH
                 email,
                 passwordHash,
             },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+            }
         });
 
         return user;

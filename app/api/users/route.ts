@@ -4,11 +4,10 @@ import { NextResponse } from "next/server";
 
 /**
  * Route handler for POST requests made to /api/users. Accepts a username, email, and password
- * from the body encoded in JSON. Inputs are validated and sanitized before creating a new user
- * and generating an API key.
- * @summary Creates a new user and returns an API key.
+ * from the body encoded in JSON. Inputs are validated and sanitized before creating a new user.
+ * @summary Creates a new user and returns an object representing that user.
  * @param req - The request object. Should contain a body with username, email, and password.
- * @returns response - A response object containing the API key and user ID if successful.
+ * @returns response - A response object containing the new user.
  * @returns response - A response containing an HTTP status code and error message.
  */
 export async function POST(req: Request): Promise<NextResponse> 
