@@ -1,7 +1,40 @@
 import * as argon2 from "argon2";
-import { find_server_user_by_username, create_or_update_api_key_by_user_id, delete_api_key, delete_api_key_by_user_id } from "@/model/userModel";
+import { find_user_by_username_or_email, create_new_user, 
+         find_server_user_by_username, create_or_update_api_key_by_user_id, 
+         delete_api_key, delete_api_key_by_user_id } 
+    from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
 import { UserControllerResponse } from "@/type/User";
+
+/**
+ * Creates a new user in the database after hashing the password.
+ * @summary Creates a new user.
+ * @param username - The new user's username.
+ * @param email - The new user's email address.
+ * @param password - The new user's password.
+ * @returns response - A response object that returns the user ID if successful.
+ * @returns response - A response containing an HTTP status code and error message.
+ */
+export async function createUser(username: string, email: string, password: string):
+    Promise<UserControllerResponse | GenericAPIResponse>
+{
+    // Check if the username or email is already taken
+    const userExists = await find_user_by_username_or_email(username, email);
+    if (userExists) return { status: 500, payload: "Internal Server Error" };
+
+    // Hash password
+    const passwordHash = await argon2.hash(password);
+
+    // Create new user in the database
+    const newUser = await create_new_user(username, email, passwordHash);
+
+    // Ensure user was successfully created
+    if (!newUser) {
+        return { status: 500, payload: "Internal Server Error - Failed to create user" };
+    }
+
+    return { payload: newUser, status: 201 };
+}
 
 /**
  * Verifies the user's provided credentials and deletes the user's API key (if one exists) before
