@@ -1,7 +1,5 @@
 import { prisma } from "@/prisma/dbClient";
-import { ServerUser, ApiKey } from "@/type/User";
-import argon2 from "argon2";
-
+import { ServerUser, ClientUser, ApiKey } from "@/type/User";
 
 /**
  * Checks if a user with the given username or email already exists.
@@ -9,8 +7,10 @@ import argon2 from "argon2";
  * @param email - The email to check.
  * @returns Boolean indicating whether the user exists.
  */
-export async function isUserExists(username: string, email: string): Promise<boolean> {
-    const existingUser = await prisma.user.findFirst({
+export async function find_user_by_username_or_email(username: string, email: string): 
+    Promise<ClientUser | null>
+{
+    const user = await prisma.user.findFirst({
         where: {
             OR: [
                 { username: username },
@@ -19,7 +19,7 @@ export async function isUserExists(username: string, email: string): Promise<boo
         },
     });
 
-    return existingUser !== null;
+    return user;
 }
 
 
@@ -27,19 +27,29 @@ export async function isUserExists(username: string, email: string): Promise<boo
  * Creates a new user in the database after hashing the password.
  * @param username - The username of the new user.
  * @param email - The email of the new user.
- * @param password - The plain text password to be hashed and stored.
+ * @param passwordHash - The user's hashed password.
  * @returns The created user object.
+ * @returns null
  */
-export async function createNewUser(username: string, email: string, password: string) {
-    const passwordHash = await argon2.hash(password);
+export async function create_new_user(username: string, email: string, passwordHash: string): 
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const user = await prisma.user.create({
+            data: {
+                username,
+                email,
+                passwordHash,
+            },
+        });
 
-    return await prisma.user.create({
-        data: {
-            username,
-            email,
-            passwordHash,
-        },
-    });
+        return user;
+    }
+    catch
+    {
+        return null;
+    }
 }
 
 /**
