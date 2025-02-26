@@ -1,58 +1,7 @@
 import { prisma } from "@/prisma/dbClient";
 import { Recipe as SanitizedRecipe, Diet } from "@/type/Recipe";
 import { Ingredient, User } from "@prisma/client";
-
-/**
- * RawRecipe is the unsanitized recipe object as returned by Prisma,
- * which includes the full nested user object.
- */
-export type RawRecipe = Omit<SanitizedRecipe, "authorUsername"> & { user: User };
-
-/**
- * Retrieves recipes created by a specific user.
- * @param user - The user object from Prisma.
- * @returns A promise resolving to an array of raw recipes or null.
- */
-export async function find_recipe_by_user(
-    user: User
-): Promise<RawRecipe[] | null> {
-    const recipes = await prisma.recipe.findMany({
-        where: { userId: user.id },
-        include: {
-            ingredients: true,
-            dietCompatibility: true,
-            user: true,
-        },
-    });
-    return recipes;
-}
-
-/**
- * Retrieves recipes based on ingredient, diet restriction, and date.
- * @param ingredient - An ingredient object to match.
- * @param dietCompatibility - A diet object to match.
- * @param dateAdded - A date to filter recipes added on or after.
- * @returns A promise resolving to an array of raw recipes or null.
- */
-export async function find_recipe_by_restrictions(
-    ingredient: Ingredient,
-    dietCompatibility: Diet,
-    dateAdded: Date
-): Promise<RawRecipe[] | null> {
-    const recipes = await prisma.recipe.findMany({
-        where: {
-            ingredients: { some: { id: ingredient.id } },
-            dietCompatibility: { some: { id: dietCompatibility.id } },
-            dateAdded: { gte: dateAdded },
-        },
-        include: {
-            ingredients: true,
-            dietCompatibility: true,
-            user: true,
-        },
-    });
-    return recipes;
-}
+import { NewRecipe, Recipe } from "@/type/Recipe";
 
 /**
  * Retrieves a recipe by its ID.
@@ -145,61 +94,101 @@ export async function update_recipe_by_id(
 }
 
 /**
- * Creates a new recipe.
- * This function is meant to be used in a separate POST endpoint (e.g., /api/recipes).
- * It creates a new recipe and associates it with the given user.
- * @param userId - The ID of the user creating the recipe.
- * @param createData - An object containing the recipe details.
- * @returns A promise resolving to the newly created raw recipe or null if creation fails.
+ * Retrieves recipes created by a specific user.
+ * @param user - The user object.
+ * @returns A promise resolving to an array of recipes or null.
  */
-export async function create_recipe(
-    userId: string,
-    createData: {
-        name: string;
-        ingredients: Ingredient[];
-        instructions: string;
-        prepTime: string;
-        cookTime: string;
-        dateAdded: Date;
-        dietCompatibility: (Diet | string)[];
-    }
-): Promise<RawRecipe | null> {
-    try 
+export async function find_recipes_by_user_id(userId: string): 
+    Promise<Recipe[] | null> 
+{
+  const recipes = await prisma.recipe.findMany({
+    where: { userId },
+    include: {
+      ingredients: true,
+      Diet: true,
+    },
+  });
+  return recipes;
+}
+
+/**
+ * Creates a new recipe.
+ * @summary Accepts a user ID and a NewRecipe object and attempts to generate
+ *          a new recipe. Individual users may not have multiple recipes with
+ *          the same name. Note: There is currently a bug preventing diets from
+ *          being added to the database.
+ * @param userId - The ID of the user creating the recipe.
+ * @param recipe - An object representing a new recipe to be added.
+ * @returns A promise resolving to the newly created recipe or null.
+ */
+export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
+    Promise<Recipe | null> 
+{
+    // Ensure dietCompatibility exists and contains valid diet names
+    const validDiets = (recipe.Diet ?? [])
+        .map(diet => diet.name)
+        .filter(name => typeof name === "string" && name.trim() !== "");
+
+    // Fetch existing ingredients that match provided names
+    const existingIngredients = await prisma.ingredient.findMany({
+        where: { name: { in: recipe.ingredients.map(ing => ing.name) } }
+    });
+
+    // Fetch existing diet compatibility categories
+    const existingDiets = await prisma.diet.findMany({
+        where: { name: { in: validDiets } }
+    });
+
+    // Extract names of existing items to avoid duplication
+    const existingIngredientNames = new Set(existingIngredients.map(ing => ing.name));
+    const existingDietNames = new Set(existingDiets.map(diet => diet.name));
+
+    // Separate new ingredients and diets (only create those that don't exist)
+    const newIngredients = recipe.ingredients
+        .filter(ing => ing.name && !existingIngredientNames.has(ing.name));
+
+    const newDiets = validDiets
+        .filter(name => !existingDietNames.has(name))
+        .map(name => ({ name })); // Format correctly for Prisma
+
+    try
     {
         const newRecipe = await prisma.recipe.create({
             data: {
-                name: createData.name,
+                name: recipe.name,
+                instructions: recipe.instructions,
+                prepTime: recipe.prepTime,
+                cookTime: recipe.cookTime,
+                userId,
+
+                // Connect existing ingredients & create new ones
                 ingredients: {
-                    // Use create to make new ingredients if they don't exist.
-                    create: createData.ingredients.map((ing) => ({
+                    connect: existingIngredients.map(ing => ({ id: ing.id })),
+                    create: newIngredients.map(ing => ({
                         name: ing.name,
                         quantityUnit: ing.quantityUnit,
                         quantity: ing.quantity,
-                        form: ing.form,
-                    })),
+                        form: ing.form
+                    }))
                 },
-                instructions: createData.instructions,
-                prepTime: createData.prepTime,
-                cookTime: createData.cookTime,
-                dateAdded: createData.dateAdded,
-                user: { connect: { id: userId } },
-                dietCompatibility: {
-                    connect: createData.dietCompatibility.map((diet) =>
-                        typeof diet === "string" ? { id: diet } : { id: diet.id }
-                    ),
+
+                // Connect existing diets & create new ones
+                Diet: {
+                    connect: existingDiets.map(diet => ({ id: diet.id })),
+                    create: newDiets
                 },
             },
             include: {
                 ingredients: true,
-                dietCompatibility: true,
+                Diet: true,
                 user: true,
             },
         });
+
         return newRecipe;
-    } 
-    catch (error) 
+    }
+    catch
     {
-        console.error("Failed to create recipe:", error);
         return null;
     }
 }

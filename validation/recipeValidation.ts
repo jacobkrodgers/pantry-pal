@@ -1,11 +1,24 @@
 import Joi from 'joi';
 
 /**
- * JOI schema for validating the recipe ID.
- * @summary Validates that the recipe ID is a valid UUID.
+ * Schema for validating a new recipe sent in the request body.
  */
-export const recipeIdSchema = Joi.object({
-  id: Joi.string().uuid().required()
+export const newRecipeSchema = Joi.object({
+  name: Joi.string().required(),
+  ingredients: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      quantityUnit: Joi.string().required(),
+      quantity: Joi.number().required(),
+      form: Joi.string().required()
+    })
+  ),
+  instructions: Joi.string().required(),
+  prepTime: Joi.string().optional(),
+  cookTime: Joi.string().optional(),
+  Diet: Joi.array().items(
+    Joi.string().valid("vegan", "vegetarian", "carnivore", "omnivore")
+  ).optional()
 });
 
 /**

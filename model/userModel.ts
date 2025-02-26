@@ -116,4 +116,3 @@ export async function get_user_by_api_key(apiKey: string):
 
     return keyMatch ? keyMatch.user : null;
 }
-  
