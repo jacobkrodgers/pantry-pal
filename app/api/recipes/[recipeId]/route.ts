@@ -78,7 +78,6 @@ export async function PUT(req: Request, {params}: {params: Promise<{recipeId: st
     }
     catch
     {
-        console.log(`Recipe Id not validated: ${recipeId}`)
         return NextResponse.json("Not Found", { status: 404 });
     }
     
