@@ -4,14 +4,14 @@ model Recipe {
   id           String       @id @default(uuid())
   name         String
   ingredients  Ingredient[]
-  instructions String       @db.LongText // Colon-separated list
+  instructions String       @db.LongText
   prepTime     String
   cookTime     String
   dateAdded    DateTime     @default(now())
   dateUpdated  DateTime     @updatedAt
   userId       String
   user         User         @relation(fields: [userId], references: [id])
-  Diet         Diet[]
+  dietTags     DietTag[]
 
   @@unique([name, userId]) // Users can't have duplicate recipes with the same name
 }
@@ -25,8 +25,7 @@ model Ingredient {
   recipes      Recipe[]
 }
 
-model Diet {
-  id     String   @id @default(uuid())
-  name   String
-  Recipe Recipe[]
+model DietTag {
+  name     String   @id
+  recipe   Recipe[]
 }

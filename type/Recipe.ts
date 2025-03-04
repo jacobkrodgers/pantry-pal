@@ -7,8 +7,17 @@ export type Recipe = {
     cookTime: string,
     dateAdded: Date,
     dateUpdated: Date,
-    Diet: Diet[],
+    dietTags: DietTag[],
     userId: string
+}
+
+export type NewRecipe = {
+    name: string,
+    ingredients: Ingredient[],
+    instructions: string,
+    prepTime: string,
+    cookTime: string,
+    dietTags: string[]
 }
 
 export type Ingredient = {
@@ -19,14 +28,11 @@ export type Ingredient = {
     form: string
 }
 
-export type Diet = {
-    name: string,
-    id: string
+export type DietTag = {
+    name: string
 }
 
 export type RecipeControllerResponse = {
     status: number;
     payload: Recipe[] | Recipe | Ingredient[] | string;
 }
-
-export type NewRecipe = Omit<Recipe, "id" | "userId" | "dateAdded" | "dateUpdated">;

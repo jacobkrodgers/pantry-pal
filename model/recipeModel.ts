@@ -13,7 +13,7 @@ export async function find_recipe_by_recipe_id(id: string):
         where: { id },
         include: {
             ingredients: true,
-            Diet: true
+            dietTags: true
         },
     });
 
@@ -39,7 +39,7 @@ export async function update_recipe_by_recipe_id(
         // Fetch the existing recipe
         const existingRecipe = await prisma.recipe.findUnique({
             where: { id: recipeId },
-            include: { ingredients: true, Diet: true }
+            include: { ingredients: true, dietTags: true }
         });
         if (!existingRecipe) return null;
         
@@ -53,15 +53,6 @@ export async function update_recipe_by_recipe_id(
             }
         });
         
-        // Fetch existing diets
-        const validDiets = (recipeUpdateData.Diet ?? [])
-            .map(diet => diet?.name)
-            .filter(name => typeof name === "string" && name.trim() !== "");
-        
-        const existingDiets = await prisma.diet.findMany({
-            where: { name: { in: validDiets } }
-        });
-        
         // Extract existing ingredient identifiers
         const existingIngredientMap = new Map(
             existingIngredients.map(ing => [`${ing.name}-${ing.form}`, ing])
@@ -70,11 +61,7 @@ export async function update_recipe_by_recipe_id(
         // Separate new ingredients and diets
         const newIngredients = (recipeUpdateData.ingredients || [])
             .filter(ing => !existingIngredientMap.has(`${ing.name}-${ing.form}`));
-        
-        const newDiets = validDiets
-            .filter(name => !existingDiets.some(diet => diet.name === name))
-            .map(name => ({ name }));
-        
+
         // Update the recipe
         const updatedRecipeData = await prisma.recipe.update({
             where: { id: recipeId },
@@ -108,14 +95,23 @@ export async function update_recipe_by_recipe_id(
                         })
                         .filter(update => update !== null)
                 },
-                Diet: {
-                    connect: existingDiets.map(diet => ({ id: diet.id })),
-                    create: newDiets
+                
+                // Connect existing diets & create new ones
+                dietTags: {
+                    connectOrCreate: recipeUpdateData.dietTags.map(tag => ({
+                        where: { name: tag },
+                        create: { name: tag }
+                    })),
+
+                    // Removes any ingredients that are no longer in the recipe
+                    disconnect: existingRecipe.dietTags
+                        .filter(tag => !recipeUpdateData.dietTags.includes(tag.name))
+                        .map(tag => ({ name: tag.name }))
                 }
             },
             include: {
                 ingredients: true,
-                Diet: true
+                dietTags: true
             }
         });
 
@@ -142,7 +138,7 @@ export async function delete_recipe_by_recipe_id(id: string):
         where: { id },
         include: {
             ingredients: true,
-            Diet: true,
+            dietTags: true,
         },
     });
         return deletedRecipe;
@@ -165,7 +161,7 @@ export async function find_recipes_by_user_id(userId: string):
     where: { userId },
     include: {
       ingredients: true,
-      Diet: true,
+      dietTags: true,
     }
   });
   return recipes;
@@ -175,8 +171,7 @@ export async function find_recipes_by_user_id(userId: string):
  * Creates a new recipe.
  * @summary Accepts a user ID and a NewRecipe object and attempts to generate
  *          a new recipe. Individual users may not have multiple recipes with
- *          the same name. Note: There is currently a bug preventing diets from
- *          being added to the database.
+ *          the same name.
  * @param userId - The ID of the user creating the recipe.
  * @param recipe - An object representing a new recipe to be added.
  * @returns A promise resolving to the newly created recipe or null.
@@ -184,32 +179,18 @@ export async function find_recipes_by_user_id(userId: string):
 export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
     Promise<Recipe | null> 
 {
-    // Ensure dietCompatibility exists and contains valid diet names
-    const validDiets = (recipe.Diet ?? [])
-        .map(diet => diet.name)
-        .filter(name => typeof name === "string" && name.trim() !== "");
-
+    console.log(recipe)
     // Fetch existing ingredients that match provided names
     const existingIngredients = await prisma.ingredient.findMany({
         where: { name: { in: recipe.ingredients.map(ing => ing.name) } }
     });
 
-    // Fetch existing diet compatibility categories
-    const existingDiets = await prisma.diet.findMany({
-        where: { name: { in: validDiets } }
-    });
-
     // Extract names of existing items to avoid duplication
     const existingIngredientNames = new Set(existingIngredients.map(ing => ing.name));
-    const existingDietNames = new Set(existingDiets.map(diet => diet.name));
 
     // Separate new ingredients and diets (only create those that don't exist)
     const newIngredients = recipe.ingredients
         .filter(ing => ing.name && !existingIngredientNames.has(ing.name));
-
-    const newDiets = validDiets
-        .filter(name => !existingDietNames.has(name))
-        .map(name => ({ name })); // Format correctly for Prisma
 
     try
     {
@@ -232,22 +213,25 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                     }))
                 },
 
-                // Connect existing diets & create new ones
-                Diet: {
-                    connect: existingDiets.map(diet => ({ id: diet.id })),
-                    create: newDiets
-                },
+                dietTags: {
+                    connectOrCreate: recipe.dietTags.map(tag => ({
+                        where: { name: tag },
+                        create: { name: tag }
+                    }))
+                }
+                
             },
             include: {
                 ingredients: true,
-                Diet: true
+                dietTags: true
             },
         });
 
         return newRecipe;
     }
-    catch
+    catch(e)
     {
+        console.log(e)
         return null;
     }
 }
