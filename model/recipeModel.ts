@@ -179,7 +179,6 @@ export async function find_recipes_by_user_id(userId: string):
 export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
     Promise<Recipe | null> 
 {
-    console.log(recipe)
     // Fetch existing ingredients that match provided names
     const existingIngredients = await prisma.ingredient.findMany({
         where: { name: { in: recipe.ingredients.map(ing => ing.name) } }
@@ -229,9 +228,8 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
 
         return newRecipe;
     }
-    catch(e)
+    catch
     {
-        console.log(e)
         return null;
     }
 }
