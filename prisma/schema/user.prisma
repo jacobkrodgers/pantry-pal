@@ -14,3 +14,11 @@ model ApiKey {
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())  // Unique reset token ID
+  token     String   @unique               // Secure reset token
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique               // Ensure one active token per user
+  expiresAt DateTime                        // Expiration time for security
+}
