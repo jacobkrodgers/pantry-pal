@@ -11,17 +11,24 @@ export type Recipe = {
     userId: string
 }
 
+export type Ingredient = {
+    id: string,
+    name: string,
+    quantityUnit: string,
+    quantity: number,
+    form: string
+}
+
 export type NewRecipe = {
     name: string,
-    ingredients: Ingredient[],
+    ingredients: NewIngredient[],
     instructions: string,
     prepTime: string,
     cookTime: string,
     dietTags: string[]
 }
 
-export type Ingredient = {
-    id: string,
+export type NewIngredient = {
     name: string,
     quantityUnit: string,
     quantity: number,

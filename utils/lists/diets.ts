@@ -1,5 +1,4 @@
-export const diets = 
-[
+export const diets: string[] = [
     "atkins",
     "carnivore",
     "gluten-free",
