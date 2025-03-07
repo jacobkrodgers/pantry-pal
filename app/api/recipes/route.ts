@@ -3,6 +3,7 @@ import { uuidSchema } from "@/validation/uuidValidation";
 import { newRecipeSchema } from "@/validation/recipeValidation";
 import { createRecipeByApiKey, getRecipesByApiKey } from "@/controller/recipeController";
 import { NewRecipe } from "@/type/Recipe";
+import { parseRecipeMarkdownFile } from "@/utils/recipes/markdownUtility";
 
 /**
  * GET /api/recipes/ - Retrieves a list of recipes that the user has permission to view.
@@ -44,6 +45,14 @@ export async function POST(req: Request): Promise<NextResponse>
 {
     let recipe: NewRecipe;
     
+    const formData = await req.formData();
+    const files = formData.get('recipe') as File
+    console.log(files)
+    parseRecipeMarkdownFile(files)
+    // console.log(content)
+    
+
+
     // Check for malformed request body (syntax errors)
     try
     {
