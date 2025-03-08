@@ -4,7 +4,7 @@ import {
     update_user_credentials, 
     update_user_password, 
     deleteUserById 
-} from "@/model/userModel";
+} from "@/controller/userController";
 
 /**
  * Middleware function for validating API keys.
