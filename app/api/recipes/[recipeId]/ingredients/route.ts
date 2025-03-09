@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { uuidSchema } from "@/validation/uuidValidation";
-import { getRecipeByRecipeId } from "@/controller/recipeController";
+import { getRecipeIngredientsByRecipeId } from "@/controller/recipeController";
 
 /**
  * GET /api/recipes/{id}/ingredients - Retrieves a list of ingredients for a specific recipe.
@@ -9,8 +9,10 @@ import { getRecipeByRecipeId } from "@/controller/recipeController";
  * @param params - An object with the recipe id.
  * @returns JSON with the list of ingredients or an error message.
  */
-export async function GET(req: Request, { params }: { params: Promise<{ recipeId: string }> }):
-    Promise<NextResponse>
+export async function GET(
+    req: Request, 
+    { params }: { params: Promise<{ recipeId: string }> }
+): Promise<NextResponse>
 {
     let recipeId: string;
 
@@ -47,14 +49,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ recipeId
         return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
     }
 
-    // Get the recipe by ID and return its ingredients.
-    const recipeResponse = await getRecipeByRecipeId(apiKey, recipeId);
-    if (recipeResponse.status !== 200)
-    {
-        return NextResponse.json(recipeResponse.payload, { status: recipeResponse.status });
-    }
-
-    // At this point, recipeResponse.payload should be a recipe object.
-    const recipe = recipeResponse.payload as { ingredients: unknown };
-    return NextResponse.json(recipe.ingredients, { status: 200 });
+    // Get the ingredients by recipe ID and return them.
+    const ingredientsResponse = await getRecipeIngredientsByRecipeId(apiKey, recipeId);
+    return NextResponse.json(ingredientsResponse.payload, { status: ingredientsResponse.status });
 }
