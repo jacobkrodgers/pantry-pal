@@ -1,5 +1,5 @@
 import { prisma } from "@/prisma/dbClient";
-import { ServerUser, ClientUser, ApiKey } from "@/type/User";
+import { ServerUser, ClientUser, ApiKey, Session } from "@/type/User";
 
 /**
  * Checks if a user with the given username or email already exists.
@@ -21,7 +21,6 @@ export async function find_user_by_username_or_email(username: string, email: st
 
     return user;
 }
-
 
 /**
  * Creates a new user in the database after hashing the password.
@@ -171,4 +170,138 @@ export async function get_user_by_api_key(apiKey: string):
     });
 
     return keyMatch ? keyMatch.user : null;
+}
+
+/**
+ * Creates a new user session.
+ * @param userId - The user's id.
+ * @param expiration - Expiration date of the session
+ * @returns session - An object representing the newly created session
+ * in the database.
+ * @returns null.
+ */
+export async function create_session(userId: string, expiration: Date):
+    Promise<Session | null>
+{
+    try
+    {
+        const session = await prisma.session.create({
+            data:{userId, expiration}
+        });
+    
+        return session;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+/**
+ * Deletes a user session.
+ * @param id - The session Id to delete.
+ * @returns deletedSession - An object representing the deleted session.
+ * @returns null.
+ */
+export async function delete_session(id: string):
+    Promise<Session | null>
+{
+    try
+    {
+        const deletedSession = await prisma.session.delete({
+            where:
+            {
+                id
+            }
+        })
+    
+        return deletedSession;
+    }
+    catch
+    {
+        return null;
+    }  
+}
+
+/**
+ * Deletes all user sessions associated with a given user.
+ * @param userId - The user's ID.
+ * @returns deletedSessionCount - The number of deleted sessions.
+ */
+export async function delete_all_user_sessions_by_user_id(userId: string):
+    Promise<number | null>
+{
+    const deletedSessions = await prisma.session.deleteMany({
+        where:
+        {
+            userId
+        }
+    });
+
+    return deletedSessions.count;
+}
+
+/**
+ * Deletes all of a user's expired sessions.
+ * @param userId - The user's ID.
+ * @returns deletedSessionCount - The number of deleted sessions.
+ */
+export async function delete_expired_user_sessions_by_user_id(userId: string):
+    Promise<number | null>
+{
+    const deletedSessions = await prisma.session.deleteMany({
+        where:
+        {
+            userId,
+            expiration:
+            {
+                lt: new Date()
+            }
+        }
+    });
+
+    return deletedSessions.count;
+}
+
+/**
+ * Deletes all expired sessions in the database.
+ * @returns deletedSessionCount - The number of deleted sessions.
+ */
+export async function delete_all_expired_sessions():
+    Promise<number | null>
+{
+    const deletedSessions = await prisma.session.deleteMany({
+        where:
+        {
+            expiration:
+            {
+                lt: new Date()
+            }
+        }
+    });
+
+    return deletedSessions.count;
+}
+
+/**
+ * Gets a user from the database using a provided session.
+ * @param id - The session id of the user.
+ * @returns An object representing a server user
+ * @returns null
+ */
+export async function get_user_by_session(id: string):
+    Promise<ServerUser | null>
+{
+    const session = await prisma.session.findUnique({
+        where:
+        {
+            id
+        },
+        include:
+        {
+            user: true
+        }
+    });
+
+    return session ? session.user : null;
 }

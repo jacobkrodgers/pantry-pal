@@ -22,3 +22,9 @@ export type LoginInformation = {
     username: string;
     password: string;
 }
+
+export type Session = {
+    id: string;
+    userId: string;
+    expiration: Date;
+}
