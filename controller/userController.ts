@@ -1,11 +1,15 @@
 import * as argon2 from "argon2";
 import { find_user_by_username_or_email, create_new_user, 
          find_server_user_by_username, create_or_update_api_key_by_user_id, 
-         delete_api_key, delete_api_key_by_user_id } 
+         delete_api_key, delete_api_key_by_user_id,
+         update_user_credentials_in_db, 
+         update_user_password_in_db, 
+         find_user_by_id, 
+         delete_user_by_id } 
     from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
 import { UserControllerResponse, ServerUser, ClientUser } from "@/type/User";
-import { prisma } from "@/prisma/dbClient";
+
 
 /**
  * Creates a new user in the database after hashing the password.
@@ -131,109 +135,56 @@ export async function deleteApiKeyWithCredentials(username: string, password: st
 }
 
 /**
- * Updates a user's email or username in the database.
+ * Updates a user's email or username.
+ * Calls the model function to update the database.
+ * 
  * @param userId - The user's ID.
- * @param newUsername - The new username.
- * @param newEmail - The new email.
- * @returns The updated user object.
- * @returns null if the update fails.
+ * @param newUsername - The new username (optional).
+ * @param newEmail - The new email (optional).
+ * @returns The updated user object or null if update fails.
  */
 export async function update_user_credentials(userId: string, newUsername?: string, newEmail?: string): 
     Promise<ClientUser | null> 
 {
-    try 
-    {
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                ...(newUsername && { username: newUsername }),
-                ...(newEmail && { email: newEmail })
-            },
-            select: {
-                id: true,
-                username: true,
-                email: true
-            }
-        });
-
-        return updatedUser;
-    }
-    catch 
-    {
-        return null;
-    }
+    return await update_user_credentials_in_db(userId, newUsername, newEmail);
 }
 
 /**
- * Updates a user's password in the database.
+ * Updates a user's password.
+ * Calls the model function to update the database.
+ * 
  * @param userId - The user's ID.
  * @param newPasswordHash - The new hashed password.
- * @returns The updated user object.
- * @returns null if the update fails.
+ * @returns The updated user object or null if update fails.
  */
 export async function update_user_password(userId: string, newPasswordHash: string): 
     Promise<ServerUser | null> 
 {
-    try 
-    {
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: { passwordHash: newPasswordHash }
-        });
-
-        return updatedUser;
-    }
-    catch 
-    {
-        return null;
-    }
+    return await update_user_password_in_db(userId, newPasswordHash);
 }
 
 /**
  * Retrieves a user by their unique ID.
+ * Calls the model function to fetch the user from the database.
+ * 
  * @param userId - The user's ID.
- * @returns An object representing the user.
- * @returns null if the user is not found.
+ * @returns An object representing the user or null if not found.
  */
 export async function getUserById(userId: string): 
     Promise<ClientUser | null> 
 {
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-            id: true,
-            username: true,
-            email: true
-        }
-    });
-
-    return user;
+    return await find_user_by_id(userId);
 }
 
 /**
  * Deletes a user from the database.
+ * Calls the model function to remove the user.
+ * 
  * @param userId - The user's ID.
- * @returns The deleted user object.
- * @returns null if deletion fails.
+ * @returns The deleted user object or null if deletion fails.
  */
 export async function deleteUserById(userId: string): 
     Promise<ClientUser | null> 
 {
-    try 
-    {
-        const deletedUser = await prisma.user.delete({
-            where: { id: userId },
-            select: {
-                id: true,
-                username: true,
-                email: true
-            }
-        });
-
-        return deletedUser;
-    }
-    catch 
-    {
-        return null;
-    }
+    return await delete_user_by_id(userId);
 }

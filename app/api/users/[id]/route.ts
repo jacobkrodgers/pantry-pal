@@ -29,11 +29,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: "Unauthorized User" }, { status: 401 });
     }
 
-    const user = await getUserById(params.id);
-    if (!user) {
-        return NextResponse.json({ message: "User not found" }, { status: 404 });
+    try {
+        const user = await getUserById(params.id);
+        if (!user) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+        return NextResponse.json(user, { status: 200 });
+    } catch  {
+        return NextResponse.json({ message: "Error retrieving user" }, { status: 500 });
     }
-    return NextResponse.json(user, { status: 200 });
 }
 
 /**
@@ -51,14 +55,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     try {
         const { newUsername, newEmail, newPassword } = await req.json();
-        let updatedUser;
+        let updatedUser = null;
 
         if (newUsername || newEmail) {
             updatedUser = await update_user_credentials(params.id, newUsername, newEmail);
         }
         
         if (newPassword) {
-            updatedUser = await update_user_password(params.id, newPassword);
+            await update_user_password(params.id, newPassword);
+            updatedUser = await getUserById(params.id); // Fetch the updated user details
         }
 
         if (!updatedUser) {
@@ -66,7 +71,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
 
         return NextResponse.json(updatedUser, { status: 200 });
-    } catch (error) {
+    } catch  {
         return NextResponse.json({ message: "Invalid request data" }, { status: 400 });
     }
 }
@@ -85,9 +90,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
+        const user = await getUserById(params.id);
+        if (!user) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+        
         await deleteUserById(params.id);
         return NextResponse.json({ message: "User successfully deleted" }, { status: 200 });
-    } catch (error) {
+    } catch  {
         return NextResponse.json({ message: "Error deleting user" }, { status: 500 });
     }
 }

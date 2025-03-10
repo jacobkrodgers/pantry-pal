@@ -173,3 +173,102 @@ export async function get_user_by_api_key(apiKey: string):
     return keyMatch ? keyMatch.user : null;
 }
 
+/**
+ * Updates a user's email or username in the database.
+ * 
+ * @param userId - The user's ID.
+ * @param newUsername - The new username (optional).
+ * @param newEmail - The new email (optional).
+ * @returns The updated user object or null if update fails.
+ */
+export async function update_user_credentials_in_db(userId: string, newUsername?: string, newEmail?: string): 
+    Promise<ClientUser | null> 
+{
+    try 
+    {
+        return await prisma.user.update({
+            where: { id: userId },
+            data: {
+                ...(newUsername && { username: newUsername }),
+                ...(newEmail && { email: newEmail })
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        });
+    }
+    catch 
+    {
+        return null;
+    }
+}
+
+/**
+ * Updates a user's password in the database.
+ * 
+ * @param userId - The user's ID.
+ * @param newPasswordHash - The new hashed password.
+ * @returns The updated user object or null if update fails.
+ */
+export async function update_user_password_in_db(userId: string, newPasswordHash: string): 
+    Promise<ServerUser | null> 
+{
+    try 
+    {
+        return await prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash: newPasswordHash }
+        });
+    }
+    catch 
+    {
+        return null;
+    }
+}
+
+/**
+ * Retrieves a user by their unique ID from the database.
+ * 
+ * @param userId - The user's ID.
+ * @returns An object representing the user or null if not found.
+ */
+export async function find_user_by_id(userId: string): 
+    Promise<ClientUser | null> 
+{
+    return await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            username: true,
+            email: true
+        }
+    });
+}
+
+/**
+ * Deletes a user from the database.
+ * 
+ * @param userId - The user's ID.
+ * @returns The deleted user object or null if deletion fails.
+ */
+export async function delete_user_by_id(userId: string): 
+    Promise<ClientUser | null> 
+{
+    try 
+    {
+        return await prisma.user.delete({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        });
+    }
+    catch 
+    {
+        return null;
+    }
+}
