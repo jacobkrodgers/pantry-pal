@@ -4,7 +4,7 @@ import { find_user_by_username_or_email, create_new_user,
          delete_api_key, delete_api_key_by_user_id,
          update_user_credentials_in_db, 
          update_user_password_in_db, 
-         findUserByApiKey, 
+         get_user_by_api_key, 
          delete_user_by_id } 
     from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
@@ -144,9 +144,11 @@ export async function deleteApiKeyWithCredentials(username: string, password: st
 export async function getUserByApiKey(apiKey: string): 
     Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    const user = await findUserByApiKey(apiKey);
-    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
-
+    const user = await get_user_by_api_key(apiKey);
+    if (!user) 
+    {    
+        return { status: 401, payload: "Unauthorized - Invalid API Key" };
+    } 
     return { payload: user, status: 200 };
 }
 
@@ -162,12 +164,17 @@ export async function getUserByApiKey(apiKey: string):
 export async function updateUserCredentials(apiKey: string, newUsername?: string, newEmail?: string): 
     Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    const user = await findUserByApiKey(apiKey);
-    if (!user) return { status: 401, payload: "Unauthorized" };
+    const user = await get_user_by_api_key(apiKey);
+    if (!user) 
+    {
+        return { status: 401, payload: "Unauthorized" };
+    }
 
     const updatedUser = await update_user_credentials_in_db(user.id, newUsername, newEmail);
-    if (!updatedUser) return { status: 400, payload: "Bad Request - User update failed" };
-
+    if (!updatedUser) 
+    {
+        return { status: 400, payload: "Bad Request - User update failed" };
+    }
     return { payload: updatedUser, status: 200 };
 }
 
@@ -181,9 +188,12 @@ export async function updateUserCredentials(apiKey: string, newUsername?: string
 export async function updateUserPassword(apiKey: string, newPasswordHash: string): 
     Promise<GenericAPIResponse> 
 {
-    const user = await findUserByApiKey(apiKey);
-    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
-
+    const user = await get_user_by_api_key(apiKey);
+    if (!user) 
+    {
+        return { status: 401, payload: "Unauthorized - Invalid API Key" };
+    }
+    
     await update_user_password_in_db(user.id, newPasswordHash);
     return { payload: "Password updated successfully", status: 200 };
 }
@@ -197,9 +207,24 @@ export async function updateUserPassword(apiKey: string, newPasswordHash: string
 export async function deleteUserByApiKey(apiKey: string): 
     Promise<GenericAPIResponse> 
 {
-    const user = await findUserByApiKey(apiKey);
-    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
-
+    const user = await get_user_by_api_key(apiKey);
+    if (!user)
+    { 
+        return { status: 401, payload: "Unauthorized - Invalid API Key" };
+    }
     await delete_user_by_id(user.id);
     return { payload: "User successfully deleted", status: 200 };
+}
+
+export async function validateApiKey(apiKey: string): Promise<GenericAPIResponse> {
+    if (!apiKey) 
+    {    
+        return { status: 401, payload: "Unauthorized User" };
+    }
+    const user = await get_user_by_api_key(apiKey);
+    if (!user) 
+    {
+        return { status: 404, payload: "User not found" };
+    }
+    return { status: 200, payload: "Valid API Key" };
 }

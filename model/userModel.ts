@@ -273,18 +273,3 @@ export async function delete_user_by_id(userId: string):
     }
 }
 
-/**
- * Finds a user in the database using a provided API key.
- * @summary Retrieves user data based on the API key.
- * @param apiKey - The API key to verify.
- * @returns A ServerUser object if found.
- * @returns null if no user is found.
- */
-export async function findUserByApiKey(apiKey: string): Promise<ServerUser | null> {
-    const keyMatch = await prisma.apiKey.findUnique({
-        where: { apiKey: apiKey },
-        include: { user: true }
-    });
-
-    return keyMatch ? keyMatch.user : null;
-}
