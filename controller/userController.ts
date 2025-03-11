@@ -4,11 +4,11 @@ import { find_user_by_username_or_email, create_new_user,
          delete_api_key, delete_api_key_by_user_id,
          update_user_credentials_in_db, 
          update_user_password_in_db, 
-         find_user_by_id, 
+         findUserByApiKey, 
          delete_user_by_id } 
     from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
-import { UserControllerResponse, ServerUser, ClientUser } from "@/type/User";
+import { UserControllerResponse} from "@/type/User";
 
 
 /**
@@ -135,56 +135,71 @@ export async function deleteApiKeyWithCredentials(username: string, password: st
 }
 
 /**
- * Updates a user's email or username.
- * Calls the model function to update the database.
- * 
- * @param userId - The user's ID.
+ * Retrieves a user by their API key.
+ * @summary Fetches user data from the database.
+ * @param apiKey - The user's API key.
+ * @returns response - A response object containing user data if successful.
+ * @returns response - A response containing an HTTP status code and error message.
+ */
+export async function getUserByApiKey(apiKey: string): 
+    Promise<UserControllerResponse | GenericAPIResponse> 
+{
+    const user = await findUserByApiKey(apiKey);
+    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
+
+    return { payload: user, status: 200 };
+}
+
+/**
+ * Updates a user's email or username using their API key.
+ * @summary Updates user credentials.
+ * @param apiKey - The user's API key.
  * @param newUsername - The new username (optional).
  * @param newEmail - The new email (optional).
- * @returns The updated user object or null if update fails.
+ * @returns response - A response object containing updated user data if successful.
+ * @returns response - A response containing an HTTP status code and error message.
  */
-export async function update_user_credentials(userId: string, newUsername?: string, newEmail?: string): 
-    Promise<ClientUser | null> 
+export async function updateUserCredentials(apiKey: string, newUsername?: string, newEmail?: string): 
+    Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    return await update_user_credentials_in_db(userId, newUsername, newEmail);
+    const user = await findUserByApiKey(apiKey);
+    if (!user) return { status: 401, payload: "Unauthorized" };
+
+    const updatedUser = await update_user_credentials_in_db(user.id, newUsername, newEmail);
+    if (!updatedUser) return { status: 400, payload: "Bad Request - User update failed" };
+
+    return { payload: updatedUser, status: 200 };
 }
 
 /**
- * Updates a user's password.
- * Calls the model function to update the database.
- * 
- * @param userId - The user's ID.
+ * Updates a user's password using their API key.
+ * @summary Updates user password.
+ * @param apiKey - The user's API key.
  * @param newPasswordHash - The new hashed password.
- * @returns The updated user object or null if update fails.
+ * @returns response - A response confirming the update or an error message.
  */
-export async function update_user_password(userId: string, newPasswordHash: string): 
-    Promise<ServerUser | null> 
+export async function updateUserPassword(apiKey: string, newPasswordHash: string): 
+    Promise<GenericAPIResponse> 
 {
-    return await update_user_password_in_db(userId, newPasswordHash);
+    const user = await findUserByApiKey(apiKey);
+    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
+
+    await update_user_password_in_db(user.id, newPasswordHash);
+    return { payload: "Password updated successfully", status: 200 };
 }
 
 /**
- * Retrieves a user by their unique ID.
- * Calls the model function to fetch the user from the database.
- * 
- * @param userId - The user's ID.
- * @returns An object representing the user or null if not found.
+ * Deletes a user from the database using their API key.
+ * @summary Deletes a user.
+ * @param apiKey - The user's API key.
+ * @returns response - A response confirming successful deletion or an error message.
  */
-export async function getUserById(userId: string): 
-    Promise<ClientUser | null> 
+export async function deleteUserByApiKey(apiKey: string): 
+    Promise<GenericAPIResponse> 
 {
-    return await find_user_by_id(userId);
-}
+    const user = await findUserByApiKey(apiKey);
+    if (!user) return { status: 401, payload: "Unauthorized - Invalid API Key" };
 
-/**
- * Deletes a user from the database.
- * Calls the model function to remove the user.
- * 
- * @param userId - The user's ID.
- * @returns The deleted user object or null if deletion fails.
- */
-export async function deleteUserById(userId: string): 
-    Promise<ClientUser | null> 
-{
-    return await delete_user_by_id(userId);
+    await delete_user_by_id(user.id);
+    return { payload: "User successfully deleted", status: 200 };
 }

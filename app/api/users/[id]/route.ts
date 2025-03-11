@@ -1,103 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
 import { 
-    getUserById, 
-    update_user_credentials, 
-    update_user_password, 
-    deleteUserById 
+    getUserByApiKey,
+    updateUserCredentials, 
+    updateUserPassword, 
+    deleteUserByApiKey 
 } from "@/controller/userController";
+import { GenericAPIResponse } from "@/type/Generic";
+import { UserControllerResponse } from "@/type/User";
 
 /**
  * Middleware function for validating API keys.
  * @param req - The request object.
- * @returns Boolean indicating whether the API key is valid.
+ * @returns The user object if API key is valid, otherwise an error response.
  */
-function validateApiKey(req: NextRequest): boolean {
+async function validateApiKey(req: NextRequest): Promise<GenericAPIResponse> {
     const apiKey = req.headers.get("X-API-Key");
-    return apiKey !== null && apiKey.length > 0;
+    if (!apiKey) 
+        return { status: 401, payload: "Unauthorized User" };
+    return await getUserByApiKey(apiKey);
 }
 
 /**
- * Route handler for GET requests made to /api/users/:id.
- * Fetches a user from the database using the provided user ID.
- * @summary Retrieves a user object by ID.
- * @param req - The request object.
- * @param params - An object containing the user ID.
- * @returns response - A response object containing the user data.
+ * Route handler for GET requests made to /api/users.
+ * Fetches a user from the database using the provided API key.
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    if (!validateApiKey(req)) {
-        return NextResponse.json({ message: "Unauthorized User" }, { status: 401 });
-    }
-
-    try {
-        const user = await getUserById(params.id);
-        if (!user) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
-        }
-        return NextResponse.json(user, { status: 200 });
-    } catch  {
-        return NextResponse.json({ message: "Error retrieving user" }, { status: 500 });
-    }
+export async function GET(req: NextRequest) {
+    const response = await validateApiKey(req);
+    return NextResponse.json(response.payload, { status: response.status });
 }
 
 /**
- * Route handler for PUT requests made to /api/users/:id.
- * Updates a user's credentials in the database based on the provided user ID and request body.
- * @summary Updates an existing user.
- * @param req - The request object containing updated user data in the body.
- * @param params - An object containing the user ID.
- * @returns response - A response object containing the updated user data.
+ * Route handler for PUT requests made to /api/users.
+ * Updates a user's credentials or password based on the provided API key.
  */
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-    if (!validateApiKey(req)) {
-        return NextResponse.json({ message: "Unauthorized User" }, { status: 401 });
+export async function PUT(req: NextRequest) {
+    const userResponse = await validateApiKey(req);
+    if (userResponse.status !== 200) {
+        return NextResponse.json(userResponse.payload, { status: userResponse.status });
     }
 
     try {
         const { newUsername, newEmail, newPassword } = await req.json();
-        let updatedUser = null;
+        let updatedUser: UserControllerResponse | GenericAPIResponse = { status: 200, payload: userResponse.payload };
 
         if (newUsername || newEmail) {
-            updatedUser = await update_user_credentials(params.id, newUsername, newEmail);
+            updatedUser = await updateUserCredentials(userResponse.payload.id, newUsername, newEmail);
         }
-        
+
         if (newPassword) {
-            await update_user_password(params.id, newPassword);
-            updatedUser = await getUserById(params.id); // Fetch the updated user details
+            await updateUserPassword(userResponse.payload.id, newPassword);
+            updatedUser = await getUserByApiKey(req.headers.get("X-API-Key")!);
         }
 
-        if (!updatedUser) {
-            return NextResponse.json({ message: "User update failed" }, { status: 400 });
-        }
+        return NextResponse.json(updatedUser.payload, { status: updatedUser.status });
 
-        return NextResponse.json(updatedUser, { status: 200 });
-    } catch  {
-        return NextResponse.json({ message: "Invalid request data" }, { status: 400 });
+    } catch {
+        return NextResponse.json({ message: "Bad Request - Malformed Request Body" }, { status: 400 });
     }
 }
 
 /**
- * Route handler for DELETE requests made to /api/users/:id.
- * Deletes a user from the database using the provided user ID.
- * @summary Deletes a user.
- * @param req - The request object.
- * @param params - An object containing the user ID.
- * @returns response - A response confirming successful deletion.
+ * Route handler for DELETE requests made to /api/users.
+ * Deletes a user from the database using the provided API key.
  */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-    if (!validateApiKey(req)) {
-        return NextResponse.json({ message: "Unauthorized User" }, { status: 401 });
+export async function DELETE(req: NextRequest) {
+    const userResponse = await validateApiKey(req);
+    if (userResponse.status !== 200) {
+        return NextResponse.json(userResponse.payload, { status: userResponse.status });
     }
-
+    
     try {
-        const user = await getUserById(params.id);
-        if (!user) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
-        }
-        
-        await deleteUserById(params.id);
-        return NextResponse.json({ message: "User successfully deleted" }, { status: 200 });
-    } catch  {
+        const deleteResponse = await deleteUserByApiKey(userResponse.payload.id);
+        return NextResponse.json(deleteResponse.payload, { status: deleteResponse.status });
+    } catch {
         return NextResponse.json({ message: "Error deleting user" }, { status: 500 });
     }
 }
