@@ -9,6 +9,7 @@ import { NewRecipe, Recipe, RecipeControllerResponse } from "@/type/Recipe";
 import { get_user_by_api_key } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { GenericAPIResponse } from "@/type/Generic";
+import { Ingredient } from "@prisma/client";
 
 /**
  * Retrieves a recipe by its ID.
@@ -205,8 +206,9 @@ export async function getRecipeIngredientsByRecipeId(apiKey: string, recipeId: s
  * @returns A response object with the missing ingredients if successful,
  *          or an error response.
  */
-export async function getMissingIngredientsByRecipeId(apiKey: string, recipeId: string):
-    Promise<RecipeControllerResponse | GenericAPIResponse>
+export async function getMissingIngredientsByRecipeId(
+    apiKey: string, recipeId: string, ingOnHand: Ingredient[]
+):Promise<RecipeControllerResponse | GenericAPIResponse>
 {
     const user: ServerUser | null = await get_user_by_api_key(apiKey);
     if(!user)
@@ -227,7 +229,7 @@ export async function getMissingIngredientsByRecipeId(apiKey: string, recipeId: 
 
     // Get existing ingredients
     const existingIngredientsMap = new Map(
-        recipe.ingredients.map(ing => [`${ing.name}-${ing.form}`, ing])
+        ingOnHand.map(ing => [`${ing.name}-${ing.form}`, ing])
     );
 
     // Separate missing ingredients

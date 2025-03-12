@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { uuidSchema } from "@/validation/uuidValidation";
 import { getRecipeIngredientsByRecipeId,
          getMissingIngredientsByRecipeId } from "@/controller/recipeController";
+import { Ingredient } from "@prisma/client";
 
 /**
  * GET /api/recipes/{id}/ingredients - Retrieves a list of ingredients for a specific recipe.
@@ -102,7 +103,22 @@ export async function PUT(
         return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
     }
 
+    let ingOnHand: Ingredient[] = [];
+    try
+    {
+        const body = await req.json();
+        ingOnHand = body.ingOnHand || [];
+        if(!ingOnHand) throw new Error();
+    }
+    catch
+    {
+        return NextResponse.json("Bad Request - Invalid Body", { status: 400 });
+    }
+
+    if(!Array.isArray(ingOnHand))
+        return NextResponse.json("Bad Request - Invalid Body Format", { status: 400 });
+
     // Get the ingredients by recipe ID and return them.
-    const missingIngredientsResponse = await getMissingIngredientsByRecipeId(apiKey, recipeId);
+    const missingIngredientsResponse = await getMissingIngredientsByRecipeId(apiKey, recipeId, ingOnHand);
     return NextResponse.json(missingIngredientsResponse.payload, { status: missingIngredientsResponse.status });
 }
