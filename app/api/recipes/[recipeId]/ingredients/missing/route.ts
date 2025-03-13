@@ -1,33 +1,34 @@
 import { NextResponse } from "next/server";
 import { uuidSchema } from "@/validation/uuidValidation";
-import { getRecipeIngredientsByRecipeId } from "@/controller/recipeController";
+import { getMissingIngredientsByRecipeId } from "@/controller/recipeController";
+import { Ingredient } from "@prisma/client";
 
 /**
- * GET /api/recipes/{id}/ingredients - Retrieves a list of ingredients for a specific recipe.
- * @summary Get the ingredients of a specific recipe by ID.
+ * POST /api/recipes/{id}/ingredients/missing - Retrieves a list of missing ingredients for a specific recipe.
+ * @summary Get the missing ingredients of a specific recipe by ID.
  * @param req - The request object.
  * @param params - An object with the recipe id.
  * @returns JSON with the list of ingredients or an error message.
  */
-export async function GET(
-    req: Request, 
-    { params }: { params: Promise<{ recipeId: string }> }
+export async function PUT(
+    req: Request,
+    { params }: { params: Promise<{ recipeId: string }>}
 ): Promise<NextResponse>
 {
     let recipeId: string;
 
-    // Get ID from path parameters.
-    try 
+    // get ID from params
+    try
     {
         ({ recipeId } = await params);
         if (!recipeId) throw new Error();
     }
-    catch 
+    catch
     {
-        return NextResponse.json("Not Found", { status: 404 });
+        return NextResponse.json( "Not Found", { status: 404 });
     }
 
-    // Validate that the recipe ID is a UUID.
+    // validate recipeId is a UUID
     const { error: recipeIdValidationError } = uuidSchema.validate({ uuid: recipeId });
     if (recipeIdValidationError)
     {
@@ -49,7 +50,22 @@ export async function GET(
         return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
     }
 
+    let ingOnHand: Ingredient[] = [];
+    try
+    {
+        const body = await req.json();
+        ingOnHand = body.ingOnHand || [];
+        if(!ingOnHand) throw new Error();
+    }
+    catch
+    {
+        return NextResponse.json("Bad Request - Invalid Body", { status: 400 });
+    }
+
+    if(!Array.isArray(ingOnHand))
+        return NextResponse.json("Bad Request - Invalid Body Format", { status: 400 });
+
     // Get the ingredients by recipe ID and return them.
-    const ingredientsResponse = await getRecipeIngredientsByRecipeId(apiKey, recipeId);
-    return NextResponse.json(ingredientsResponse.payload, { status: ingredientsResponse.status });
+    const missingIngredientsResponse = await getMissingIngredientsByRecipeId(apiKey, recipeId, ingOnHand);
+    return NextResponse.json(missingIngredientsResponse.payload, { status: missingIngredientsResponse.status });
 }
