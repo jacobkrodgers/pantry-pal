@@ -2,8 +2,8 @@ import * as argon2 from "argon2";
 import { find_user_by_username_or_email, create_new_user, 
          find_server_user_by_username, create_or_update_api_key_by_user_id, 
          delete_api_key, delete_api_key_by_user_id,
-         update_user_credentials_in_db, 
-         update_user_password_in_db, 
+         update_user_credentials, 
+         update_user_password, 
          get_user_by_api_key, 
          delete_user_by_id } 
     from "@/model/userModel";
@@ -153,67 +153,145 @@ export async function getUserByApiKey(apiKey: string):
 }
 
 /**
- * Updates a user's email or username using their API key.
- * @summary Updates user credentials.
- * @param apiKey - The user's API key.
- * @param newUsername - The new username (optional).
- * @param newEmail - The new email (optional).
- * @returns response - A response object containing updated user data if successful.
- * @returns response - A response containing an HTTP status code and error message.
+ * Updates a user's email, username, or password based on provided input.
+ * @param {string} apiKey - The API key for authentication.
+ * @param {object} userData - Contains new email, username, or password.
+ * @returns {object} - Response object containing status and message.
  */
-export async function updateUserCredentials(apiKey: string, newUsername?: string, newEmail?: string): 
+export async function updateUserCredentialsByApiKey(apiKey: string, email?:string, username?: string):
+    Promise<UserControllerResponse | GenericAPIResponse>
+{
+    try 
+    {
+        // Step 1: Authenticate the user using the API key
+        const existingUser = await get_user_by_api_key(apiKey);
+        if (!existingUser) 
+        {
+            return { status: 404, payload: "User not found." };
+        }
+
+        // Step 2: Determine what needs to be updated (email, username, or password)
+        let credentialsUpdated = false;
+        
+        // Prepare data for update (preserving unchanged values)
+        const newEmail = email ? email : existingUser.email;
+        const newUsername = username ? username : existingUser.username;
+        
+        // Step 3: Update email or username if provided
+        if (newEmail || newUsername)
+        {
+            const updatedCredentials = await update_user_credentials(existingUser.id, email ?? existingUser.email, username ?? existingUser.username);
+            if (updatedCredentials) {
+                credentialsUpdated = true;
+            }
+        }
+
+        // Step 5: Check if any updates were successful and return response
+        if (credentialsUpdated) 
+        {
+            return { status: 200, payload: "User information updated successfully." };
+        }
+
+        return { status: 400, payload: "No updates were made." };
+    } 
+    catch (error) 
+    {
+        console.error("Error updating user:", error);
+        return { status: 500, payload: "Internal server error." };
+    }
+}
+
+
+/**
+ * Updates a user's password after verifying the old password using Argon2.
+ * @param {string} apiKey - The API key for authentication.
+ * @param {string} oldPassword - The user's current password for verification.
+ * @param {string} newPassword - The new password to be set.
+ * @returns {Promise<UserControllerResponse | GenericAPIResponse>} - Response object containing status and message.
+ */
+export async function updateUserPasswordByApiKey(apiKey: string, oldPassword: string, newPassword: string): 
     Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    const user = await get_user_by_api_key(apiKey);
-    if (!user) 
-    {
-        return { status: 401, payload: "Unauthorized" };
-    }
+    try {
+        // Step 1: Authenticate user using API key
+        const existingUser = await get_user_by_api_key(apiKey);
+        if (!existingUser) {
+            return { status: 404, payload: "User not found." };
+        }
+        
+        // Step 2: Verify the old password with Argon2
+        const isPasswordValid = await argon2.verify(existingUser.passwordHash, oldPassword);
+        if (!isPasswordValid) {
+            return { status: 401, payload: "Invalid old password." };
+        }
 
-    const updatedUser = await update_user_credentials_in_db(user.id, newUsername, newEmail);
-    if (!updatedUser) 
-    {
-        return { status: 400, payload: "Bad Request - User update failed" };
+        // Step 3: Ensure the new password is different from the old one
+        const isSamePassword = await argon2.verify(existingUser.passwordHash, newPassword);
+        if (isSamePassword) {
+            return { status: 400, payload: "New password cannot be the same as the old password." };
+        }
+
+        // Step 4: Hash the new password using Argon2 before updating
+        const hashedPassword = await argon2.hash(newPassword);
+
+        // Step 5: Update password in the database
+        const passwordUpdated = await update_user_password(existingUser.id, hashedPassword);
+        if (!passwordUpdated) {
+            return { status: 500, payload: "Failed to update password. Please try again." };
+        }
+
+        return { status: 200, payload: "Password updated successfully." };
+    } 
+    catch (error) {
+        console.error("Error updating password:", error);
+        return { status: 500, payload: "Internal server error." };
     }
-    return { payload: updatedUser, status: 200 };
 }
 
 /**
- * Updates a user's password using their API key.
- * @summary Updates user password.
- * @param apiKey - The user's API key.
- * @param newPasswordHash - The new hashed password.
- * @returns response - A response confirming the update or an error message.
+ * Deletes a user from the database after verifying their credentials.
+ * @param {string} apiKey - The user's API key for authentication.
+ * @param {string} email - The user's registered email.
+ * @param {string} username - The user's registered username.
+ * @param {string} password - The user's password for verification.
+ * @returns {Promise<UserControllerResponse | GenericAPIResponse>} - Response object with status and message.
  */
-export async function updateUserPassword(apiKey: string, newPasswordHash: string): 
-    Promise<GenericAPIResponse> 
+export async function deleteUserByApiKey(apiKey: string, email: string, username: string, password: string): 
+    Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    const user = await get_user_by_api_key(apiKey);
-    if (!user) 
+    try 
     {
-        return { status: 401, payload: "Unauthorized - Invalid API Key" };
-    }
-    
-    await update_user_password_in_db(user.id, newPasswordHash);
-    return { payload: "Password updated successfully", status: 200 };
-}
+        // Step 1: Authenticate user using API key
+        const existingUser = await get_user_by_api_key(apiKey);
+        if (!existingUser) {
+            return { status: 404, payload: "User not found." };
+        }
 
-/**
- * Deletes a user from the database using their API key.
- * @summary Deletes a user.
- * @param apiKey - The user's API key.
- * @returns response - A response confirming successful deletion or an error message.
- */
-export async function deleteUserByApiKey(apiKey: string): 
-    Promise<GenericAPIResponse> 
-{
-    const user = await get_user_by_api_key(apiKey);
-    if (!user)
-    { 
-        return { status: 401, payload: "Unauthorized - Invalid API Key" };
+        // Step 2: Verify all credentials match the stored data
+        if (
+            existingUser.email !== email ||
+            existingUser.username !== username
+        ) {
+            return { status: 401, payload: "Invalid credentials. Deletion request denied." };
+        }
+
+        // Step 3: Verify the provided password against the stored hash
+        const isPasswordValid = await argon2.verify(existingUser.passwordHash, password);
+        if (!isPasswordValid) {
+            return { status: 401, payload: "Invalid password. Deletion request denied." };
+        }
+
+        // Step 4: Delete user data from the database
+        const deletedUser = await delete_user_by_id(existingUser.id);
+        if (!deletedUser) {
+            return { status: 500, payload: "Failed to delete user. Please try again later." };
+        }
+
+        return { status: 200, payload: "User account deleted successfully." };
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        return { status: 500, payload: "Internal server error." };
     }
-    await delete_user_by_id(user.id);
-    return { payload: "User successfully deleted", status: 200 };
 }
 
 export async function validateApiKey(apiKey: string): Promise<GenericAPIResponse> {
@@ -228,3 +306,4 @@ export async function validateApiKey(apiKey: string): Promise<GenericAPIResponse
     }
     return { status: 200, payload: "Valid API Key" };
 }
+

@@ -173,35 +173,43 @@ export async function get_user_by_api_key(apiKey: string):
     return keyMatch ? keyMatch.user : null;
 }
 
+
 /**
- * Updates a user's email or username in the database.
+ * Updates a user's email and/or username in the database.
  * 
- * @param userId - The user's ID.
- * @param newUsername - The new username (optional).
- * @param newEmail - The new email (optional).
- * @returns The updated user object or null if update fails.
+ * @param userId - The unique identifier of the user.
+ * @param newUsername - The new username to update (optional).
+ * @param newEmail - The new email to update (optional).
+ * @returns The updated user data if successful, otherwise null.
  */
-export async function update_user_credentials_in_db(userId: string, newUsername?: string, newEmail?: string): 
-    Promise<ClientUser | null> 
-{
-    try 
-    {
-        return await prisma.user.update({
-            where: { id: userId },
-            data: {
-                ...(newUsername && { username: newUsername }),
-                ...(newEmail && { email: newEmail })
-            },
-            select: {
-                id: true,
-                username: true,
-                email: true
-            }
+export async function update_user_credentials(userId: string, newUsername?: string, newEmail?: string) {
+    try {
+        // Fetch the current user details from the database
+        const existingUser = await prisma.user.findUnique({
+            where: { id: userId }
         });
-    }
-    catch 
-    {
-        return null;
+
+        // If the user does not exist, return null (without revealing why)
+        if (!existingUser) {
+            return null; // Do not reveal if the user exists or not
+        }
+
+        // Prepare update data by keeping unchanged fields
+        const updatedData = {
+            username: newUsername || existingUser.username, // Retain existing username if not changed
+            email: newEmail || existingUser.email          // Retain existing email if not changed
+        };
+
+        // Update user in the database with new values
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updatedData
+        });
+
+        return updatedUser;
+    } catch (error) {
+        console.error("Error updating user credentials:", error);
+        return null; // Generic failure response
     }
 }
 
@@ -212,7 +220,7 @@ export async function update_user_credentials_in_db(userId: string, newUsername?
  * @param newPasswordHash - The new hashed password.
  * @returns The updated user object or null if update fails.
  */
-export async function update_user_password_in_db(userId: string, newPasswordHash: string): 
+export async function update_user_password(userId: string, newPasswordHash: string): 
     Promise<ServerUser | null> 
 {
     try 
@@ -256,8 +264,7 @@ export async function find_user_by_id(userId: string):
 export async function delete_user_by_id(userId: string): 
     Promise<ClientUser | null> 
 {
-    try 
-    {
+    try {
         return await prisma.user.delete({
             where: { id: userId },
             select: {
@@ -266,10 +273,10 @@ export async function delete_user_by_id(userId: string):
                 email: true
             }
         });
-    }
-    catch 
-    {
+    } catch (error) {
+        console.error("Error deleting user:", error);
         return null;
     }
 }
+
 
