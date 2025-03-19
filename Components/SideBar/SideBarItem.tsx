@@ -16,7 +16,7 @@ interface SideBarItemProps
     open: boolean;
     name: string;
     icon: React.ReactNode;
-    handleClick: () => void;
+    handleClick?: () => void;
 }
 
 export default function SideBarItem
@@ -28,7 +28,7 @@ export default function SideBarItem
                     { minHeight: 48, px: 2.5 },
                     { justifyContent: open ? 'initial' : 'center' }
                 ]}
-            onClick={handleClick}
+            onClick={handleClick} 
         >
             <ListItemIcon
                 sx={[

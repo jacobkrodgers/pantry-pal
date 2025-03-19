@@ -8,6 +8,9 @@ export type ServerUser = {
 
 export type ClientUser = Omit<ServerUser, "passwordHash">
 
+export type PublicUser = Omit<ClientUser, "email">
+
+
 export type ApiKey = {
     apiKey: string;
     userId: string;

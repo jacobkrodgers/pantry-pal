@@ -1,5 +1,5 @@
 import { prisma } from "@/prisma/dbClient";
-import { ServerUser, ClientUser, ApiKey, Session } from "@/type/User";
+import { ServerUser, ClientUser, ApiKey, Session, PublicUser } from "@/type/User";
 
 /**
  * Checks if a user with the given username or email already exists.
@@ -289,18 +289,19 @@ export async function delete_all_expired_sessions():
  * @returns An object representing a server user
  * @returns null
  */
-export async function get_user_by_session(id: string):
-    Promise<ServerUser | null>
+export async function get_public_user_by_session(id: string):
+    Promise<PublicUser | null>
 {
     const session = await prisma.session.findUnique({
-        where:
-        {
-            id
+        where: { id },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                },
+            },
         },
-        include:
-        {
-            user: true
-        }
     });
 
     return session ? session.user : null;

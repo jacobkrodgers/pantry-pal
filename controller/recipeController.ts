@@ -7,7 +7,7 @@ import { find_recipe_by_recipe_id,
          find_recipe_by_recipe_name} 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse } from "@/type/Recipe";
-import { find_server_user_by_username, get_user_by_api_key, get_user_by_session } from "@/model/userModel";
+import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 
@@ -53,7 +53,7 @@ export async function getRecipeByRecipeId(apiKey: string, recipeId: string):
 export async function getRecipeByRecipeName(sessionId: string, authorUsername: string, recipeName: string): 
     Promise<ActionResponse<Recipe>> 
 {
-    const user = await get_user_by_session(sessionId);
+    const user = await get_public_user_by_session(sessionId);
     if (!user)
     {
         return { message: "Unauthorized", status: 401 };

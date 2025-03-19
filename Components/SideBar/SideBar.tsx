@@ -19,9 +19,18 @@ import SideBarToggle from './SideBarToggle';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupIcon from '@mui/icons-material/Group';
-import { DarkMode, LightMode, Restaurant } from '@mui/icons-material';
+import LoginIcon from '@mui/icons-material/Login';
+import { DarkMode, LightMode, Logout, Restaurant } from '@mui/icons-material';
+import Link from 'next/link';
+import { PublicUser } from '@/type/User';
 
 const drawerWidth = 240;
+
+interface SideBarProps 
+{
+    user?: PublicUser;
+    children: React.ReactNode;
+}
 
 const openedMixin = (theme: Theme): CSSObject => 
 ({
@@ -73,7 +82,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open'}
     ],
 }));
 
-export default function SideBar({children}: Readonly<{children: React.ReactNode}>) 
+export default function SideBar({ user, children }: SideBarProps) 
 {
     const [open, setOpen] = useState(true);
     const { mode, systemMode, setMode } = useColorScheme();
@@ -110,37 +119,75 @@ export default function SideBar({children}: Readonly<{children: React.ReactNode}
 
     const drawerToggle = () => setOpen(!open);
 
+    let sideBarItems;
+    if (user)
+    {
+        sideBarItems = [
+            <Link key="accountIcon" href={user.username}>
+                <SideBarItem 
+                    open={open} 
+                    name="Profile" 
+                    icon={<AccountBoxIcon />} 
+                    handleClick={() => {}} 
+                />
+            </Link>,
+            <Link key="recipesIcon" href={"./recipes"}>
+                <SideBarItem 
+                    open={open} 
+                    name="Recipes" 
+                    icon={<MenuBookIcon />} 
+                    handleClick={() => {}} 
+                />
+            </Link>,
+            <Link key="followingIcon" href={"following"}>
+                <SideBarItem 
+                    open={open} 
+                    name="Following" 
+                    icon={<GroupIcon />} 
+                    handleClick={() => {}} 
+                />
+            </Link>,
+            <SideBarItem key="logoutIcon"
+                open={open} 
+                name="Log Out" 
+                icon={<Logout />} 
+                handleClick={() => {}} 
+            />
+
+        ]
+    }
+    else
+    {
+        sideBarItems = [
+        <Link key="loginIcon" href="login">
+                <SideBarItem 
+                    open={open} 
+                    name="Login" 
+                    icon={<LoginIcon />} 
+                />
+            </Link>,
+        ]
+    }
+    
+
     return (
         <Box sx={{ display: 'flex', height: '100vh' }}>
             <Drawer variant="permanent" open={open}>
                 <List disablePadding>
                     <SideBarToggle open={open} handleClick={drawerToggle} />
                     <Divider />
-                    <SideBarItem 
-                        open={open} 
-                        name="PantryPal" 
-                        icon={<Restaurant />} 
-                        handleClick={() => {}} 
-                    />
+                    <Link href="/">
+                        <SideBarItem 
+                            open={open} 
+                            name="PantryPal" 
+                            icon={<Restaurant />} 
+                            handleClick={() => {}} 
+                        />
+                    </Link>
                     <Divider />
-                    <SideBarItem 
-                        open={open} 
-                        name="Profile" 
-                        icon={<AccountBoxIcon />} 
-                        handleClick={() => {}} 
-                    />
-                    <SideBarItem 
-                        open={open} 
-                        name="Recipes" 
-                        icon={<MenuBookIcon />} 
-                        handleClick={() => {}} 
-                    />
-                    <SideBarItem 
-                        open={open} 
-                        name="Following" 
-                        icon={<GroupIcon />} 
-                        handleClick={() => {}} 
-                    />
+                    {
+                        sideBarItems.map((sideBarItem)=>(sideBarItem))
+                    }
                     <Divider />
                     <SideBarItem 
                         open={open} 
