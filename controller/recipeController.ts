@@ -6,7 +6,7 @@ import { find_recipe_by_recipe_id,
          create_recipe_by_user_id, 
          find_recipe_by_recipe_name} 
     from "@/model/recipeModel";
-import { NewRecipe, Recipe, RecipeControllerResponse } from "@/type/Recipe";
+import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
 import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
@@ -236,4 +236,48 @@ export async function getRecipeIngredientsByRecipeId(apiKey: string, recipeId: s
     }
 
     return { payload: recipe.ingredients, status: 200 };
+}
+
+/**
+ * Retrieves the missing ingredients of a recipe by its ID.
+ * @summary Get the missing ingredients of a specific recipe by ID.
+ * @param apiKey - The API key for authentication.
+ * @param recipeId - The UUID of the recipe.
+ * @returns A response object with the missing ingredients if successful,
+ *          or an error response.
+ */
+export async function getMissingIngredientsByRecipeId(
+    apiKey: string, recipeId: string, ingredientsOnHand: Ingredient[]
+):Promise<RecipeControllerResponse | GenericAPIResponse>
+{
+    const user: ServerUser | null = await get_user_by_api_key(apiKey);
+    if(!user)
+    {
+        return { payload: "Unauthorized", status: 401 };
+    }
+
+    const recipe = await find_recipe_by_recipe_id(recipeId);
+    if(!recipe)
+    {
+        return { payload: "Not Found", status: 404 };
+    }
+
+    if(recipe.userId !== user.id)
+    {
+        return { payload: "Forbidden", status: 403 };
+    }
+
+    /* Creating a map of already existing ingredients and giving each a unique name
+       using their name and form */
+    const existingIngredientsMap = new Map(
+        ingredientsOnHand.map(ing => [`${ing.name}-${ing.form}`, ing])
+    );
+
+    /* Creating a new array of needed by filtering out all of the ingredients that 
+       the user already has */
+    const missingIngredients = (recipe.ingredients || [])
+        .filter(ing => !existingIngredientsMap.has(`${ing.name}-${ing.form}`));
+
+
+    return { payload: missingIngredients, status: 200 };
 }
