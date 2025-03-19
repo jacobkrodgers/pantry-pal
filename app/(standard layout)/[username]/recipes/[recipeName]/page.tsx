@@ -1,8 +1,8 @@
-import { Paper, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
 import { getRecipeByRecipeName } from "@/controller/recipeController";
-import RecipePage from "@/app/Components/Recipe/RecipePage";
+import RecipePage from "@/Components/Recipe/RecipePage";
 
 export default async function Page(
     {params}: {params: Promise<{ username: string, recipeName: string }>}
@@ -34,8 +34,6 @@ export default async function Page(
     }
 
     return (
-        <Paper style={{ height: '100vh', padding: 10 }}>
-            <RecipePage recipe={recipe.payload} />
-        </Paper>
+        <RecipePage recipe={recipe.payload} />
     );
 }
