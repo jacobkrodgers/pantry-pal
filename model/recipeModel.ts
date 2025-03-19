@@ -13,8 +13,31 @@ export async function find_recipe_by_recipe_id(id: string):
         where: { id },
         include: {
             ingredients: true,
-            dietTags: true
+            dietTags: true,
         },
+    });
+
+    return recipe;
+}
+
+/**
+ * Retrieves a recipe by username and recipe name.
+ * @param userId - The ID of the recipe's author.
+ * @param name - The name of the recipe.
+ * @returns A recipe object or null.
+ */
+export async function find_recipe_by_recipe_name(userId: string, name: string): Promise<Recipe | null>
+{
+    const recipe = await prisma.recipe.findUnique({
+        where: {
+            name_userId: {
+                userId, name
+            }
+        },
+        include: {
+            ingredients: true,
+            dietTags: true,
+        }
     });
 
     return recipe;
@@ -228,8 +251,9 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
 
         return newRecipe;
     }
-    catch
+    catch(e)
     {
+        console.log(e)
         return null;
     }
 }
