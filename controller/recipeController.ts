@@ -33,7 +33,7 @@ export async function getRecipeByRecipeId(apiKey: string, recipeId: string):
     {
         return { payload: "Not Found", status: 404 };
     }
-    if (recipe.userId !== user.id)
+    if (!(recipe.userId === user.id) && !(recipe.isPublic))
     {
         return { payload: "Forbidden", status: 403 };
     }
@@ -65,17 +65,17 @@ export async function getRecipeByRecipeName(sessionId: string, authorUsername: s
         return { message: "Unauthorized", status: 401 };
     }
 
-    if (!(user.id === author.id))
-    {
-        return { message: "Unauthorized", status: 401 };
-    }
-
     const recipe = await find_recipe_by_recipe_name(author.id, recipeName);
     if (!recipe)
     {
         return { message: "Not Found", status: 404 };
     }
-    
+
+    if (!(user.id === author.id) && !(recipe.isPublic))
+    {
+        return { message: "Unauthorized", status: 401 };
+    }
+
     recipe.authorUsername = author.username;
 
     return { payload: recipe, status: 200 };
@@ -230,7 +230,7 @@ export async function getRecipeIngredientsByRecipeId(apiKey: string, recipeId: s
     {
         return { payload: "Not Found", status: 404 };
     }
-    if (recipe.userId !== user.id)
+    if (!(recipe.userId === user.id) && !(recipe.isPublic))
     {
         return { payload: "Forbidden", status: 403 };
     }

@@ -9,6 +9,7 @@ model Recipe {
   cookTime     String
   dateAdded    DateTime     @default(now())
   dateUpdated  DateTime     @updatedAt
+  isPublic     Boolean
   userId       String
   user         User         @relation(fields: [userId], references: [id])
   dietTags     DietTag[]

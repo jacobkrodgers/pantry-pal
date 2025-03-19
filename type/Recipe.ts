@@ -8,6 +8,7 @@ export type Recipe = {
     dateAdded: Date,
     dateUpdated: Date,
     dietTags: DietTag[],
+    isPublic: boolean,
     userId: string
     authorUsername?: string
 }
@@ -26,7 +27,8 @@ export type NewRecipe = {
     instructions: string,
     prepTime: string,
     cookTime: string,
-    dietTags: string[]
+    dietTags: string[],
+    isPublic?: boolean
 }
 
 export type NewIngredient = {
