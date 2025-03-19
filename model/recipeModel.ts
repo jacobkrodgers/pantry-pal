@@ -130,7 +130,8 @@ export async function update_recipe_by_recipe_id(
                     disconnect: existingRecipe.dietTags
                         .filter(tag => !recipeUpdateData.dietTags.includes(tag.name))
                         .map(tag => ({ name: tag.name }))
-                }
+                },
+                isPublic: recipeUpdateData.isPublic ?? existingRecipe.isPublic
             },
             include: {
                 ingredients: true,
@@ -200,7 +201,7 @@ export async function find_recipes_by_user_id(userId: string):
  * @returns A promise resolving to the newly created recipe or null.
  */
 export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
-    Promise<Recipe | null> 
+    Promise<Recipe | null>
 {
     // Fetch existing ingredients that match provided names
     const existingIngredients = await prisma.ingredient.findMany({
@@ -240,7 +241,8 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                         where: { name: tag },
                         create: { name: tag }
                     }))
-                }
+                },
+                isPublic: recipe.isPublic ?? false
                 
             },
             include: {

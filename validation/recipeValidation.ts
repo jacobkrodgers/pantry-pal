@@ -19,5 +19,6 @@ export const newRecipeSchema = Joi.object({
   cookTime: Joi.string().optional(),
   dietTags: Joi.array().items(
     Joi.string().valid(...diets)
-  ).optional()
+  ).optional(),
+  isPublic: Joi.boolean().optional()
 });
