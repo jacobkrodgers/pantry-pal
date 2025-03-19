@@ -3,12 +3,13 @@ import { find_recipe_by_recipe_id,
          update_recipe_by_recipe_id,
          delete_recipe_by_recipe_id,
          find_recipes_by_user_id,
-         create_recipe_by_user_id } 
+         create_recipe_by_user_id, 
+         find_recipe_by_recipe_name} 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
-import { get_user_by_api_key } from "@/model/userModel";
+import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
-import { GenericAPIResponse } from "@/type/Generic";
+import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 
 /**
  * Retrieves a recipe by its ID.
@@ -32,10 +33,50 @@ export async function getRecipeByRecipeId(apiKey: string, recipeId: string):
     {
         return { payload: "Not Found", status: 404 };
     }
-    if (recipe.userId !== user.id)
+    if (!(recipe.userId === user.id) && !(recipe.isPublic))
     {
         return { payload: "Forbidden", status: 403 };
     }
+
+    return { payload: recipe, status: 200 };
+}
+
+/**
+ * Recipe to pull a recipe for use in the front end.
+ * @summary Get a specific recipe by username and recipe name.
+ * @param sessionId - The user's session ID for authentication.
+ * @param authorUsername - The username of the recipe's author.
+ * @param recipeName - The name of the recipe to query.
+ * @returns A response object with the recipe if successful,
+ *          or an error response.
+ */
+export async function getRecipeByRecipeName(sessionId: string, authorUsername: string, recipeName: string): 
+    Promise<ActionResponse<Recipe>> 
+{
+    const user = await get_public_user_by_session(sessionId);
+    if (!user)
+    {
+        return { message: "Unauthorized", status: 401 };
+    }
+
+    const author = await find_server_user_by_username(authorUsername);
+    if (!author)
+    {
+        return { message: "Unauthorized", status: 401 };
+    }
+
+    const recipe = await find_recipe_by_recipe_name(author.id, recipeName);
+    if (!recipe)
+    {
+        return { message: "Not Found", status: 404 };
+    }
+
+    if (!(user.id === author.id) && !(recipe.isPublic))
+    {
+        return { message: "Unauthorized", status: 401 };
+    }
+
+    recipe.authorUsername = author.username;
 
     return { payload: recipe, status: 200 };
 }
@@ -189,7 +230,7 @@ export async function getRecipeIngredientsByRecipeId(apiKey: string, recipeId: s
     {
         return { payload: "Not Found", status: 404 };
     }
-    if (recipe.userId !== user.id)
+    if (!(recipe.userId === user.id) && !(recipe.isPublic))
     {
         return { payload: "Forbidden", status: 403 };
     }

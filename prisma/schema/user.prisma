@@ -7,10 +7,18 @@ model User {
   passwordHash String
   ApiKey       ApiKey?
   Recipes      Recipe[]
+  Sessions     Session[]
 }
 
 model ApiKey {
   apiKey String @id @default(uuid())
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
+}
+
+model Session {
+  id          String @id @default(uuid())
+  user        User @relation(fields: [userId], references: [id])
+  userId      String
+  expiration  DateTime
 }

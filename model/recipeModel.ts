@@ -13,8 +13,31 @@ export async function find_recipe_by_recipe_id(id: string):
         where: { id },
         include: {
             ingredients: true,
-            dietTags: true
+            dietTags: true,
         },
+    });
+
+    return recipe;
+}
+
+/**
+ * Retrieves a recipe by username and recipe name.
+ * @param userId - The ID of the recipe's author.
+ * @param name - The name of the recipe.
+ * @returns A recipe object or null.
+ */
+export async function find_recipe_by_recipe_name(userId: string, name: string): Promise<Recipe | null>
+{
+    const recipe = await prisma.recipe.findUnique({
+        where: {
+            name_userId: {
+                userId, name
+            }
+        },
+        include: {
+            ingredients: true,
+            dietTags: true,
+        }
     });
 
     return recipe;
@@ -107,7 +130,8 @@ export async function update_recipe_by_recipe_id(
                     disconnect: existingRecipe.dietTags
                         .filter(tag => !recipeUpdateData.dietTags.includes(tag.name))
                         .map(tag => ({ name: tag.name }))
-                }
+                },
+                isPublic: recipeUpdateData.isPublic ?? existingRecipe.isPublic
             },
             include: {
                 ingredients: true,
@@ -177,9 +201,8 @@ export async function find_recipes_by_user_id(userId: string):
  * @returns A promise resolving to the newly created recipe or null.
  */
 export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
-    Promise<Recipe | null> 
+    Promise<Recipe | null>
 {
-    console.log(recipe)
     // Fetch existing ingredients that match provided names
     const existingIngredients = await prisma.ingredient.findMany({
         where: { name: { in: recipe.ingredients.map(ing => ing.name) } }
@@ -218,7 +241,8 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                         where: { name: tag },
                         create: { name: tag }
                     }))
-                }
+                },
+                isPublic: recipe.isPublic ?? false
                 
             },
             include: {

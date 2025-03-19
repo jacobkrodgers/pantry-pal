@@ -8,6 +8,9 @@ export type ServerUser = {
 
 export type ClientUser = Omit<ServerUser, "passwordHash">
 
+export type PublicUser = Omit<ClientUser, "email">
+
+
 export type ApiKey = {
     apiKey: string;
     userId: string;
@@ -21,4 +24,10 @@ export type UserControllerResponse = {
 export type LoginInformation = {
     username: string;
     password: string;
+}
+
+export type Session = {
+    id: string;
+    userId: string;
+    expiration: Date;
 }
