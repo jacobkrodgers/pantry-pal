@@ -162,7 +162,7 @@ export async function create_or_update_api_key_by_user_id(userId: string):
  * @returns An object representing a server user
  * @returns null
  */
-export async function get_user_by_api_key(apiKey: string):
+export async function get_server_user_by_api_key(apiKey: string):
     Promise<ServerUser | null> 
 {
     const keyMatch = await prisma.apiKey.findUnique({
@@ -171,6 +171,28 @@ export async function get_user_by_api_key(apiKey: string):
     });
 
     return keyMatch ? keyMatch.user : null;
+}
+
+/**
+ * Gets a user from the database using a provided API Key.
+ * @param apiKey - The API key to verify.
+ * @returns An object representing a server user
+ * @returns null
+ */
+export async function get_client_user_by_api_key(apiKey: string):
+    Promise<ClientUser | null> 
+{
+    const keyMatch = await prisma.apiKey.findUnique({
+        where: { apiKey: apiKey },
+        include: { user: { select: {
+            username: true,
+            email: true,
+            id: true,
+        }} }
+    });
+
+    const user = keyMatch ? keyMatch.user : null;
+    return user;
 }
 
 
@@ -265,16 +287,27 @@ export async function delete_user_by_id(userId: string):
     Promise<ClientUser | null> 
 {
     try {
-        return await prisma.user.delete({
+        console.log("[delete_user_by_id] Attempting to delete user with ID:", userId);
+        
+        if (!userId) {
+            console.error("❌ [delete_user_by_id] Invalid user ID provided:", userId);
+            return null;
+        }
+
+        const deletedUser = await prisma.user.delete({
             where: { id: userId },
-            select: {
-                id: true,
-                username: true,
-                email: true
-            }
+            // select: {
+            //     id: true,
+            //     username: true,
+            //     email: true
+            // }
         });
+
+        console.log("✅ [delete_user_by_id] User successfully deleted:", deletedUser);
+        return deletedUser;
     } catch (error) {
         console.error("Error deleting user:", error);
+
         return null;
     }
 }

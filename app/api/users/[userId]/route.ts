@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserByApiKey, updateUserCredentialsByApiKey, 
-         updateUserPasswordByApiKey, deleteUserByApiKey, validateApiKey } from "@/controller/userController";
+import { getUserByUserId, updateUserCredentialsByApiKey, 
+         updateUserPasswordByApiKey, deleteUserByApiKey, } from "@/controller/userController";
 import { uuidSchema, } from "@/validation/uuidValidation";
+
 
 
 /**
@@ -10,19 +11,50 @@ import { uuidSchema, } from "@/validation/uuidValidation";
  * @param {NextRequest} req - The incoming request object.
  * @returns {NextResponse} - Response containing user data or an error message.
  */
-export async function GET(req: NextRequest): Promise<NextResponse> 
+export async function GET(req: Request,{params}: {params: Promise<{userId: string}>}):
+ Promise<NextResponse> 
 {
     try {
-        // Step 1: Extract API key from request headers
+        // Extract API key from request headers
         let apiKey = req.headers.get("X-API-Key");
-        // Step 2: Validate API key
+       
         if (!apiKey) {
             return NextResponse.json({message: "API key is required."}, { status: 400 });
         }
         apiKey = apiKey.trim();
+         
+        // Validate API key
+         
+        const { error: apiKeyValidationError } = uuidSchema.validate({ uuid: apiKey });
+        if (apiKeyValidationError) 
+        {
+             return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
+        }
+
+        let userId: string;
+
+        // Get ID from path parameters.
+        try 
+        {
+            ({userId} = await params);
+            if (!userId) throw new Error();   
+        }
+        catch 
+        {
+            return NextResponse.json("Not Found", { status: 404 });
+        }
+
+        
+        // Validate that the user ID is a UUID.
+        const { error: userIdValidationError } = uuidSchema.validate({ uuid: userId });
+        if (userIdValidationError)
+        {
+            
+            return NextResponse.json("Bad Request - Invalid User ID", { status: 400 });
+        }
 
         // Step 3: Call controller function to get user data
-        const response = await getUserByApiKey(apiKey);
+        const response = await getUserByUserId(apiKey, userId);
 
         // Step 4: Return response to client
         return NextResponse.json(response.payload, { status: response.status });
@@ -53,7 +85,6 @@ export async function PUT(req: NextRequest): Promise<NextResponse>
 
         let response;
         // Validate API key and fetch user details.
-        response = await validateApiKey(apiKey);
         if (!response) 
         {
             return NextResponse.json({message: "Failed to update user."},{ status: 500 });
@@ -98,8 +129,11 @@ export async function DELETE(req: Request): Promise<NextResponse>
 {
     // Retrieve and validate API key.
     let apiKey = req.headers.get("X-API-Key");
+    console.log ("Extracted API Key:", apiKey);
+
     if (!apiKey) 
-    {
+    {   
+        console.error("API Key is missing");
         return NextResponse.json({message:"Not Authorized"}, { status: 401 });
     }
     apiKey = apiKey.trim();
@@ -107,31 +141,42 @@ export async function DELETE(req: Request): Promise<NextResponse>
     const { error: apiKeyValidationError } = uuidSchema.validate({ uuid: apiKey });
     if (apiKeyValidationError) 
     {
+        console.error("Invalid API Key format:", apiKey);
         return NextResponse.json({message:"Bad Request - Invalid API Key"}, { status: 400 });
     }
 
-    // Ensure the API key is valid before deleting user.
-    const userResponse = await validateApiKey(apiKey);
-    if (userResponse.status !== 200) 
-    {
-        return NextResponse.json(userResponse.payload, { status: userResponse.status });
-    }
     
     // Extract user credentials from request body
-    const { email, username, password } = await req.json();
+    let requestBody;
+    try {
+        requestBody = await req.json();
+        console.log("Parsed request body:", requestBody);
+    } catch (parseError) {
+        console.error("Error parsing JSON body:", parseError);
+        return NextResponse.json({ message: "Invalid JSON format" }, { status: 400 });
+    }
+
+
+    const { email, username, password } = requestBody;
     if (!email || !username || !password) 
     {
+        console.error("Missing required fields:", { email, username, password });
         return NextResponse.json({message: "Email, username, and password are required for authentication."}, { status: 400 });
     }
+
+    console.log("Attempting to delete user:", { apiKey, email, username });
 
     // Delete user from database.
     try 
     {
+        
         const deleteResponse = await deleteUserByApiKey(apiKey, email, username, password);
+        console.log("Delete response from database:", deleteResponse);
         return NextResponse.json(deleteResponse.payload, { status: deleteResponse.status });
     } 
     catch
- {
+    {
+        console.log("Error deleting user:");
         return NextResponse.json({message: "Internal Server Error - Failed to delete user"}, { status: 500 });
     }
 }

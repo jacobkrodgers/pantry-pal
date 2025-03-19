@@ -4,8 +4,10 @@ import { find_user_by_username_or_email, create_new_user,
          delete_api_key, delete_api_key_by_user_id,
          update_user_credentials, 
          update_user_password, 
-         get_user_by_api_key, 
-         delete_user_by_id } 
+         get_server_user_by_api_key,
+         get_client_user_by_api_key, 
+         delete_user_by_id, 
+         find_user_by_id} 
     from "@/model/userModel";
 import { GenericAPIResponse } from "@/type/Generic";
 import { UserControllerResponse} from "@/type/User";
@@ -141,15 +143,27 @@ export async function deleteApiKeyWithCredentials(username: string, password: st
  * @returns response - A response object containing user data if successful.
  * @returns response - A response containing an HTTP status code and error message.
  */
-export async function getUserByApiKey(apiKey: string): 
+export async function getUserByUserId(apiKey: string, userId: string): 
     Promise<UserControllerResponse | GenericAPIResponse> 
 {
-    const user = await get_user_by_api_key(apiKey);
-    if (!user) 
+    const requestUser = await get_client_user_by_api_key(apiKey);
+    if (!requestUser) 
     {    
         return { status: 401, payload: "Unauthorized - Invalid API Key" };
     } 
-    return { payload: user, status: 200 };
+
+    const targetUser = await find_user_by_id(userId);
+    if (!targetUser) 
+    {
+        return { status: 500, payload: "Internal Server Error" };
+    }
+
+    if (targetUser.id !== requestUser.id) 
+    {
+        return { status: 401, payload: "Not authorized" };
+    }
+    
+    return { payload: targetUser, status: 200 };
 }
 
 /**
@@ -164,7 +178,7 @@ export async function updateUserCredentialsByApiKey(apiKey: string, email?:strin
     try 
     {
         // Step 1: Authenticate the user using the API key
-        const existingUser = await get_user_by_api_key(apiKey);
+        const existingUser = await get_client_user_by_api_key(apiKey);
         if (!existingUser) 
         {
             return { status: 404, payload: "User not found." };
@@ -214,7 +228,7 @@ export async function updateUserPasswordByApiKey(apiKey: string, oldPassword: st
 {
     try {
         // Step 1: Authenticate user using API key
-        const existingUser = await get_user_by_api_key(apiKey);
+        const existingUser = await get_server_user_by_api_key(apiKey);
         if (!existingUser) {
             return { status: 404, payload: "User not found." };
         }
@@ -262,7 +276,7 @@ export async function deleteUserByApiKey(apiKey: string, email: string, username
     try 
     {
         // Step 1: Authenticate user using API key
-        const existingUser = await get_user_by_api_key(apiKey);
+        const existingUser = await get_server_user_by_api_key(apiKey);
         if (!existingUser) {
             return { status: 404, payload: "User not found." };
         }
@@ -294,16 +308,5 @@ export async function deleteUserByApiKey(apiKey: string, email: string, username
     }
 }
 
-export async function validateApiKey(apiKey: string): Promise<GenericAPIResponse> {
-    if (!apiKey) 
-    {    
-        return { status: 401, payload: "Unauthorized User" };
-    }
-    const user = await get_user_by_api_key(apiKey);
-    if (!user) 
-    {
-        return { status: 404, payload: "User not found" };
-    }
-    return { status: 200, payload: "Valid API Key" };
-}
+
 
