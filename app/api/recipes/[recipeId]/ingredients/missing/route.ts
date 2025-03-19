@@ -50,22 +50,23 @@ export async function PUT(
         return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
     }
 
-    let ingOnHand: Ingredient[] = [];
+    let ingredientsOnHand: Ingredient[] | undefined = undefined;
     try
     {
         const body = await req.json();
-        ingOnHand = body.ingOnHand || [];
-        if(!ingOnHand) throw new Error();
+        if(!body.ingredientsOnHand) throw new Error();
+        if (!(Array.isArray(body.ingredientsOnHand))) throw new Error();
+        ingredientsOnHand = body.ingredientsOnHand;
     }
     catch
     {
         return NextResponse.json("Bad Request - Invalid Body", { status: 400 });
     }
 
-    if(!Array.isArray(ingOnHand))
+    if(!Array.isArray(ingredientsOnHand))
         return NextResponse.json("Bad Request - Invalid Body Format", { status: 400 });
 
     // Get the ingredients by recipe ID and return them.
-    const missingIngredientsResponse = await getMissingIngredientsByRecipeId(apiKey, recipeId, ingOnHand);
+    const missingIngredientsResponse = await getMissingIngredientsByRecipeId(apiKey, recipeId, ingredientsOnHand);
     return NextResponse.json(missingIngredientsResponse.payload, { status: missingIngredientsResponse.status });
 }

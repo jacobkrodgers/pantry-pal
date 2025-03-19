@@ -207,7 +207,7 @@ export async function getRecipeIngredientsByRecipeId(apiKey: string, recipeId: s
  *          or an error response.
  */
 export async function getMissingIngredientsByRecipeId(
-    apiKey: string, recipeId: string, ingOnHand: Ingredient[]
+    apiKey: string, recipeId: string, ingredientsOnHand: Ingredient[]
 ):Promise<RecipeControllerResponse | GenericAPIResponse>
 {
     const user: ServerUser | null = await get_user_by_api_key(apiKey);
@@ -227,12 +227,14 @@ export async function getMissingIngredientsByRecipeId(
         return { payload: "Forbidden", status: 403 };
     }
 
-    // Get existing ingredients
+    /* Creating a map of already existing ingredients and giving each a unique name
+       using their name and form */
     const existingIngredientsMap = new Map(
-        ingOnHand.map(ing => [`${ing.name}-${ing.form}`, ing])
+        ingredientsOnHand.map(ing => [`${ing.name}-${ing.form}`, ing])
     );
 
-    // Separate missing ingredients
+    /* Creating a new array of needed by filtering out all of the ingredients that 
+       the user already has */
     const missingIngredients = (recipe.ingredients || [])
         .filter(ing => !existingIngredientsMap.has(`${ing.name}-${ing.form}`));
 
