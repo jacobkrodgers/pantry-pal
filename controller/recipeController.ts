@@ -5,11 +5,10 @@ import { find_recipe_by_recipe_id,
          find_recipes_by_user_id,
          create_recipe_by_user_id } 
     from "@/model/recipeModel";
-import { NewRecipe, Recipe, RecipeControllerResponse } from "@/type/Recipe";
+import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
 import { get_user_by_api_key } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { GenericAPIResponse } from "@/type/Generic";
-import { Ingredient } from "@prisma/client";
 
 /**
  * Retrieves a recipe by its ID.

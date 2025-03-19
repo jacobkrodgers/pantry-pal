@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { uuidSchema } from "@/validation/uuidValidation";
 import { getMissingIngredientsByRecipeId } from "@/controller/recipeController";
-import { Ingredient } from "@prisma/client";
+import { Ingredient } from "@/type/Recipe";
 
 /**
  * POST /api/recipes/{id}/ingredients/missing - Retrieves a list of missing ingredients for a specific recipe.
