@@ -9,6 +9,7 @@ export type Recipe = {
     dateUpdated: Date,
     dietTags: DietTag[],
     userId: string
+    authorUsername?: string
 }
 
 export type Ingredient = {
