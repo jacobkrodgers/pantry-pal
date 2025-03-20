@@ -103,8 +103,9 @@ export async function DELETE(req: Request): Promise<NextResponse>
     username = username.trim();
     password = password.trim();
 
-    // Ensure username and password are valid. Not strictly necessary but can save database queries.
-    if (!(loginValidationSchema.validate({username: username, password: password})))
+    const {error: loginValidationError} = 
+        loginValidationSchema.validate({username: username, password: password})
+    if (loginValidationError)
     {
         return NextResponse.json("Bad Request - Invalid Username or Password", {status: 400});
     };
