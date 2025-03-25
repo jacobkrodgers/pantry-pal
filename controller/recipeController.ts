@@ -4,12 +4,14 @@ import { find_recipe_by_recipe_id,
          delete_recipe_by_recipe_id,
          find_recipes_by_user_id,
          create_recipe_by_user_id, 
-         find_recipe_by_recipe_name} 
+         find_recipe_by_recipe_name,
+         get_recipes_by_username} 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
 import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
+import { Action } from "@prisma/client/runtime/library";
 
 /**
  * Retrieves a recipe by its ID.
@@ -202,7 +204,7 @@ export async function createRecipeByApiKey(apiKey: string, recipe: NewRecipe):
     if(!user) return {payload: "Unauthorized", status: 401};
 
     // Attempt to create new recipe
-    const newRecipe: Recipe | null = await create_recipe_by_user_id(user.id, recipe);
+    const newRecipe: Recipe | null = await create_recipe_by_user_id(user.id, user.username, recipe);
     if (!newRecipe) return {payload: "Internal Server Error", status: 500};
 
     return {payload: newRecipe, status: 200}
@@ -280,4 +282,17 @@ export async function getMissingIngredientsByRecipeId(
 
 
     return { payload: missingIngredients, status: 200 };
+}
+
+export async function getRecipesByUsername(username: string):
+    Promise<ActionResponse<Recipe[] | GenericAPIResponse>>
+{
+    const recipes = await get_recipes_by_username(username);
+
+    if (!recipes)
+    {
+        return {status: 404}
+    }
+
+    return {status: 200, payload: recipes};
 }

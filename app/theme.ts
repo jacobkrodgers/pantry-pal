@@ -1,6 +1,7 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
+import { lightBlue } from '@mui/material/colors';
 
 const theme = createTheme({
   typography: {
@@ -19,7 +20,13 @@ const theme = createTheme({
         },
       },
     }
-  }
+  },
+  palette: {
+      primary: {
+        main: '#009bef',
+      },
+      secondary: lightBlue,
+  },
 });
 
 export default theme;

@@ -123,7 +123,7 @@ export default function SideBar({ user, children }: SideBarProps)
     if (user)
     {
         sideBarItems = [
-            <Link key="accountIcon" href={user.username}>
+            <Link key="accountIcon" href={`/${user.username}`}>
                 <SideBarItem 
                     open={open} 
                     name="Profile" 
@@ -131,7 +131,7 @@ export default function SideBar({ user, children }: SideBarProps)
                     handleClick={() => {}} 
                 />
             </Link>,
-            <Link key="recipesIcon" href={"./recipes"}>
+            <Link key="recipesIcon" href={"/recipes"}>
                 <SideBarItem 
                     open={open} 
                     name="Recipes" 
@@ -139,7 +139,7 @@ export default function SideBar({ user, children }: SideBarProps)
                     handleClick={() => {}} 
                 />
             </Link>,
-            <Link key="followingIcon" href={"following"}>
+            <Link key="followingIcon" href={"/following"}>
                 <SideBarItem 
                     open={open} 
                     name="Following" 
@@ -200,7 +200,7 @@ export default function SideBar({ user, children }: SideBarProps)
             <Box 
                 component="main" 
                 sx={[
-                        {flexGrow: 1, p: 3, display: 'flex'}, 
+                        {flexGrow: 1, display: 'flex'}, 
                         {flexDirection: 'column'} 
                     ]}
             >

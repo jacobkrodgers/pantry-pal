@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma/dbClient";
+import { ActionResponse } from "@/type/Generic";
 import { NewRecipe, Recipe } from "@/type/Recipe";
 
 /**
@@ -200,7 +201,7 @@ export async function find_recipes_by_user_id(userId: string):
  * @param recipe - An object representing a new recipe to be added.
  * @returns A promise resolving to the newly created recipe or null.
  */
-export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
+export async function create_recipe_by_user_id(userId: string, authorUsername: string, recipe: NewRecipe): 
     Promise<Recipe | null>
 {
     // Fetch existing ingredients that match provided names
@@ -224,6 +225,7 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                 prepTime: recipe.prepTime,
                 cookTime: recipe.cookTime,
                 userId,
+                authorUsername,
 
                 // Connect existing ingredients & create new ones
                 ingredients: {
@@ -255,7 +257,53 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     }
     catch(e)
     {
-        console.log(e)
         return null;
     }
+}
+
+export async function get_recipes_by_username(authorUsername: string):
+    Promise<Recipe[] | null>
+{
+    const recipes = await prisma.recipe.findMany({
+        where: {
+            authorUsername
+        },
+        include: {
+            dietTags: true,
+            ingredients: true
+        }
+    })
+
+    return recipes;
+}
+
+export async function get_recipes(searchString: string, authorUsername: string, page: number, resultsPerPage: number)
+{
+    console.log("database request")
+    const recipes = prisma.recipe.findMany({
+        where: {
+            authorUsername,
+            name: {
+                contains: searchString
+            }
+        },
+        // skip: page * resultsPerPage,
+        take: resultsPerPage * 5,
+        include: {
+            dietTags: true,
+            ingredients: true
+        },
+        orderBy: [{
+                _relevance: {
+                  fields: ['name'],
+                  search: searchString,
+                  sort: 'desc'
+                }},
+            {
+              dateUpdated: 'desc',
+            },]
+        }
+    )
+
+    return recipes;
 }

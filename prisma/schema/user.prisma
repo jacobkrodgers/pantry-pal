@@ -8,6 +8,8 @@ model User {
   ApiKey       ApiKey?
   Recipes      Recipe[]
   Sessions     Session[]
+
+  @@unique([id, username])
 }
 
 model ApiKey {

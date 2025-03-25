@@ -1,19 +1,21 @@
 // Models related to recipes
 
 model Recipe {
-  id           String       @id @default(uuid())
-  name         String
-  ingredients  Ingredient[]
-  instructions String       @db.LongText
-  prepTime     String
-  cookTime     String
-  dateAdded    DateTime     @default(now())
-  dateUpdated  DateTime     @updatedAt
-  isPublic     Boolean
-  userId       String
-  user         User         @relation(fields: [userId], references: [id])
-  dietTags     DietTag[]
-
+  id             String       @id @default(uuid())
+  name           String
+  ingredients    Ingredient[]
+  instructions   String       @db.LongText
+  prepTime       String
+  cookTime       String
+  dateAdded      DateTime     @default(now())
+  dateUpdated    DateTime     @updatedAt
+  isPublic       Boolean
+  userId         String
+  authorUsername String
+  user           User         @relation(fields: [userId, authorUsername], references: [id, username])
+  dietTags       DietTag[]
+  
+  @@fulltext([name])
   @@unique([name, userId]) // Users can't have duplicate recipes with the same name
 }
 

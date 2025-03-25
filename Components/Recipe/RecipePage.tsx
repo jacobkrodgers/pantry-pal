@@ -3,6 +3,7 @@
 import { Recipe } from "@/type/Recipe";
 import { 
     Box, 
+    Chip, 
     Divider, 
     List, 
     ListItem, 
@@ -20,6 +21,13 @@ export default function RecipePage({ recipe }: { recipe: Recipe })
             <Typography variant="h4">
                 {recipe.name}
             </Typography>
+        </List>
+        <List>
+        <Box display="flex" flexWrap="wrap" gap={1}>
+                {recipe.dietTags.map((tag, index) => (
+                <Chip key={index} label={tag.name} size="small" />
+                ))}
+            </Box>
         </List>
         <Divider />
         <List>
@@ -46,11 +54,6 @@ export default function RecipePage({ recipe }: { recipe: Recipe })
             <Typography variant="body2">
                 <AccessTimeIcon /> Cook Time: {recipe.cookTime}
             </Typography>
-        </List>
-        <List>
-                {recipe.dietTags.map((tag, index) => (
-                    <Typography key={index}>{tag.name}</Typography>
-            ))}
         </List>
         <Divider textAlign="left"><Typography variant="h5">Ingredients</Typography></Divider>
             <List dense={true} sx={{ listStyleType: 'disc' }}>
