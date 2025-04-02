@@ -80,7 +80,7 @@ export const userUpdateSchema = Joi.object({
 
     newPassword: Joi.string()
         .min(7)
-        .pattern(new RegExp('(?=.*?[#?!@$ %^&*-])(?=.*?[0-9])'))
+        .regex(/^(?=.*?[#?!@$%^&*-])(?=.*?[0-9])/)
         .optional()
         .messages({
             'string.base': 'Password should be a type of text',
