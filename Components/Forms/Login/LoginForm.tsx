@@ -24,7 +24,7 @@ export default function LoginForm() {
     setUsernameError("");
     setPasswordError("");
 
-    // Final client-side validation using JOI (optional for UX)
+    // Final client-side validation using JOI 
     const { error } = loginValidationSchema.validate({ username, password });
     if (error) {
       const detail = error.details[0];
@@ -42,15 +42,9 @@ export default function LoginForm() {
       if (result.status === 201) {
         router.push("/");
       } else {
-        const msg = result.payload as string;
-        if (msg.toLowerCase().includes("password")) {
-          setPasswordError(msg);
-        } else if (msg.toLowerCase().includes("username")) {
-          setUsernameError(msg);
-        } else {
-          setUsernameError(msg);
-          setPasswordError(msg);
-        }
+        // Generic error message 
+        setUsernameError("Not Found");
+        setPasswordError("Not Found");
       }
     } catch (error: any) {
       setPasswordError(error.message);
@@ -65,7 +59,7 @@ export default function LoginForm() {
       <Box
         component="form"
         onSubmit={handleSubmit}
-        noValidate  // Disable native browser validation
+        noValidate
         sx={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
         <FormInput
