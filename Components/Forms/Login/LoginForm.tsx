@@ -6,24 +6,54 @@ import { Box, Typography, Button } from "@mui/material";
 import Link from "next/link";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginUser } from "../../../app/(standard layout)/login/actions";
+import { loginValidationSchema } from "@/validation/userValidation";
 
 export default function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Error state for inputs
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validate the form inputs 
+
+    // Reset error states
+    setUsernameError("");
+    setPasswordError("");
+
+    // Final client-side validation using JOI (optional for UX)
+    const { error } = loginValidationSchema.validate({ username, password });
+    if (error) {
+      const detail = error.details[0];
+      if (detail.path.includes("username")) {
+        setUsernameError(detail.message);
+      }
+      if (detail.path.includes("password")) {
+        setPasswordError(detail.message);
+      }
+      return;
+    }
+
     try {
       const result = await loginUser(username, password);
       if (result.status === 201) {
         router.push("/");
       } else {
-        alert(`Login failed: ${result.payload}`);
+        const msg = result.payload as string;
+        if (msg.toLowerCase().includes("password")) {
+          setPasswordError(msg);
+        } else if (msg.toLowerCase().includes("username")) {
+          setUsernameError(msg);
+        } else {
+          setUsernameError(msg);
+          setPasswordError(msg);
+        }
       }
     } catch (error: any) {
-      alert(`Error logging in: ${error.message}`);
+      setPasswordError(error.message);
     }
   };
 
@@ -32,22 +62,41 @@ export default function LoginForm() {
       <Typography variant="h5" align="center" gutterBottom>
         Log In
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        noValidate  // Disable native browser validation
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         <FormInput
           label="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          helperText="(Letters and numbers only)"
+          errorMessage={usernameError}
+          helperText={usernameError || "(Letters and numbers only)"}
         />
         <FormInput
           label="Password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          helperText="(At least 8 characters, include a special character and a number)"
+          errorMessage={passwordError}
+          helperText={
+            passwordError ||
+            "(At least 8 characters, include a special character and a number)"
+          }
           inputProps={{ minLength: 8 }}
         />
-        <Button variant="contained" type="submit" fullWidth sx={{ backgroundColor: "black", color: "white", ":hover": { backgroundColor: "#333" } }}>
+        <Button
+          variant="contained"
+          type="submit"
+          fullWidth
+          sx={{
+            backgroundColor: "black",
+            color: "white",
+            ":hover": { backgroundColor: "#333" },
+          }}
+        >
           Log In
         </Button>
       </Box>
