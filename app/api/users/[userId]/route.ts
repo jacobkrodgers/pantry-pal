@@ -83,12 +83,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse>
         }
         apiKey = apiKey.trim();
 
-        let response;
-        // Validate API key and fetch user details.
-        if (!response) 
-        {
-            return NextResponse.json({message: "Failed to update user."},{ status: 500 });
-        }
+        
 
         // Step 2: Parse request body
         const { email, username, oldPassword, newPassword } = await req.json();
@@ -99,6 +94,24 @@ export async function PUT(req: NextRequest): Promise<NextResponse>
             return NextResponse.json(
                 {message: "At least one field (email, username, or password) must be provided."}, { status: 400 },
             );
+        }
+
+        // Validate password update constraints
+        if (oldPassword && newPassword) 
+        {
+            if (oldPassword === newPassword) 
+            {
+                return NextResponse.json(
+                    { message: "New password must be different from the old password." }, { status: 400 },
+                );
+            }
+        }
+
+        let response;
+        // Validate API key and fetch user details.
+        if (!response) 
+        {
+            return NextResponse.json({message: "Failed to update user."},{ status: 500 });
         }
 
         // Step 4: Determine whether to update credentials or password
