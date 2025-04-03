@@ -55,79 +55,88 @@ export async function GET(req: Request, {params}: {params: Promise<{userId: stri
     return NextResponse.json(userResponse.payload, { status: userResponse.status });
 }
 
-/**
- * PUT /api/users - Updates user credentials or password.
- * @summary Modifies user account details such as username, email, or password.
- * @param {NextRequest} req - The incoming request object.
- * @returns {NextResponse} - Response containing success or error message.
- */
-export async function PUT(req: NextRequest): Promise<NextResponse> 
+export async function PUT(req: Request, {params}: {params: Promise<{userId: string}>})
 {
+    let userId: string;
+
+    // Get ID from path parameters.
     try 
     {
-        // Step 1: Extract API key from request headers
-        let apiKey = req.headers.get("X-API-Key");
-        if (!apiKey) 
-        {
-            return NextResponse.json({message: "API key is required."}, { status: 400 });
-        }
-        apiKey = apiKey.trim();
-
-        
-        // Step 2: Parse request body
-        const requestBody = await req.json();
-        const {error, value} = userUpdateSchema.validate(requestBody, {abortEarly: false})     // Collect all validation errors
-
-        if (error) 
-        {
-            return NextResponse.json(
-                { message: "Validation error", errors: error.details.map(err => err.message) },
-                { status: 400 }
-            );
-        }
-        const { email, username, oldPassword, newPassword } = value;
-
-        let response;
-        // Validate API key and fetch user details.
-        if (!response) 
-        {
-            return NextResponse.json({message: "Failed to update user."},{ status: 500 });
-        }
-
-
-        // Step 3: Validate request body
-        if (!email && !username && (!oldPassword || !newPassword)) 
-        {
-            return NextResponse.json(
-                {message: "At least one field (email, username, or password) must be provided."}, { status: 400 },
-            );
-        }
-        
-        
-        // Step 4: Determine whether to update credentials or password
-        if (email || username) {
-            response = await updateUserCredentialsByApiKey(apiKey, email, username);
-        } else if (oldPassword && newPassword) {
-            response = await updateUserPasswordByApiKey(apiKey, oldPassword, newPassword);
-        }
-
-        // Step 5: Return response from controller
-        return NextResponse.json(response.payload, { status: response.status });
-
-    } 
-    catch (error) 
-    {
-        console.error("Error updating user:", error);
-        return NextResponse.json({message: "Internal server error." }, { status: 500});
+        ({userId} = await params);
+        if (!userId) throw new Error();   
     }
-}
+    catch 
+    {
+        return NextResponse.json("Internal Server Error", { status: 500 });
+    }
 
-/**
- * DELETE /api/users - Deletes a user by API key.
- * @summary Removes a user account permanently.
- * @param req - The request object.
- * @returns JSON confirming deletion or an error message.
- */
+    // Validate that the user ID is a UUID.
+    const { error: userIdValidationError } = uuidSchema.validate({ uuid: userId });
+    if (userIdValidationError)
+    {
+        return NextResponse.json("Internal Server Error", { status: 500 });
+    }
+
+    // Get API key from request header, trim it, and validate.
+    let apiKey = req.headers.get("X-API-Key");
+    if (!apiKey)
+    {
+        return NextResponse.json("Not Authorized", { status: 401 });
+    }
+    apiKey = apiKey.trim();
+
+    // Validate the API key.
+    const { error: apiKeyValidationError } = uuidSchema.validate({ uuid: apiKey });
+    if (apiKeyValidationError) 
+    {
+        return NextResponse.json("Bad Request - Invalid API Key", { status: 400 });
+    }
+
+    // Parse update values from body
+    const userData = await req.json();
+    //let {username, email, oldPassword, newPassword} = userData;
+
+    const {error: bodyValidationError, value: validatedBody} = userUpdateSchema.validate(userData, {
+        abortEarly: false});
+    if (bodyValidationError)
+    {
+        return NextResponse.json({
+            message: "validation error",
+            errors: bodyValidationError.details.map(err => err.message)}, {status: 400});
+    }
+
+    let { username, email, oldPassword, newPassword } = validatedBody;
+   
+    if (!(username || email) && !(newPassword))
+    {
+        return NextResponse.json
+                ("Bad Request - Body must include " +
+                 "attributes to update.", { status: 400 });
+    }
+
+    if (newPassword && !(username && email))
+    {
+        return NextResponse.json
+                ("Bad Request - Password Updates Require Existing " +
+                 "Username and Email as Attributes", { status: 400 });
+    }
+
+    let updatedUserResponse: ActionResponse<ClientUser> | GenericAPIResponse;
+    
+    if (!(newPassword))
+    {
+        updatedUserResponse = await updateUserByApiKey(apiKey, userId, username, email);
+    }
+    else
+    {
+        updatedUserResponse = await 
+            updateUserPasswordByApiKey(
+                apiKey, userId, username, email, 
+                oldPassword, newPassword);
+    }
+
+    return NextResponse.json(updatedUserResponse.payload, {status: updatedUserResponse. status})
+}
 
 export async function DELETE(req: Request, {params}: {params: Promise<{userId: string}>}):
     Promise<NextResponse>
