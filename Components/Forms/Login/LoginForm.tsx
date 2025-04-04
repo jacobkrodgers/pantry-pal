@@ -2,29 +2,40 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Checkbox, FormControlLabel, IconButton, InputAdornment } from "@mui/material";
 import Link from "next/link";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginUser } from "../../../app/(standard layout)/login/actions";
 import { loginValidationSchema } from "@/validation/userValidation";
 
 export default function LoginForm() {
   const router = useRouter();
+
+  // Form field states
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // Error state for inputs
+  // Error states
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // "Keep me logged in" state
+  const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false);
+
+  // Show/hide password toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const handleToggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     // Reset error states
     setUsernameError("");
     setPasswordError("");
 
-    // Final client-side validation using JOI 
+    // Client-side validation
     const { error } = loginValidationSchema.validate({ username, password });
     if (error) {
       const detail = error.details[0];
@@ -38,11 +49,12 @@ export default function LoginForm() {
     }
 
     try {
-      const result = await loginUser(username, password);
+      // Pass keepMeLoggedIn to the server
+      const result = await loginUser(username, password, keepMeLoggedIn);
       if (result.status === 201) {
         router.push("/");
       } else {
-        // Generic error message 
+        // Use a generic error message
         setUsernameError("Not Found");
         setPasswordError("Not Found");
       }
@@ -71,15 +83,33 @@ export default function LoginForm() {
         />
         <FormInput
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           errorMessage={passwordError}
           helperText={
-            passwordError ||
-            "(At least 8 characters, include a special character and a number)"
+            passwordError || "(At least 8 characters, include a special character and a number)"
           }
           inputProps={{ minLength: 8 }}
+          // Toggle icon
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleToggleShowPassword} edge="end">
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={keepMeLoggedIn}
+              onChange={(e) => setKeepMeLoggedIn(e.target.checked)}
+            />
+          }
+          label="Keep me logged in"
         />
         <Button
           variant="contained"
