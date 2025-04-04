@@ -55,6 +55,13 @@ export async function GET(req: Request, {params}: {params: Promise<{userId: stri
     return NextResponse.json(userResponse.payload, { status: userResponse.status });
 }
 
+/**
+ * PUT /api/user/{userId} - Updates a specific user.
+ * @summary Get a specific user by ID.
+ * @param req - The request object.
+ * @param params - An object with the user id.
+ * @returns JSON with updated user or an error message.
+ */
 export async function PUT(req: Request, {params}: {params: Promise<{userId: string}>})
 {
     let userId: string;
@@ -94,10 +101,11 @@ export async function PUT(req: Request, {params}: {params: Promise<{userId: stri
 
     // Parse update values from body
     const userData = await req.json();
-    //let {username, email, oldPassword, newPassword} = userData;
+    
+    //Validate the body of the request using the userUpdateSchema
+    const {error: bodyValidationError, value: validatedBody} = userUpdateSchema.validate(userData, 
+          { abortEarly: false});
 
-    const {error: bodyValidationError, value: validatedBody} = userUpdateSchema.validate(userData, {
-        abortEarly: false});
     if (bodyValidationError)
     {
         return NextResponse.json({
@@ -106,7 +114,8 @@ export async function PUT(req: Request, {params}: {params: Promise<{userId: stri
     }
 
     let { username, email, oldPassword, newPassword } = validatedBody;
-   
+    
+    // If no attributes to update, return bad request
     if (!(username || email) && !(newPassword))
     {
         return NextResponse.json
@@ -123,6 +132,8 @@ export async function PUT(req: Request, {params}: {params: Promise<{userId: stri
 
     let updatedUserResponse: ActionResponse<ClientUser> | GenericAPIResponse;
     
+    // If no new password is provided, just update username and email
+    // Otherwise, update the password as well
     if (!(newPassword))
     {
         updatedUserResponse = await updateUserByApiKey(apiKey, userId, username, email);
@@ -138,6 +149,13 @@ export async function PUT(req: Request, {params}: {params: Promise<{userId: stri
     return NextResponse.json(updatedUserResponse.payload, {status: updatedUserResponse. status})
 }
 
+/**
+ * DELETE /api/user/{userId} - Deletes a specific user.
+ * @summary Get a specific user by ID.
+ * @param req - The request object.
+ * @param params - An object with the user id.
+ * @returns JSON with deleted user status or an error message.
+ */
 export async function DELETE(req: Request, {params}: {params: Promise<{userId: string}>}):
     Promise<NextResponse>
 {

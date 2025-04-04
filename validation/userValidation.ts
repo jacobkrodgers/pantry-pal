@@ -53,7 +53,7 @@ export const registerValidationSchema = Joi.object({
  * Ensures that new username, email, and password (if provided) meet required criteria.
  */
 export const userUpdateSchema = Joi.object({
-    newUsername: Joi.string()
+    username: Joi.string()
         .min(5)
         .max(15)
         .alphanum()
@@ -63,17 +63,17 @@ export const userUpdateSchema = Joi.object({
             'string.empty': 'Username cannot be an empty field',
             'string.min': 'Username must be at least 5 characters long',
             'string.max': 'Username must not exceed 15 characters',
-            'any.required': 'Username is a required field'
+            //'any.required': 'Username is a required field'
         }),
 
-    newEmail: Joi.string()
+    email: Joi.string()
         .email({ tlds: { allow: false } })
         .optional()
         .messages({
             'string.base': 'Email should be a type of text',
             'string.empty': 'Email cannot be an empty field',
             'string.email': 'Email must be a valid email',
-            'any.required': 'Email is a required field'
+            //'any.required': 'Email is a required field'
         }),
 
     newPassword: Joi.string()
@@ -85,10 +85,18 @@ export const userUpdateSchema = Joi.object({
             'string.empty': 'Password cannot be an empty field',
             'string.min': 'Password must be at least 7 characters long',
             'string.pattern.base': 'Password must contain at least one special character and one number',
-            'any.required': 'Password is a required field'
-        })
+            //'any.required': 'Password is a required field'
+        }),
+    
+    oldPassword: Joi.when('newPassword', {
+        is: Joi.exist(),
+        then: Joi.string().required().messages({
+            'string.empty': 'Old password cannot be empty',
+            'any.required': 'Old password is required when setting a new password'
+        }),
+        otherwise: Joi.optional()
+    })
 })
-.or("newUsername", "newEmail", "newPassword") // Ensure at least one field is provided
 .messages({
     "object.missing": "At least one field (username, email, or password) must be provided"
 });
