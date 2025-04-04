@@ -116,6 +116,7 @@ export async function PUT(req: Request, {params}: {params: Promise<{recipeId: st
     const { error: recipeValidationError } = newRecipeSchema.validate(recipeUpdateData);
     if (recipeValidationError) 
     {
+        console.log(recipeValidationError)
         return NextResponse.json("Bad Request - Invalid Recipe", { status: 400 });
     }
 

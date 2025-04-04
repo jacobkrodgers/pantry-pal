@@ -1,32 +1,28 @@
 import { Ingredient } from "@/type/Recipe";
 import { Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CircleIcon from '@mui/icons-material/Circle';  // Bullet point icon
-import IngredientIndicator from "./IngredientIndicator";
+import IngredientListItem from "./IngredientListItem";
 
-interface RecipeBodyProps {
+interface RecipeBodyProps 
+{
     prepTime: string;
     cookTime: string;
     ingredients: Ingredient[];
-    directions: string;
     ingredientsOnHand: Ingredient[];
-    filterIngredients?: boolean;
+    directions: string;
+    highlight?: boolean;
 }
 
-export default function RecipeBody({ prepTime, cookTime, ingredients, directions, ingredientsOnHand, filterIngredients = false }: RecipeBodyProps) {
-    // Example data, you can remove this part when using actual props
+export default function RecipeBody({ prepTime, cookTime, ingredients, directions, ingredientsOnHand, highlight = true }: RecipeBodyProps) {
+    
     ingredientsOnHand = [{
         id: "12345",
         name: "Rice",
-        quantityUnit: "Cups",
-        quantity: 5,
+        quantityUnit: "gram",
+        quantity: 0.000,
         form: "None"
     }];
     
-    filterIngredients = false;
-
     return (
         <>
             <List>
@@ -41,7 +37,24 @@ export default function RecipeBody({ prepTime, cookTime, ingredients, directions
                 <Typography variant="h5">Ingredients</Typography>
             </Divider>
             <List dense={true} sx={{ pl: 0, listStylePosition: "inside" }}>
-                <IngredientIndicator ingredients={ingredients} ingredientsOnHand={ingredientsOnHand} filterIngredients={filterIngredients} />
+                {
+                    ingredients.map((ingredient, index) => 
+                    {
+                        const ingredientOnHand = ingredientsOnHand.find(
+                            item => item.name === ingredient.name && item.form === ingredient.form
+                        );
+
+                        return (
+                            
+                            <IngredientListItem 
+                                key={ingredient.name} 
+                                ingredient={ingredient} 
+                                ingredientOnHand={ingredientOnHand}
+                                highlight={highlight} 
+                            />
+                        );
+                    })
+                }
             </List>
 
             <Divider textAlign="left">

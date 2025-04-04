@@ -3,9 +3,10 @@
 import { Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import RecipePage from "@/Components/Recipe/RecipePage";
 import { getRecipe } from "./actions";
 import { Recipe } from "@/type/Recipe";
+import RecipeHeader from "@/Components/Recipe/RecipeHeader";
+import RecipeBody from "@/Components/Recipe/RecipeBody";
 
 export default function Page() {
     const params = useParams<{ username: string; recipeName: string }>();
@@ -25,5 +26,10 @@ export default function Page() {
         return <Typography>Loading...</Typography>;
     }
 
-    return <RecipePage recipe={recipe} />;
+    return (
+        <>
+            <RecipeHeader name={recipe.name} dietTags={recipe.dietTags} username={recipe.authorUsername!} created={recipe.dateAdded} updated={recipe.dateUpdated} />
+            <RecipeBody prepTime={recipe.prepTime} cookTime={recipe.prepTime} ingredients={recipe.ingredients} ingredientsOnHand={[]} directions={recipe.instructions} highlight={true} />
+        </>
+    );
 }
