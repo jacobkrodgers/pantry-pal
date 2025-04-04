@@ -12,13 +12,13 @@ model User {
 
 model ApiKey {
   apiKey String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 }
 
 model Session {
   id          String @id @default(uuid())
-  user        User @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   expiration  DateTime
 }
