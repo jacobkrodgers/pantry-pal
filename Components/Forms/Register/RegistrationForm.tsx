@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Typography, Button } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
-import { registerUser } from "../../../app/(standard layout)/register/actions";
+import { registerValidationSchema } from "@/validation/userValidation";
 
-export default function RegistrationForm() {
+interface RegistrationFormProps {
+  onRegister: (username: string, email: string, password: string) => Promise<{status: number, payload: string | object}>;
+}
+
+export default function RegistrationForm({ onRegister }: RegistrationFormProps) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -34,12 +38,29 @@ export default function RegistrationForm() {
       return;
     }
 
+    // Client-side validation using JOI
+    const { error } = registerValidationSchema.validate({ username, email, password }, { abortEarly: false });
+    if (error) {
+      error.details.forEach((detail) => {
+        if (detail.path.includes("username")) {
+          setUsernameError((prev) => (prev ? prev + " " + detail.message : detail.message));
+        }
+        if (detail.path.includes("email")) {
+          setEmailError((prev) => (prev ? prev + " " + detail.message : detail.message));
+        }
+        if (detail.path.includes("password")) {
+          setPasswordError((prev) => (prev ? prev + " " + detail.message : detail.message));
+        }
+      });
+      return;
+    }
+
     try {
-      const result = await registerUser(username, email, password);
+      const result = await onRegister(username, email, password);
       if (result.status === 201) {
         router.push("/login");
       } else {
-        // Handle server-side validation errors
+        // For errors from the server, distribute error messages
         const msg = result.payload as string;
         if (msg.toLowerCase().includes("username")) {
           setUsernameError(msg);
@@ -48,14 +69,12 @@ export default function RegistrationForm() {
         } else if (msg.toLowerCase().includes("password")) {
           setPasswordError(msg);
         } else {
-          // Generic error message 
           setUsernameError(msg);
           setEmailError(msg);
           setPasswordError(msg);
         }
       }
     } catch (error: any) {
-      // In case of unexpected error, assign a general error message
       setPasswordError(error.message);
     }
   };
@@ -92,11 +111,10 @@ export default function RegistrationForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           errorMessage={passwordError}
-          helperText={
-            passwordError ||
-            "(At least 8 characters, include a special character and a number)"
-          }
-          inputProps={{ minLength: 8 }}
+          helperText={passwordError || "(At least 8 characters, include a special character and a number)"}
+          slotProps={{
+            htmlInput: { minLength: 8 },
+          }}
         />
         <FormInput
           label="Confirm Password"
@@ -105,7 +123,9 @@ export default function RegistrationForm() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           errorMessage={confirmPasswordError}
           helperText={confirmPasswordError || "(Re-enter your password)"}
-          inputProps={{ minLength: 8 }}
+          slotProps={{
+            htmlInput: { minLength: 8 },
+          }}
         />
         <Button
           variant="contained"

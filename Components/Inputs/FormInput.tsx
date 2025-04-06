@@ -3,12 +3,12 @@
 import React from "react";
 import { TextField, TextFieldProps } from "@mui/material";
 
-export interface FormInputProps extends Omit<TextFieldProps, 'label' | 'value' | 'onChange'> {
+type FormInputProps = TextFieldProps & {
   label: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errorMessage?: string;
-}
+};
 
 export default function FormInput({
   label,
