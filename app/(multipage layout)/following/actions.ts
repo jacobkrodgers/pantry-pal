@@ -5,7 +5,7 @@ import { PublicUser } from "@/type/User";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function getFollowers(page: number, followersPerPage: number):
+export async function getPeopleFollowed(page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
 {
 
@@ -24,7 +24,7 @@ export async function getFollowers(page: number, followersPerPage: number):
         redirect(`login`);
     }
 
-    const followers = await get_followers((await user).payload?.username!, page, followersPerPage);
+    const peopleFollowed = await get_people_followed((await user).payload?.username!, page, peopleFollowedPerPage);
 
-    return followers;
+    return peopleFollowed;
 }

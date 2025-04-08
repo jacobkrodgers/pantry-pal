@@ -1,13 +1,14 @@
 // Models related to the user, api access, and sessions
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  username     String   @unique
-  passwordHash String
-  ApiKey       ApiKey?
-  Recipes      Recipe[]
-  Sessions     Session[]
+  id            String   @id @default(uuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String
+  ApiKey        ApiKey?
+  Recipes       Recipe[]
+  Sessions      Session[]
+  FollowedUsers FollowedUser[]
 }
 
 model ApiKey {
@@ -21,4 +22,10 @@ model Session {
   user        User @relation(fields: [userId], references: [id])
   userId      String
   expiration  DateTime
+}
+
+model FollowedUser {
+  id          String  @id @default(uuid())
+  user        User    @relation(fields: [userId], references: [id])
+  userId      String
 }

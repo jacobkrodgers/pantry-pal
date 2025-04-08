@@ -306,3 +306,79 @@ export async function get_public_user_by_session(id: string):
 
     return session ? session.user : null;
 }
+
+export async function get_people_followed_by_user_id(userId: string):
+    Promise<PublicUser[] | null>
+{
+    const followedUsers = await prisma.followedUsers.findMany({
+        where: { userId },
+        include: {
+            user: true
+        }
+    });
+
+    return followedUsers ? followedUsers.user : null;
+}
+
+export async function add_person_to_followed_by_user_id(userId: string, followedUserId: string):
+    Promise<PublicUser | null>
+{
+    try
+    {
+        const existingFollow = await prisma.followedUser.findUnique({
+            where: {
+                userId,
+                followedUserId
+            }
+        });
+
+        if(existingFollow)
+        {
+            return null;
+        }
+
+        const newFollowedUser = await prisma.followedUser.create({
+            data: {userId, followedUserId}
+        });
+
+        if(!newFollowedUser)
+        {
+            return null;
+        }
+
+        return newFollowedUser;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+export async function delete_person_from_followed_by_user_id(userId: string, followedUserId: string):
+    Promise<PublicUser | null>
+{
+    try
+    {
+        const followedUser = await prisma.user.findUnique({
+            where: {id: followedUserId}
+        });
+
+        if(!followedUser)
+        {
+            return null;
+        }
+
+        const deletedFollowedUser = await prisma.followedUser.delete({
+            where: {
+                userId,
+                followedUserId
+            }
+        });
+
+        return deletedFollowedUser;
+    }
+    catch
+    {
+        return null;
+    }
+}
