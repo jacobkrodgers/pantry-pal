@@ -169,7 +169,6 @@ export async function DELETE(req: Request, {params}: {params: Promise<{userId: s
     }
     catch 
     {
-        console.log("1")
         return NextResponse.json("Internal Server Error", { status: 500 });
     }
 
@@ -177,7 +176,6 @@ export async function DELETE(req: Request, {params}: {params: Promise<{userId: s
     const { error: userIdValidationError } = uuidSchema.validate({ uuid: userId });
     if (userIdValidationError)
     {
-        console.log("2")
         return NextResponse.json("Internal Server Error", { status: 500 });
     }
 
