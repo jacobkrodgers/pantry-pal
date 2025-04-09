@@ -4,6 +4,7 @@ import { getPublicUserBySessionId } from "@/controller/userController";
 import { PublicUser } from "@/type/User";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getFollowedUsersByUsername } from "../../../controller/userController";
 
 export async function getPeopleFollowed(page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
@@ -24,7 +25,11 @@ export async function getPeopleFollowed(page: number, peopleFollowedPerPage: num
         redirect(`login`);
     }
 
-    const peopleFollowed = await get_people_followed((await user).payload?.username!, page, peopleFollowedPerPage);
+    const usersFollowed = await getFollowedUsersByUsername((await user).payload?.username!, page, peopleFollowedPerPage);
 
-    return peopleFollowed;
+    if(usersFollowed && usersFollowed.payload) {
+        return usersFollowed.payload;
+    }
+
+    return null;
 }

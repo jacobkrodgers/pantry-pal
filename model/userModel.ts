@@ -307,14 +307,22 @@ export async function get_public_user_by_session(id: string):
     return session ? session.user : null;
 }
 
-export async function get_people_followed_by_user_id(userId: string):
+export async function get_people_followed_by_user_id(userId: string, page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
 {
     const followedUsers = await prisma.followedUsers.findMany({
         where: { userId },
         include: {
             user: true
-        }
+        },
+        skip: page * peopleFollowedPerPage,
+        take: peopleFollowedPerPage * 5,
+        orderBy: [{
+            _relevance: {
+                fields: ['username'],
+                sort: 'desc'
+            }
+        }]
     });
 
     return followedUsers ? followedUsers.user : null;

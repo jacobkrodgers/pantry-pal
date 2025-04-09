@@ -146,7 +146,7 @@ export async function getPublicUserBySessionId(sessionId: string):
     return {status: 200, payload: publicUser}
 }
 
-export async function getFollowedUsersByUserId(username: string):
+export async function getFollowedUsersByUsername(username: string, page: number, peopleFollowedPerPage: number):
     Promise<ActionResponse<PublicUser[]>>
 {
     const userExists = await find_server_user_by_username(username);
@@ -156,7 +156,7 @@ export async function getFollowedUsersByUserId(username: string):
         return { status: 404 }
     }
     
-    const followedUsers: PublicUser[] | null = await get_people_followed_by_user_id(userExists.id);
+    const followedUsers: PublicUser[] | null = await get_people_followed_by_user_id(userExists.id, page, peopleFollowedPerPage);
 
     if(!followedUsers)
     {
@@ -167,7 +167,7 @@ export async function getFollowedUsersByUserId(username: string):
 }
 
 export async function updateFollowedUsers(username: string, followedUsername: string):
-    Promise<ActionResponse<PublicUser[]>>
+    Promise<ActionResponse<PublicUser>>
 {
     const userExists = await find_server_user_by_username(username);
 
@@ -190,14 +190,7 @@ export async function updateFollowedUsers(username: string, followedUsername: st
         return { status: 500 };
     }
 
-    const updatedFollowedUsers: PublicUser[] | null = await get_people_followed_by_user_id(userExists.id);
-
-    if(!updatedFollowedUsers)
-    {
-        return { status: 500 }
-    }
-
-    return { status: 200, payload: updatedFollowedUsers }
+    return { status: 200, payload: newFollowedUser }
 }
 
 export async function deleteUserFromFollowed(username: string, followedUsername: string):
