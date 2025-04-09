@@ -5,12 +5,9 @@ import { useRouter } from "next/navigation";
 import { Box, Typography, Button } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { registerValidationSchema } from "@/validation/userValidation";
+import { registerUser } from "../../../app/(standard layout)/register/actions";
 
-interface RegistrationFormProps {
-  onRegister: (username: string, email: string, password: string) => Promise<{status: number, payload: string | object}>;
-}
-
-export default function RegistrationForm({ onRegister }: RegistrationFormProps) {
+export default function RegistrationForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -23,7 +20,7 @@ export default function RegistrationForm({ onRegister }: RegistrationFormProps) 
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     // Reset error states
@@ -38,29 +35,37 @@ export default function RegistrationForm({ onRegister }: RegistrationFormProps) 
       return;
     }
 
-    // Client-side validation using JOI
-    const { error } = registerValidationSchema.validate({ username, email, password }, { abortEarly: false });
+    // Client-side JOI validation
+    const { error } = registerValidationSchema.validate(
+      { username, email, password },
+      { abortEarly: false }
+    );
     if (error) {
       error.details.forEach((detail) => {
         if (detail.path.includes("username")) {
-          setUsernameError((prev) => (prev ? prev + " " + detail.message : detail.message));
+          setUsernameError((prev) =>
+            prev ? prev + " " + detail.message : detail.message
+          );
         }
         if (detail.path.includes("email")) {
-          setEmailError((prev) => (prev ? prev + " " + detail.message : detail.message));
+          setEmailError((prev) =>
+            prev ? prev + " " + detail.message : detail.message
+          );
         }
         if (detail.path.includes("password")) {
-          setPasswordError((prev) => (prev ? prev + " " + detail.message : detail.message));
+          setPasswordError((prev) =>
+            prev ? prev + " " + detail.message : detail.message
+          );
         }
       });
       return;
     }
 
     try {
-      const result = await onRegister(username, email, password);
+      const result = await registerUser(username, email, password);
       if (result.status === 201) {
         router.push("/login");
       } else {
-        // For errors from the server, distribute error messages
         const msg = result.payload as string;
         if (msg.toLowerCase().includes("username")) {
           setUsernameError(msg);
@@ -77,7 +82,7 @@ export default function RegistrationForm({ onRegister }: RegistrationFormProps) 
     } catch (error: any) {
       setPasswordError(error.message);
     }
-  };
+  }
 
   return (
     <Box sx={{ maxWidth: 400, margin: "auto", mt: 4 }}>
@@ -111,7 +116,10 @@ export default function RegistrationForm({ onRegister }: RegistrationFormProps) 
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           errorMessage={passwordError}
-          helperText={passwordError || "(At least 8 characters, include a special character and a number)"}
+          helperText={
+            passwordError ||
+            "(At least 8 characters, include a special character and a number)"
+          }
           slotProps={{
             htmlInput: { minLength: 8 },
           }}

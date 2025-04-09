@@ -6,24 +6,24 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
+import { loginUser } from "../../../app/(standard layout)/login/actions";
+import { useRouter } from "next/navigation";
 
-interface LoginFormProps {
-  onLogin: (username: string, password: string, keepMeLoggedIn: boolean) => Promise<any>;
-}
-
-export default function LoginForm({ onLogin }: LoginFormProps) {
-  // Local states
+export default function LoginForm() {
+  // Local states 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false);
 
-  // Show/hide password toggle
+  // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
   const handleToggleShowPassword = () => setShowPassword((prev) => !prev);
 
-  // Error states
+  // Error states 
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,13 +45,18 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       return;
     }
 
-    // Call the callback from page.tsx
-    const result = await onLogin(username, password, keepMeLoggedIn);
-
-    // Display a generic message
-    if (result && result.status !== 201) {
-      setUsernameError("Not Found");
-      setPasswordError("Not Found");
+    try {
+      // Call the server action directly from the client component.
+      const result = await loginUser(username, password, keepMeLoggedIn);
+      if (result.status === 201) {
+        router.push("/");
+      } else {
+        // Display a generic error message for both fields.
+        setUsernameError("Not Found");
+        setPasswordError("Not Found");
+      }
+    } catch (error: any) {
+      setPasswordError(error.message);
     }
   }
 
@@ -60,7 +65,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       <Typography variant="h5" align="center" gutterBottom>
         Log In
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        noValidate // Disable native browser validation
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         <FormInput
           label="Username"
           value={username}
@@ -75,7 +85,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           errorMessage={passwordError}
           helperText={
-            passwordError || "(At least 8 characters, include a special character and a number)"
+            passwordError ||
+            "(At least 8 characters, include a special character and a number)"
           }
           inputProps={{ minLength: 8 }}
           InputProps={{
@@ -85,7 +96,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
-            )
+            ),
           }}
         />
         <FormControlLabel
@@ -112,7 +123,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       </Box>
       <Box sx={{ textAlign: "center", mt: 2 }}>
         <Typography variant="body2">
-          Don&apos;t have an account?{" "}
+          Don't have an account?{" "}
           <Link href="/register" style={{ color: "cyan" }}>
             Sign up here!
           </Link>
