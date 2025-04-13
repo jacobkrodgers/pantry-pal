@@ -1,0 +1,13 @@
+model Pantry {
+  id          String       @id
+  ingredients Ingredient[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String       @unique
+}
+
+model ShoppingCart {
+  id          String       @id
+  ingredients Ingredient[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String       @unique
+}

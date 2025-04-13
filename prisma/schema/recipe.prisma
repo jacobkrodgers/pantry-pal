@@ -18,15 +18,19 @@ model Recipe {
 }
 
 model Ingredient {
-  id           String   @id @default(uuid())
-  name         String
-  quantityUnit String
-  quantity     Int
-  form         String
-  recipes      Recipe[]
+  id             String        @id @default(uuid())
+  name           String
+  quantityUnit   String
+  quantity       Int
+  form           String
+  recipes        Recipe[]
+  Pantry         Pantry?       @relation(fields: [pantryId], references: [id])
+  pantryId       String?
+  ShoppingCart   ShoppingCart? @relation(fields: [shoppingCartId], references: [id])
+  shoppingCartId String?
 }
 
 model DietTag {
-  name     String   @id
-  recipe   Recipe[]
+  name   String   @id
+  recipe Recipe[]
 }
