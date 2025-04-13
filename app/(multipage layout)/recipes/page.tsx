@@ -2,7 +2,7 @@
 
 import RecipePreview from '@/Components/Recipe/RecipePreview';
 import { Ingredient, NewIngredient, Recipe } from '@/type/Recipe';
-import { Box, Pagination, InputBase } from '@mui/material';
+import { Box, Pagination, InputBase, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { getRecipes } from './actions';
 import theme from '@/app/theme';
@@ -41,14 +41,14 @@ export default function Page() {
                     padding: 2, 
                     display: "flex",
                     justifyContent: "center",
-                    backgroundColor: theme.palette.primary.main
                 }}
             >
-                <InputBase
+                <TextField
                     sx={{ ml: 1, flex: 1 }}
                     placeholder="Search for recipes..."
                     inputProps={{ 'aria-label': 'search recipes' }}
                     onChange={handleStringChange}
+                    variant="outlined"
                 />
             </Box>
             

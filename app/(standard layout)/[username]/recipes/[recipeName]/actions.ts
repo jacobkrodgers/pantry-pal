@@ -8,9 +8,11 @@ import { redirect } from "next/navigation";
 export async function getRecipe(username: string, recipeName: string):
     Promise<Recipe | null>
 {
-    // Attempt to get session ID from user cookies
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get('session')?.value;
+    // // Attempt to get session ID from user cookies
+    // const cookieStore = await cookies();
+    // const sessionId = cookieStore.get('session')?.value;
+    const sessionId = "6b42cebb-be98-43f4-af55-25d31ba65392";
+
 
     // If the user isn't logged in, redirect
     if (!sessionId)

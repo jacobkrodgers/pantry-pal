@@ -26,6 +26,7 @@ model Ingredient {
   quantity     Int
   form         String
   recipes      Recipe[]
+  pantries     Pantry[]
 }
 
 model DietTag {

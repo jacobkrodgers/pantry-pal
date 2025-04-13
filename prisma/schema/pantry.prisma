@@ -1,0 +1,7 @@
+
+model Pantry {
+  id String @id
+  ingredient Ingredient[]
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
