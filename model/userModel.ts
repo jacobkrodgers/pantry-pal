@@ -310,22 +310,27 @@ export async function get_public_user_by_session(id: string):
 export async function get_people_followed_by_user_id(userId: string, page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
 {
-    const followedUsers = await prisma.followedUsers.findMany({
+    const followedUsers = await prisma.followedUser.findMany({
         where: { userId },
-        include: {
+        select: {
             user: true
         },
         skip: page * peopleFollowedPerPage,
         take: peopleFollowedPerPage * 5,
-        orderBy: [{
-            _relevance: {
-                fields: ['username'],
-                sort: 'desc'
-            }
-        }]
     });
 
-    return followedUsers ? followedUsers.user : null;
+    return followedUsers.length > 0
+        ? followedUsers.map(followedUser => {
+            const user = followedUser.user;
+            return {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                passwordHash: user.passwordHash,
+                // Add any additional properties here if needed
+            } as PublicUser; // Ensure the shape matches the PublicUser type
+        })
+        : [];
 }
 
 export async function add_person_to_followed_by_user_id(userId: string, followedUserId: string):
@@ -336,7 +341,7 @@ export async function add_person_to_followed_by_user_id(userId: string, followed
         const existingFollow = await prisma.followedUser.findUnique({
             where: {
                 userId,
-                followedUserId
+                id: followedUserId
             }
         });
 
@@ -346,7 +351,7 @@ export async function add_person_to_followed_by_user_id(userId: string, followed
         }
 
         const newFollowedUser = await prisma.followedUser.create({
-            data: {userId, followedUserId}
+            data: {userId, id: followedUserId}
         });
 
         if(!newFollowedUser)
@@ -379,7 +384,7 @@ export async function delete_person_from_followed_by_user_id(userId: string, fol
         const deletedFollowedUser = await prisma.followedUser.delete({
             where: {
                 userId,
-                followedUserId
+                id: followedUserId
             }
         });
 

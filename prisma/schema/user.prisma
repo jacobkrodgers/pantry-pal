@@ -25,7 +25,10 @@ model Session {
 }
 
 model FollowedUser {
-  id          String  @id @default(uuid())
-  user        User    @relation(fields: [userId], references: [id])
-  userId      String
+  id              String  @id @default(uuid())
+  followingUser   User    @relation("FollowingUser", fields: [followingUserId], references: [id])
+  followedUser    User    @relation("FollowedUser", fields: [followedUserId], references: [id])
+  followingUserId String
+  followedUserId  String
+  @@unique([followingUserId, followedUserId])
 }
