@@ -16,7 +16,6 @@ export default function UserSettings({user}: {user: ClientUser}) {
             <Typography variant="h6" sx={{ mb: 2 }}>
                 /[username]/profile (private)
             </Typography>
-
             <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography variant="h5">
