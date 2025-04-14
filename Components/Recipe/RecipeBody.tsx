@@ -7,22 +7,16 @@ interface RecipeBodyProps
 {
     prepTime: string;
     cookTime: string;
-    ingredients: Ingredient[];
-    ingredientsOnHand: Ingredient[];
+    recipeIngredients: Ingredient[];
+    pantryIngredients: Ingredient[];
     directions: string;
     highlight?: boolean;
 }
 
-export default function RecipeBody({ prepTime, cookTime, ingredients, directions, ingredientsOnHand, highlight = true }: RecipeBodyProps) {
-    
-    ingredientsOnHand = [{
-        id: "12345",
-        name: "Rice",
-        quantityUnit: "gram",
-        quantity: 0.000,
-        form: "None"
-    }];
-    
+export default function RecipeBody(
+    { prepTime, cookTime, recipeIngredients, 
+        pantryIngredients, directions, highlight = true }: RecipeBodyProps) 
+{
     return (
         <>
             <List>
@@ -38,18 +32,18 @@ export default function RecipeBody({ prepTime, cookTime, ingredients, directions
             </Divider>
             <List dense={true} sx={{ pl: 0, listStylePosition: "inside" }}>
                 {
-                    ingredients.map((ingredient, index) => 
+                    recipeIngredients.map((recipeIngredient, index) => 
                     {
-                        const ingredientOnHand = ingredientsOnHand.find(
-                            item => item.name === ingredient.name && item.form === ingredient.form
+                        const ingredientOnHand = pantryIngredients.find(
+                            item => item.name === recipeIngredient.name && item.form === recipeIngredient.form
                         );
 
                         return (
                             
                             <IngredientListItem 
-                                key={ingredient.name} 
-                                ingredient={ingredient} 
-                                ingredientOnHand={ingredientOnHand}
+                                key={recipeIngredient.name} 
+                                ingredient={recipeIngredient} 
+                                pantryIngredient={ingredientOnHand}
                                 highlight={highlight} 
                             />
                         );

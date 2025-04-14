@@ -13,11 +13,11 @@ import { alpha } from '@mui/system';
 interface IngredientListItemProps
 {
     ingredient: Ingredient
-    ingredientOnHand: Ingredient | undefined
+    pantryIngredient: Ingredient | undefined
     highlight: boolean
 }
 
-export default function IngredientListItem({ingredient, ingredientOnHand, highlight}: IngredientListItemProps)
+export default function IngredientListItem({ingredient, pantryIngredient, highlight}: IngredientListItemProps)
 {
     if (!highlight)
     {
@@ -31,7 +31,7 @@ export default function IngredientListItem({ingredient, ingredientOnHand, highli
         )
     }
 
-    if (!ingredientOnHand)
+    if (!pantryIngredient)
     {
         return (
             <ListItem sx={{ display: "flex", alignItems: "center", pl: 0, width: "fit-content" }}>
@@ -47,7 +47,7 @@ export default function IngredientListItem({ingredient, ingredientOnHand, highli
         )
     }
 
-    if (ingredient.quantityUnit === ingredientOnHand.quantityUnit && ingredient.quantity > ingredientOnHand.quantity)
+    if (ingredient.quantityUnit === pantryIngredient.quantityUnit && ingredient.quantity > pantryIngredient.quantity)
     {
         return (
             <ListItem sx={{ display: "flex", alignItems: "center", pl: 0, width: "fit-content" }}>
@@ -63,7 +63,7 @@ export default function IngredientListItem({ingredient, ingredientOnHand, highli
         )
     }
 
-    if ((ingredient.quantityUnit !== ingredientOnHand.quantityUnit) && !(ingredient.quantityUnit in unitConversion))
+    if ((ingredient.quantityUnit !== pantryIngredient.quantityUnit) && !(ingredient.quantityUnit in unitConversion))
     {
         return (
             <ListItem sx={{ display: "flex", alignItems: "center", pl: 0, width: "fit-content" }}>
@@ -80,7 +80,7 @@ export default function IngredientListItem({ingredient, ingredientOnHand, highli
     }
     
     if ( ingredient.quantity * unitConversion[ingredient.quantityUnit] > 
-         ingredientOnHand.quantity * unitConversion[ingredientOnHand.quantityUnit]
+         pantryIngredient.quantity * unitConversion[pantryIngredient.quantityUnit]
         )
     {
         return (
