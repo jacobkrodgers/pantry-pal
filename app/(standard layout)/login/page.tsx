@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import LoginForm from "@/Components/Forms/Login/LoginForm";
 import { getPublicUserBySessionId } from "@/controller/userController";
+import { Paper } from "@mui/material";
 
 export default async function LoginPage() {
     // Check for an existing session cookie
@@ -21,5 +22,9 @@ export default async function LoginPage() {
     }
 
     // Otherwise, render the client login form
-    return <LoginForm />;
+    return (
+        <Paper style={{ height: '100vh', padding: 10 }}>
+            <LoginForm />
+        </Paper>
+    );
 }

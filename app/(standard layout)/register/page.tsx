@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
 import { getPublicUserBySessionId } from "@/controller/userController";
+import { Paper } from "@mui/material";
 
 export default async function RegisterPage() {
     // Check for an existing session cookie
@@ -18,5 +19,9 @@ export default async function RegisterPage() {
     }
 
     // Otherwise, render the client registration form
-    return <RegistrationForm />;
+    return (
+        <Paper style={{ height: '100vh', padding: 10 }}>
+            <RegistrationForm />
+        </Paper>
+    );
 }

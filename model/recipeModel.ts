@@ -255,7 +255,6 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     }
     catch(e)
     {
-        console.log(e)
         return null;
     }
 }

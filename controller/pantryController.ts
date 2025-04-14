@@ -1,4 +1,4 @@
-import { get_user_by_api_key } from "@/model/userModel";
+import { get_public_user_by_session, get_user_by_api_key } from "@/model/userModel";
 import {
   get_pantry_by_user_id,
   get_shopping_list_by_user_id,
@@ -14,8 +14,8 @@ import { Ingredient } from "@/type/Recipe";
 import { Pantry } from "@/type/Pantry";
 import { GenericAPIResponse, ActionResponse } from "@/type/Generic";
 
-export async function getPantryByApiKey(apiKey: string): Promise<ActionResponse<Pantry>> {
-  const user: ServerUser | null = await get_user_by_api_key(apiKey);
+export async function getPantryBySession(sessionId: string): Promise<ActionResponse<Pantry>> {
+  const user = await get_public_user_by_session(sessionId);
   if (!user) return { message: "Unauthorized", status: 401 };
 
   const pantry = await get_pantry_by_user_id(user.id);
@@ -24,8 +24,8 @@ export async function getPantryByApiKey(apiKey: string): Promise<ActionResponse<
   return { payload: pantry, status: 200 };
 }
 
-export async function getShoppingListByApiKey(apiKey: string): Promise<ActionResponse<Pantry>> {
-  const user: ServerUser | null = await get_user_by_api_key(apiKey);
+export async function getShoppingListBySession(sessionId: string): Promise<ActionResponse<Pantry>> {
+  const user = await get_public_user_by_session(sessionId);
   if (!user) return { message: "Unauthorized", status: 401 };
 
   const list = await get_shopping_list_by_user_id(user.id);
