@@ -229,8 +229,6 @@ export async function updateUserByApiKey(
     username?: string, email?: string):
         Promise<ActionResponse<ClientUser> | GenericAPIResponse>
 {
-    console.log(await argon2.hash("MyComplexPassword@1"))
-
     const requestingUser = await get_user_by_api_key(apiKey);
     
     if (!requestingUser)
@@ -259,8 +257,6 @@ export async function updateUserPasswordByApiKey(
     oldPassword: string, newPassword: string):
         Promise<ActionResponse<ClientUser> | GenericAPIResponse>
 {
-    console.log(await argon2.hash("MyComplexPassword@1"))
-
     const requestingUser = await get_user_by_api_key(apiKey);
     
     if (!requestingUser)
