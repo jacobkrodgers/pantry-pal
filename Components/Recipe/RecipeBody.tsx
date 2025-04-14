@@ -8,7 +8,7 @@ interface RecipeBodyProps
     prepTime: string;
     cookTime: string;
     recipeIngredients: Ingredient[];
-    pantryIngredients: Ingredient[];
+    pantryIngredients: Ingredient[] | [];
     directions: string;
     highlight?: boolean;
 }

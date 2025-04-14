@@ -20,7 +20,7 @@ export default function RecipeHeader(
     return (
         <>
         <List>
-            <Link href={`${username}/recipes/${name.replaceAll(" ", "%20")}`} onClick={(e) => e.stopPropagation()}>
+            <Link href={`/${username}/recipes/${name.replaceAll(" ", "%20")}`} onClick={(e) => e.stopPropagation()}>
                 <Typography variant="h4" sx={{ display: 'inline', '&:hover': { color: 'primary.main' }}}>
                     {name}
                 </Typography>
@@ -40,7 +40,7 @@ export default function RecipeHeader(
         <Box display="flex" justifyContent="space-between">
                 <Typography variant="body2">
                     Author: {" "} 
-                        <MUILink underline="none" component={Link} href={`users/${username}`} onClick={(e) => e.stopPropagation()}>{username}</MUILink>
+                        <MUILink underline="none" component={Link} href={`/users/${username}`} onClick={(e) => e.stopPropagation()}>{username}</MUILink>
                 </Typography>
                 <Box textAlign="right">
                     <Typography variant="caption" sx={{ display: 'block' }}>
