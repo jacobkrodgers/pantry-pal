@@ -26,8 +26,8 @@ model Ingredient {
   recipes        Recipe[]
   Pantry         Pantry?       @relation(fields: [pantryId], references: [id])
   pantryId       String?
-  ShoppingCart   ShoppingCart? @relation(fields: [shoppingCartId], references: [id])
-  shoppingCartId String?
+  ShoppingList   ShoppingList? @relation(fields: [shoppingListId], references: [id])
+  shoppingListId String?
 }
 
 model DietTag {

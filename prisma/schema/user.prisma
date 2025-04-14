@@ -9,7 +9,7 @@ model User {
   Recipes      Recipe[]
   Sessions     Session[]
   Pantry       Pantry?
-  ShoppingCart ShoppingCart?
+  ShoppingList ShoppingList?
 }
 
 model ApiKey {
