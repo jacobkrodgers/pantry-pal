@@ -24,7 +24,7 @@ export async function getPantryByApiKey(apiKey: string): Promise<ActionResponse<
   return { payload: pantry, status: 200 };
 }
 
-export async function getShoppingCartByApiKey(apiKey: string): Promise<ActionResponse<Pantry>> {
+export async function getShoppingListByApiKey(apiKey: string): Promise<ActionResponse<Pantry>> {
   const user: ServerUser | null = await get_user_by_api_key(apiKey);
   if (!user) return { message: "Unauthorized", status: 401 };
 
@@ -44,7 +44,7 @@ export async function addPantryIngredientByApiKey(apiKey: string, ingredient: In
   return { payload: added, status: 200 };
 }
 
-export async function addShoppingCartIngredientByApiKey(apiKey: string, ingredient: Ingredient): Promise<ActionResponse<Ingredient>> {
+export async function addShoppingListIngredientByApiKey(apiKey: string, ingredient: Ingredient): Promise<ActionResponse<Ingredient>> {
   const user: ServerUser | null = await get_user_by_api_key(apiKey);
   if (!user) return { message: "Unauthorized", status: 401 };
 
@@ -64,7 +64,7 @@ export async function deletePantryIngredientById(apiKey: string, ingredientId: s
   return { payload: "Ingredient deleted", status: 200 };
 }
 
-export async function deleteShoppingCartIngredientById(apiKey: string, ingredientId: string): Promise<ActionResponse<string>> {
+export async function deleteShoppingListIngredientById(apiKey: string, ingredientId: string): Promise<ActionResponse<string>> {
   const user: ServerUser | null = await get_user_by_api_key(apiKey);
   if (!user) return { message: "Unauthorized", status: 401 };
 
@@ -84,7 +84,7 @@ export async function updatePantryIngredientById(apiKey: string, ingredientId: s
   return { payload: updated, status: 200 };
 }
 
-export async function updateShoppingCartIngredientById(apiKey: string, ingredientId: string, updatedData: Partial<Ingredient>): Promise<ActionResponse<Ingredient>> {
+export async function updateShoppingListIngredientById(apiKey: string, ingredientId: string, updatedData: Partial<Ingredient>): Promise<ActionResponse<Ingredient>> {
   const user: ServerUser | null = await get_user_by_api_key(apiKey);
   if (!user) return { message: "Unauthorized", status: 401 };
 
