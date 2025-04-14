@@ -19,21 +19,21 @@ export async function get_pantry_by_user_id(userId: string):
     return pantry;
 }
 
-export async function get_shopping_cart_by_user_id(userId: string): 
+export async function get_shopping_list_by_user_id(userId: string): 
     Promise<Pantry | null>
 {
-    const shoppingCart = await prisma.shoppingCart.findUnique({
+    const shoppingList = await prisma.shoppingList.findUnique({
         where: { userId },
         include: {
             ingredients: true,
         },
     });
   
-    if (!shoppingCart) {
+    if (!shoppingList) {
         return null;
     }
   
-    return shoppingCart;
+    return shoppingList;
 }
 
 export async function add_pantry_ingredient_by_user_id(userId: string, ingredient: Ingredient):
@@ -60,28 +60,28 @@ export async function add_pantry_ingredient_by_user_id(userId: string, ingredien
     return pantryIngredient;
 }
 
-export async function add_shopping_cart_ingredient_by_user_id(userId: string, ingredient: Ingredient):
+export async function add_shopping_list_ingredient_by_user_id(userId: string, ingredient: Ingredient):
     Promise<Ingredient | null>
 {
-    const shoppingCart = await prisma.shoppingCart.findUnique({
+    const shoppingList = await prisma.shoppingList.findUnique({
         where: { userId },
     });
   
-    if (!shoppingCart) {
+    if (!shoppingList) {
         return null;
     }
   
-    const shoppingCartIngredient = await prisma.ingredient.create({
+    const shoppingListIngredient = await prisma.ingredient.create({
         data: {
             name: ingredient.name,
             quantity: ingredient.quantity,
             quantityUnit: ingredient.quantityUnit,
             form: ingredient.form,
-            pantryId: shoppingCart.id,
+            pantryId: shoppingList.id,
         },
     });
   
-    return shoppingCartIngredient;
+    return shoppingListIngredient;
 }
 
 export async function delete_pantry_ingredient_by_id(ingredientId: string):
@@ -94,9 +94,9 @@ export async function delete_pantry_ingredient_by_id(ingredientId: string):
     return deletedIngredient;
 }
 
-export async function delete_shopping_cart_ingredient_by_id(ingredientId: string) 
+export async function delete_shopping_list_ingredient_by_id(ingredientId: string) 
 {
-    const deletedIngredient = await prisma.shoppingCart.delete({
+    const deletedIngredient = await prisma.shoppingList.delete({
         where: { id: ingredientId },
     });
   
@@ -119,7 +119,7 @@ export async function update_pantry_ingredient_by_id(ingredientId: string, updat
     return updatedIngredient;
 }
 
-export async function update_shopping_cart_ingredient_by_id(ingredientId: string, updatedData: Partial<Ingredient>):
+export async function update_shopping_list_ingredient_by_id(ingredientId: string, updatedData: Partial<Ingredient>):
     Promise<Ingredient | null>
 {
     const updatedIngredient = await prisma.ingredient.update({

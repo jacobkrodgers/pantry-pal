@@ -5,7 +5,7 @@ model Pantry {
   userId      String       @unique
 }
 
-model ShoppingCart {
+model ShoppingList {
   id          String       @id
   ingredients Ingredient[]
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
