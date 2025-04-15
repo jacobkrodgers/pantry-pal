@@ -4,15 +4,16 @@ import { Box,
          Paper, 
          Link } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { PublicUser } from '@/type/User';
 
-type User = {
-  username: string;
-  joinDate: string; // ISO date string
+type ProfileTabProps = {
+  user: PublicUser;
+  joinDate: string; // you can optionally move this into user type later
   recipeCount: number;
 };
 
-export default function ProfileTabContents({ user }: { user: User }) {
-  const formattedDate = new Date(user.joinDate).toLocaleDateString('en-US', {
+export default function ProfileTabContents({ user, joinDate, recipeCount}: ProfileTabProps ) {
+  const formattedDate = new Date(joinDate).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -36,7 +37,7 @@ export default function ProfileTabContents({ user }: { user: User }) {
         underline="hover"
         sx={{ display: 'inline-block', mt: 1 }}
       >
-        View all recipes ({user.recipeCount})
+        View all recipes ({recipeCount})
       </Link>
     </Paper>
   );
