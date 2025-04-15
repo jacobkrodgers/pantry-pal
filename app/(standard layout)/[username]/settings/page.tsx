@@ -1,24 +1,29 @@
+'use client'
+
 import { Typography } from "@mui/material";
-import { redirect } from 'next/navigation'
-import { cookies } from "next/headers";
-import { getClientUserBySessionId } from "@/controller/userController";
+import { useEffect, useState } from "react";
+import { ClientUser } from "@/type/User"
+import { getUser } from "./actions"
+import { ActionResponse } from "@/type/Generic"
 import UserSettings from "@/Components/User/Settings";
 
-export default async function Page() {
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get('session')?.value;
+export default function Page() {
+    const [user, setUser] = useState<ActionResponse<ClientUser> | null>(null);
 
-    if(!sessionId){
-        redirect(`/login`);
-    }
+    useEffect(() => {
+        async function fetchData() {
+            const userData = await getUser();
+            setUser(userData);
+        }
 
-    const user = await getClientUserBySessionId(sessionId);
+        fetchData();
+    });
 
-    if(!user.payload) {
-        return <Typography>{user.message}</Typography>
+    if(!user) {
+        return <Typography>Loading...</Typography>
     }
 
     return (
-        <UserSettings user={user.payload} />
+        <UserSettings user={user.payload!} />
     )
 }
