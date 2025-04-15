@@ -4,11 +4,16 @@ import { find_user_by_username_or_email, create_new_user,
          delete_api_key, delete_api_key_by_user_id, 
          get_public_user_by_session,
          get_people_followed_by_user_id,
-         add_person_to_followed_by_user_id,
-         delete_person_from_followed_by_user_id} 
+         //add_person_to_followed_by_user_id,
+         //delete_person_from_followed_by_user_id,
+         get_user_by_api_key,
+         update_user_by_id,
+         update_user_password_by_id,
+         delete_user_by_id,
+         get_client_user_by_session} 
     from "@/model/userModel";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
-import { PublicUser, UserControllerResponse } from "@/type/User";
+import { PublicUser, UserControllerResponse, ClientUser } from "@/type/User";
 
 /**
  * Creates a new user in the database after hashing the password.
@@ -146,6 +151,19 @@ export async function getPublicUserBySessionId(sessionId: string):
     return {status: 200, payload: publicUser}
 }
 
+export async function getClientUserBySessionId(sessionId: string):
+    Promise<ActionResponse<ClientUser>>
+{
+    const clientUser = await get_client_user_by_session(sessionId);
+
+    if (!clientUser)
+    {
+        return {status: 401}
+    }
+
+    return {status: 200, payload: clientUser}
+}
+
 export async function getFollowedUsersByUsername(username: string, page: number, peopleFollowedPerPage: number):
     Promise<ActionResponse<PublicUser[]>>
 {
@@ -165,7 +183,7 @@ export async function getFollowedUsersByUsername(username: string, page: number,
 
     return { status: 200, payload: followedUsers }
 }
-
+/*
 export async function updateFollowedUsers(username: string, followedUsername: string):
     Promise<ActionResponse<PublicUser>>
 {
@@ -218,4 +236,102 @@ export async function deleteUserFromFollowed(username: string, followedUsername:
     }
 
     return { status: 200, payload: "OK" };
+}
+*/
+export async function updateUserByApiKey(
+    apiKey: string, userId: string, 
+    username?: string, email?: string):
+        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+{
+    const requestingUser = await get_user_by_api_key(apiKey);
+    
+    if (!requestingUser)
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    if (!(requestingUser.id === userId))
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    const updatedUser = await update_user_by_id(userId, username, email);
+
+    if (!updatedUser)
+    {
+        return {status: 500, payload: "Internal Server Error"};
+    }
+
+    return {status: 200, payload: updatedUser};
+}
+
+export async function updateUserPasswordByApiKey(
+    apiKey: string, userId: string,
+    username: string, email: string,
+    oldPassword: string, newPassword: string):
+        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+{
+    const requestingUser = await get_user_by_api_key(apiKey);
+    
+    if (!requestingUser)
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    if (!(requestingUser.id === userId) || 
+        !(requestingUser.username === username) ||
+        !(requestingUser.email === email))
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    if (!(await argon2.verify(requestingUser.passwordHash, oldPassword)))
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    const newPasswordHash = await argon2.hash(newPassword);
+
+    const updatedUser = await update_user_password_by_id(userId, newPasswordHash);
+
+    if (!(updatedUser))
+    {
+        return {status: 500, payload: "Internal Server Error"};
+    }
+
+    return {status: 200, payload: updatedUser};
+}
+
+export async function deleteUserWithApiKey(
+    apiKey: string, userId: string, username: string,
+    email: string, password: string):
+        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+{
+    const requestingUser = await get_user_by_api_key(apiKey);
+    
+    if (!requestingUser)
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    if (!(requestingUser.id === userId) || 
+        !(requestingUser.username === username) ||
+        !(requestingUser.email === email))
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    if (!(await argon2.verify(requestingUser.passwordHash, password)))
+    {
+        return {status: 401, payload: "Not Authorized."};
+    }
+
+    const deletedUser = await delete_user_by_id(userId);
+
+    if (!(deletedUser))
+    {
+        return {status: 500, payload: "Internal Server Error"};
+    }
+
+    return {status: 200, payload: deletedUser};
 }

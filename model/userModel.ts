@@ -307,6 +307,31 @@ export async function get_public_user_by_session(id: string):
     return session ? session.user : null;
 }
 
+/**
+ * Gets a user from the database using a provided session.
+ * @param id - The session id of the user.
+ * @returns An object representing a client user
+ * @returns null
+ */
+export async function get_client_user_by_session(id: string):
+    Promise<ClientUser | null>
+{
+    const session = await prisma.session.findUnique({
+        where: { id },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                },
+            },
+        },
+    });
+
+    return session ? session.user : null;
+}
+
 export async function get_people_followed_by_user_id(userId: string, page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
 {
@@ -332,7 +357,7 @@ export async function get_people_followed_by_user_id(userId: string, page: numbe
         })
         : [];
 }
-
+/*
 export async function add_person_to_followed_by_user_id(userId: string, followedUserId: string):
     Promise<PublicUser | null>
 {
@@ -392,6 +417,102 @@ export async function delete_person_from_followed_by_user_id(userId: string, fol
     }
     catch
     {
+        return null;
+    }
+}
+*/
+export async function get_client_user_by_id(id: string):
+    Promise<ClientUser | null>
+{
+    const user = await prisma.user.findUnique({
+        where: {id},
+        select: {
+            id: true,
+            username: true,
+            email: true
+        }
+    })
+
+    return user;
+}
+
+export async function update_user_by_id(id: string, username?: string, email?: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const existingUser = await prisma.user.findUnique({
+            where: {id}
+        })
+    
+        if (!existingUser) return null;
+    
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                username: username ?? existingUser.username,
+                email: email ?? existingUser.email
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+export async function update_user_password_by_id(id: string, passwordHash: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                passwordHash
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch
+    {
+        return null
+    }
+    
+}
+
+export async function delete_user_by_id(id: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.delete({
+            where: {id},
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch(e)
+    {
+        console.log(e)
         return null;
     }
 }

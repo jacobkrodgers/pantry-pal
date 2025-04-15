@@ -6,6 +6,7 @@ import { Box, Typography, useTheme, Paper, Dialog, DialogTitle, DialogContent, D
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { updateUserByApiKey, updateUserPasswordByApiKey } from '@/controller/userController'
 
 export default function UserSettings({ user }: { user: ClientUser }) {
   const theme = useTheme();
@@ -112,21 +113,21 @@ export default function UserSettings({ user }: { user: ClientUser }) {
             onClick={() => {
                 if (field === 'username') {
                     updateUserByApiKey(
-                      user.apiKey, 
+                      user.apiKey!, 
                       user.id, 
                       username, 
                       user.email
                     );
                 } else if (field === 'email') {
                     updateUserByApiKey(
-                      user.apiKey, 
+                      user.apiKey!, 
                       user.id, 
                       user.username, 
                       email
                     );
                 } else if (field === 'password') {
                     updateUserPasswordByApiKey(
-                      user.apiKey,
+                      user.apiKey!,
                       user.id,
                       user.username,
                       user.email, 

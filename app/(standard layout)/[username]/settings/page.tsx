@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
-import { getPublicUserBySessionId } from "@/controller/userController";
+import { getClientUserBySessionId } from "@/controller/userController";
 import UserSettings from "@/app/Components/User/UserSettings";
 
 export default async function Page() {
@@ -12,7 +12,7 @@ export default async function Page() {
         redirect(`/login`);
     }
 
-    const user = await getPublicUserBySessionId(sessionId);
+    const user = await getClientUserBySessionId(sessionId);
 
     if(!user.payload) {
         return <Typography>{user.message}</Typography>
