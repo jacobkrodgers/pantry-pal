@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
 import { getClientUserBySessionId } from "@/controller/userController";
-import UserSettings from "@/app/Components/User/UserSettings";
+import UserSettings from "@/Components/User/Settings";
 
 export default async function Page() {
     const cookieStore = await cookies();
