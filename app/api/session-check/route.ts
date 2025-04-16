@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ username: null }, { status: 401 });
   }
 
-  // Verify the session by calling your controller function
+  // Verify the session by calling controller function
   const userResult = await getPublicUserBySessionId(sessionCookie);
 
   if (userResult.status === 200 && userResult.payload && "username" in userResult.payload) {
