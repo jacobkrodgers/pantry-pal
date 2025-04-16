@@ -14,6 +14,7 @@ import { find_user_by_username_or_email, create_new_user,
     from "@/model/userModel";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 import { PublicUser, UserControllerResponse, ClientUser } from "@/type/User";
+import { valid } from "joi";
 
 /**
  * Creates a new user in the database after hashing the password.
@@ -238,12 +239,12 @@ export async function deleteUserFromFollowed(username: string, followedUsername:
     return { status: 200, payload: "OK" };
 }
 */
-export async function updateUserByApiKey(
-    apiKey: string, userId: string, 
+export async function updateUserBySession(
+    sessionId: string, userId: string, 
     username?: string, email?: string):
         Promise<ActionResponse<ClientUser>>
 {
-    const requestingUser = await get_user_by_api_key(apiKey);
+    const requestingUser = await get_public_user_by_session(sessionId);
     
     if (!requestingUser)
     {
@@ -266,26 +267,32 @@ export async function updateUserByApiKey(
 }
 
 export async function updateUserPasswordByApiKey(
-    apiKey: string, userId: string,
+    sessionId: string, userId: string,
     username: string, email: string,
     oldPassword: string, newPassword: string):
         Promise<ActionResponse<ClientUser>>
 {
-    const requestingUser = await get_user_by_api_key(apiKey);
+    const requestingUser = await get_public_user_by_session(sessionId);
+
+    if(!requestingUser) {
+        return {message: "Not Authorized.", status: 401};
+    }
+
+    const validUser = await find_server_user_by_username(username);
     
-    if (!requestingUser)
+    if (!validUser)
     {
         return {message: "Not Authorized.", status: 401};
     }
 
-    if (!(requestingUser.id === userId) || 
-        !(requestingUser.username === username) ||
-        !(requestingUser.email === email))
+    if (!(validUser.id === userId) || 
+        !(validUser.username === username) ||
+        !(validUser.email === email))
     {
         return {message: "Not Authorized.", status: 401};
     }
 
-    if (!(await argon2.verify(requestingUser.passwordHash, oldPassword)))
+    if (!(await argon2.verify(validUser.passwordHash, oldPassword)))
     {
         return {message: "Not Authorized.", status: 401};
     }

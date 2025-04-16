@@ -6,7 +6,6 @@ import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActio
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { updateUserByApiKey, updateUserPasswordByApiKey } from '@/controller/userController'
 
 type Props = {
   user: ClientUser;

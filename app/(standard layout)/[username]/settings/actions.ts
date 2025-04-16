@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
 import { getClientUserBySessionId,
-         updateUserByApiKey,
+         updateUserBySession,
          updateUserPasswordByApiKey } from "@/controller/userController";
 import { ClientUser } from "@/type/User";
 
@@ -25,8 +25,6 @@ export async function getUser():
 export async function updateUsernameOrEmail(username: string, email: string):
     Promise<ClientUser | null> 
 {
-    console.log(">> Called updateUsernameOrEmail with:", username, email);
-
     const cookieStore = await cookies();
     const sessionId = cookieStore.get('session')?.value;
 
@@ -37,21 +35,12 @@ export async function updateUsernameOrEmail(username: string, email: string):
     const user = await getClientUserBySessionId(sessionId);
 
     const userId = user.payload?.id;
-    const apiKey = user.payload?.apiKey;
 
     if(!userId) {
-        console.log("No userId");
         return null;
     }
 
-    if(!apiKey) {
-        console.log("No apiKey");
-        return null;
-    }
-
-    const updatedUser = await updateUserByApiKey(apiKey, userId, username, email);
-
-    console.log("Updated user response:", updatedUser);
+    const updatedUser = await updateUserBySession(sessionId, userId, username, email);
 
     return updatedUser.payload ?? null;
 }
@@ -69,15 +58,14 @@ export async function updatePassword(oldPassword: string, newPassword: string):
     const user = await getClientUserBySessionId(sessionId);
 
     const userId = user.payload?.id;
-    const apiKey = user.payload?.apiKey;
     const username = user.payload?.username;
     const email = user.payload?.email;
 
-    if(!apiKey || !userId || !username || !email) {
+    if(!userId || !username || !email) {
         return null;
     }
 
-    const updatedUser = await updateUserPasswordByApiKey(apiKey, userId, username, email, oldPassword, newPassword);
+    const updatedUser = await updateUserPasswordByApiKey(sessionId, userId, username, email, oldPassword, newPassword);
 
     return updatedUser.payload ?? null;
 }
