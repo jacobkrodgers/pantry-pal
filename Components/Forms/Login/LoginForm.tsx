@@ -96,7 +96,10 @@ export default function LoginForm() {
                         passwordError ||
                         "(At least 8 characters, include a special character and a number)"
                     }
-                    inputProps={{ minLength: 8 }}
+                    // Use slotProps to forward HTML input attributes
+                    slotProps={{
+                        htmlInput: { minLength: 8 },
+                    }}
                     InputProps={{
                         endAdornment: (
                             <InputAdornment position="end">

@@ -1,22 +1,30 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
-import { getPublicUserBySessionId } from "@/controller/userController";
 
-export default async function RegisterPage() {
-    // Check for an existing session cookie
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session")?.value;
+export default function RegisterPage() {
+  const router = useRouter();
+  const [sessionChecked, setSessionChecked] = useState(false);
 
-    if (sessionCookie) {
-        const userResult = await getPublicUserBySessionId(sessionCookie);
-        if (userResult.status === 200 && userResult.payload && "username" in userResult.payload) {
-            // Redirect to the user's profile page if a valid session exists.
-            // The URL will be "/username", where username is the user's username.
-            redirect(`${userResult.payload.username}`);
+  useEffect(() => {
+    async function checkSession() {
+      const res = await fetch("/api/session-check");
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.username) {
+          // Redirect to the user's profile 
+          router.push(data.username);
+          return;
         }
+      }
+      setSessionChecked(true);
     }
+    checkSession();
+  }, [router]);
 
-    // Otherwise, render the client registration form
-    return <RegistrationForm />;
+  if (!sessionChecked) return null;
+
+  return <RegistrationForm />;
 }

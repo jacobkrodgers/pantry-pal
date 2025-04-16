@@ -64,7 +64,7 @@ export default function RegistrationForm() {
         try {
             const result = await registerUser(username, email, password);
             if (result.status === 201) {
-                router.push("/login");
+                router.push("login");
             } else {
                 const msg = result.payload as string;
                 if (msg.toLowerCase().includes("username")) {
