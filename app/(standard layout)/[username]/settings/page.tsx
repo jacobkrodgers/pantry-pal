@@ -3,7 +3,7 @@
 import { Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { ClientUser } from "@/type/User"
-import { getUser, updatePassword, updateUsernameOrEmail } from "./actions"
+import { getUser, updatePassword, updateUsernameOrEmail, deleteUser } from "./actions"
 import UserSettings from "@/Components/User/Settings";
 
 export default function Page() {
@@ -37,6 +37,15 @@ export default function Page() {
         },
     []);
 
+    const handleDeleteUser = useCallback(
+        async (username: string, password: string) => {
+            const deletedUser = await deleteUser(username, password);
+            if(deletedUser) {
+                setUser(null);
+            }
+        },
+    []);
+
     if(!user) {
         return <Typography>Loading...</Typography>
     }
@@ -46,6 +55,7 @@ export default function Page() {
             user={user} 
             onUpdateUsernameOrEmail={handleUpdateUsernameOrEmail}
             onUpdatePassword={handleUpdatePassword}
+            onDeleteUser={handleDeleteUser}
         />
     )
 }

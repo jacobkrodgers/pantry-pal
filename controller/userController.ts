@@ -309,36 +309,38 @@ export async function updateUserPasswordByApiKey(
     return {status: 200, payload: updatedUser};
 }
 
-export async function deleteUserWithApiKey(
-    apiKey: string, userId: string, username: string,
+export async function deleteUserWithSession(
+    sessionId: string, userId: string, username: string,
     email: string, password: string):
-        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+        Promise<ActionResponse<ClientUser>>
 {
-    const requestingUser = await get_user_by_api_key(apiKey);
+    const requestingUser = await get_public_user_by_session(sessionId);
     
     if (!requestingUser)
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
-    if (!(requestingUser.id === userId) || 
-        !(requestingUser.username === username) ||
-        !(requestingUser.email === email))
-    {
-        return {status: 401, payload: "Not Authorized."};
-    }
+    const validUser = await find_server_user_by_username(username);
 
-    if (!(await argon2.verify(requestingUser.passwordHash, password)))
+    if(!validUser) {
+        return {message: "Not Authorized.", status: 401};    }
+
+    if (!(validUser.id === userId) || 
+        !(validUser.username === username) ||
+        !(validUser.email === email))
     {
-        return {status: 401, payload: "Not Authorized."};
-    }
+        return {message: "Not Authorized.", status: 401};    }
+
+    if (!(await argon2.verify(validUser.passwordHash, password)))
+    {
+        return {message: "Not Authorized.", status: 401};    }
 
     const deletedUser = await delete_user_by_id(userId);
 
     if (!(deletedUser))
     {
-        return {status: 500, payload: "Internal Server Error"};
-    }
+        return {message: "Internal Server Error.", status: 500};    }
 
     return {status: 200, payload: deletedUser};
 }

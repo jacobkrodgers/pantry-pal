@@ -11,15 +11,20 @@ type Props = {
   user: ClientUser;
   onUpdateUsernameOrEmail: (username: string, email: string) => Promise<void>;
   onUpdatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  onDeleteUser: (username: string, password: string) => Promise<void>;
 };
 
-export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePassword}: Props) {
+export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePassword, onDeleteUser}: Props) {
   const [open, setOpen] = useState(false);
   const [field, setField] = useState<'username' | 'email' | 'password' | null>(null);
   const [username, setUsername] = useState(user.username);
   const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState('');
   const [oldPassword, setOldPassword] = useState('');
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteUsername, setDeleteUsername] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
 
   const handleEdit = (type: 'username' | 'email' | 'password') => {
     setField(type);
@@ -42,11 +47,23 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     handleClose();
   };
 
-  return (
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+    setDeleteUsername('');
+    setDeletePassword('');
+  };
+
+  const handleDeleteSubmit = async () => {
+    await onDeleteUser(deleteUsername, deletePassword);
+    handleDeleteClose();
+  };
+
+  return (    
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        /[username]/settings (private)
-      </Typography>
+      {/* Top Section with Delete Button */}
+      <Button variant='outlined' color='error' onClick={() => setDeleteOpen(true)}>
+        Delete Account
+      </Button>
       <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
 
         {/* Username */}
@@ -134,6 +151,42 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             }
           >
             Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteOpen} onClose={handleClose}>
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <Typography variant='body2' color='error' sx={{ mb: 2 }}>
+            Please confirm your credentials to delete your account.
+          </Typography>
+          <TextField 
+            fullWidth
+            label="Username"
+            value={deleteUsername}
+            onChange={(e) => setDeleteUsername(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField 
+            fullWidth
+            type='password'
+            label='Password'
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Cancel</Button>
+          <Button
+            color='error'
+            variant='contained'
+            onClick={handleDeleteSubmit}
+            disabled={!deleteUsername || !deletePassword}
+          >
+            Delete Account
           </Button>
         </DialogActions>
       </Dialog>
