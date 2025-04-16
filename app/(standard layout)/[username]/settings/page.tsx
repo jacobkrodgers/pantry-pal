@@ -17,13 +17,17 @@ export default function Page() {
         }
 
         fetchData();
-    });
+    }, []);
 
     if(!user) {
         return <Typography>Loading...</Typography>
     }
 
+    if (!user.payload) {
+        return <Typography>User data is missing</Typography>
+    }
+
     return (
-        <UserSettings user={user.payload!} />
+        <UserSettings user={user.payload} />
     )
 }
