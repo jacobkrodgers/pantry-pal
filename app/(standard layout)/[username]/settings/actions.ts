@@ -25,6 +25,8 @@ export async function getUser():
 export async function updateUsernameOrEmail(username: string, email: string):
     Promise<ClientUser | null> 
 {
+    console.log(">> Called updateUsernameOrEmail with:", username, email);
+
     const cookieStore = await cookies();
     const sessionId = cookieStore.get('session')?.value;
 
@@ -38,14 +40,18 @@ export async function updateUsernameOrEmail(username: string, email: string):
     const apiKey = user.payload?.apiKey;
 
     if(!userId) {
+        console.log("No userId");
         return null;
     }
 
     if(!apiKey) {
+        console.log("No apiKey");
         return null;
     }
 
     const updatedUser = await updateUserByApiKey(apiKey, userId, username, email);
+
+    console.log("Updated user response:", updatedUser);
 
     return updatedUser.payload ?? null;
 }
