@@ -331,7 +331,7 @@ export async function get_client_user_by_session(id: string):
 
     return session ? session.user : null;
 }
-
+/*
 export async function get_people_followed_by_user_id(userId: string, page: number, peopleFollowedPerPage: number):
     Promise<PublicUser[] | null>
 {
@@ -357,7 +357,7 @@ export async function get_people_followed_by_user_id(userId: string, page: numbe
         })
         : [];
 }
-/*
+
 export async function add_person_to_followed_by_user_id(userId: string, followedUserId: string):
     Promise<PublicUser | null>
 {

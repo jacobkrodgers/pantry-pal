@@ -1,14 +1,14 @@
 'use client'
 
 import { Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ClientUser } from "@/type/User"
-import { getUser } from "./actions"
-import { ActionResponse } from "@/type/Generic"
+import { getUser, updatePassword, updateUsernameOrEmail } from "./actions"
 import UserSettings from "@/Components/User/Settings";
 
 export default function Page() {
-    const [user, setUser] = useState<ActionResponse<ClientUser> | null>(null);
+    const [user, setUser] = useState<ClientUser | null>(null);
+    
 
     useEffect(() => {
         async function fetchData() {
@@ -19,15 +19,33 @@ export default function Page() {
         fetchData();
     }, []);
 
+    const handleUpdateUsernameOrEmail = useCallback(
+        async (username: string, email: string) => {
+            const updatedUser = await updateUsernameOrEmail(username, email);
+            if(updatedUser) {
+                setUser(updatedUser);
+            }
+        },
+    []);
+
+    const handleUpdatePassword = useCallback(
+        async (oldPassword: string, newPassword: string) => {
+            const updatedUser = await updatePassword(oldPassword, newPassword);
+            if(updatedUser) {
+                setUser(updatedUser);
+            }
+        },
+    []);
+
     if(!user) {
         return <Typography>Loading...</Typography>
     }
 
-    if (!user.payload) {
-        return <Typography>User data is missing</Typography>
-    }
-
     return (
-        <UserSettings user={user.payload} />
+        <UserSettings 
+            user={user} 
+            onUpdateUsernameOrEmail={handleUpdateUsernameOrEmail}
+            onUpdatePassword={handleUpdatePassword}
+        />
     )
 }

@@ -2,14 +2,19 @@
 
 import { ClientUser } from '@/type/User';
 import React, { useState } from 'react';
-import { Box, Typography, useTheme, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
+import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { updateUserByApiKey, updateUserPasswordByApiKey } from '@/controller/userController'
 
-export default function UserSettings({ user }: { user: ClientUser }) {
-  const theme = useTheme();
+type Props = {
+  user: ClientUser;
+  onUpdateUsernameOrEmail: (username: string, email: string) => Promise<void>;
+  onUpdatePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+};
+
+export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePassword}: Props) {
   const [open, setOpen] = useState(false);
   const [field, setField] = useState<'username' | 'email' | 'password' | null>(null);
   const [username, setUsername] = useState(user.username);
@@ -25,6 +30,17 @@ export default function UserSettings({ user }: { user: ClientUser }) {
   const handleClose = () => {
     setOpen(false); // Close modal
     setField(null); // Reset field
+    setOldPassword('');
+    setPassword('');
+  };
+
+  const handleSave = async () => {
+    if (field === 'username' || field === 'email') {
+      await onUpdateUsernameOrEmail(username, email);
+    } else if (field === 'password') {
+      await onUpdatePassword(oldPassword, password);
+    }
+    handleClose();
   };
 
   return (
@@ -70,7 +86,7 @@ export default function UserSettings({ user }: { user: ClientUser }) {
           </Tooltip>
         </Box>
       </Paper>
-
+      
       {/* Edit Modal */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Edit {field}</DialogTitle>
@@ -110,35 +126,7 @@ export default function UserSettings({ user }: { user: ClientUser }) {
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button
-            onClick={() => {
-                if (field === 'username') {
-                    updateUserByApiKey(
-                      user.apiKey!, 
-                      user.id, 
-                      username, 
-                      user.email
-                    );
-                } else if (field === 'email') {
-                    updateUserByApiKey(
-                      user.apiKey!, 
-                      user.id, 
-                      user.username, 
-                      email
-                    );
-                } else if (field === 'password') {
-                    updateUserPasswordByApiKey(
-                      user.apiKey!,
-                      user.id,
-                      user.username,
-                      user.email, 
-                      oldPassword,
-                      password
-                    );
-                }
-                handleClose();
-                setOldPassword('');
-                setPassword('');
-            }}
+            onClick={handleSave}
             variant = "contained"
             disabled = {
                 (field === 'username' && !username.trim()) ||

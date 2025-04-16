@@ -3,7 +3,7 @@ import { find_user_by_username_or_email, create_new_user,
          find_server_user_by_username, create_or_update_api_key_by_user_id, 
          delete_api_key, delete_api_key_by_user_id, 
          get_public_user_by_session,
-         get_people_followed_by_user_id,
+         //get_people_followed_by_user_id,
          //add_person_to_followed_by_user_id,
          //delete_person_from_followed_by_user_id,
          get_user_by_api_key,
@@ -163,7 +163,7 @@ export async function getClientUserBySessionId(sessionId: string):
 
     return {status: 200, payload: clientUser}
 }
-
+/*
 export async function getFollowedUsersByUsername(username: string, page: number, peopleFollowedPerPage: number):
     Promise<ActionResponse<PublicUser[]>>
 {
@@ -183,7 +183,7 @@ export async function getFollowedUsersByUsername(username: string, page: number,
 
     return { status: 200, payload: followedUsers }
 }
-/*
+
 export async function updateFollowedUsers(username: string, followedUsername: string):
     Promise<ActionResponse<PublicUser>>
 {
@@ -241,25 +241,25 @@ export async function deleteUserFromFollowed(username: string, followedUsername:
 export async function updateUserByApiKey(
     apiKey: string, userId: string, 
     username?: string, email?: string):
-        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+        Promise<ActionResponse<ClientUser>>
 {
     const requestingUser = await get_user_by_api_key(apiKey);
     
     if (!requestingUser)
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
     if (!(requestingUser.id === userId))
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
     const updatedUser = await update_user_by_id(userId, username, email);
 
     if (!updatedUser)
     {
-        return {status: 500, payload: "Internal Server Error"};
+        return {message: "Internal Server Error", status: 500};
     }
 
     return {status: 200, payload: updatedUser};
@@ -269,25 +269,25 @@ export async function updateUserPasswordByApiKey(
     apiKey: string, userId: string,
     username: string, email: string,
     oldPassword: string, newPassword: string):
-        Promise<ActionResponse<ClientUser> | GenericAPIResponse>
+        Promise<ActionResponse<ClientUser>>
 {
     const requestingUser = await get_user_by_api_key(apiKey);
     
     if (!requestingUser)
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
     if (!(requestingUser.id === userId) || 
         !(requestingUser.username === username) ||
         !(requestingUser.email === email))
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
     if (!(await argon2.verify(requestingUser.passwordHash, oldPassword)))
     {
-        return {status: 401, payload: "Not Authorized."};
+        return {message: "Not Authorized.", status: 401};
     }
 
     const newPasswordHash = await argon2.hash(newPassword);
@@ -296,7 +296,7 @@ export async function updateUserPasswordByApiKey(
 
     if (!(updatedUser))
     {
-        return {status: 500, payload: "Internal Server Error"};
+        return {message: "Internal Server Error", status: 500};
     }
 
     return {status: 200, payload: updatedUser};
