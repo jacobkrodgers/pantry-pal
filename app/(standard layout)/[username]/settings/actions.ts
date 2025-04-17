@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
 import { getClientUserBySessionId,
          updateUserBySession,
-         updateUserPasswordByApiKey,
+         updateUserPasswordBySession,
          deleteUserWithSession } from "@/controller/userController";
 import { ClientUser } from "@/type/User";
 
@@ -66,7 +66,7 @@ export async function updatePassword(oldPassword: string, newPassword: string):
         return null;
     }
 
-    const updatedUser = await updateUserPasswordByApiKey(sessionId, userId, username, email, oldPassword, newPassword);
+    const updatedUser = await updateUserPasswordBySession(sessionId, userId, username, email, oldPassword, newPassword);
 
     return updatedUser.payload ?? null;
 }
