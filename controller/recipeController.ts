@@ -281,3 +281,14 @@ export async function getMissingIngredientsByRecipeId(
 
     return { payload: missingIngredients, status: 200 };
 }
+
+
+/**
+ * Returns the number of recipes created by a user.
+ * @param userId - ID of the user.
+ * @returns Number of recipes or 0 if none found.
+ */
+export async function get_recipe_count_by_user_id(userId: string): Promise<number> {
+  const recipes = await find_recipes_by_user_id(userId);
+  return recipes ? recipes.length : 0;
+}
