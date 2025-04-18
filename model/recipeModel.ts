@@ -1,5 +1,5 @@
 import { prisma } from "@/prisma/dbClient";
-import { NewRecipe, Recipe } from "@/type/Recipe";
+import { Ingredient, NewRecipe, Recipe } from "@/type/Recipe";
 
 /**
  * Retrieves a recipe by its ID.
@@ -254,6 +254,25 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
         return newRecipe;
     }
     catch(e)
+    {
+        return null;
+    }
+}
+
+export async function delete_ingredient_by_id(id: string):
+    Promise<Ingredient | null>
+{
+    try
+    {
+        const deletedIngredient = await prisma.ingredient.delete({
+            where: {
+                id
+            }
+        })
+
+        return deletedIngredient;
+    }
+    catch
     {
         return null;
     }

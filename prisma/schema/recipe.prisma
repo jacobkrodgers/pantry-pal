@@ -28,6 +28,9 @@ model Ingredient {
   pantryId       String?
   ShoppingList   ShoppingList? @relation(fields: [shoppingListId], references: [id])
   shoppingListId String?
+
+  @@unique([name, form, pantryId])
+  @@unique([name, form, shoppingListId])
 }
 
 model DietTag {
