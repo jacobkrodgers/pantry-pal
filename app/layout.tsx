@@ -6,7 +6,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { Roboto } from 'next/font/google';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
-import { CssBaseline } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import SideBar from "../Components/SideBar/SideBar";
 import { cookies } from "next/headers";
 import { getPublicUserBySessionId } from "@/controller/userController";
@@ -43,7 +43,9 @@ export default async function RootLayout({children}: Readonly<{children: React.R
                 <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <SideBar user={user}>
-                    {children}
+                    <Box sx={[{p: 3}]}>
+                        {children}
+                    </Box>
                 </SideBar>
                 </ThemeProvider>
             </AppRouterCacheProvider>

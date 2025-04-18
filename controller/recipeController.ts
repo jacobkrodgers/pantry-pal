@@ -4,12 +4,14 @@ import { find_recipe_by_recipe_id,
          delete_recipe_by_recipe_id,
          find_recipes_by_user_id,
          create_recipe_by_user_id, 
-         find_recipe_by_recipe_name} 
+         find_recipe_by_recipe_name,
+        } 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
 import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
+import { Action } from "@prisma/client/runtime/library";
 
 /**
  * Retrieves a recipe by its ID.
@@ -267,14 +269,10 @@ export async function getMissingIngredientsByRecipeId(
         return { payload: "Forbidden", status: 403 };
     }
 
-    /* Creating a map of already existing ingredients and giving each a unique name
-       using their name and form */
     const existingIngredientsMap = new Map(
         ingredientsOnHand.map(ing => [`${ing.name}-${ing.form}`, ing])
     );
 
-    /* Creating a new array of needed by filtering out all of the ingredients that 
-       the user already has */
     const missingIngredients = (recipe.ingredients || [])
         .filter(ing => !existingIngredientsMap.has(`${ing.name}-${ing.form}`));
 

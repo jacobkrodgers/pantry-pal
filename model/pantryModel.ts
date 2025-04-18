@@ -1,6 +1,6 @@
 import { prisma } from "@/prisma/dbClient";
 import { Pantry } from "@/type/Pantry";
-import { Ingredient } from "@/type/Recipe";
+import { Ingredient, NewIngredient } from "@/type/Recipe";
 
 export async function get_pantry_by_user_id(userId: string): 
     Promise<Pantry | null>
@@ -36,52 +36,68 @@ export async function get_shopping_list_by_user_id(userId: string):
     return shoppingList;
 }
 
-export async function add_pantry_ingredient_by_user_id(userId: string, ingredient: Ingredient):
+export async function add_pantry_ingredient_by_user_id(userId: string, ingredient: NewIngredient):
     Promise<Ingredient | null>
 {
-    const pantry = await prisma.pantry.findUnique({
-        where: { userId },
-    });
-  
-    if (!pantry) {
+    try
+    {
+        const pantry = await prisma.pantry.findUnique({
+            where: { userId },
+        });
+      
+        if (!pantry) {
+            return null;
+        }
+      
+        const pantryIngredient = await prisma.ingredient.create({
+            data: {
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                quantityUnit: ingredient.quantityUnit,
+                form: ingredient.form,
+                pantryId: pantry.id,
+            },
+        });
+      
+        return pantryIngredient;
+    }
+    catch
+    {
         return null;
     }
-  
-    const pantryIngredient = await prisma.ingredient.create({
-        data: {
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            quantityUnit: ingredient.quantityUnit,
-            form: ingredient.form,
-            pantryId: pantry.id,
-        },
-    });
-  
-    return pantryIngredient;
+    
 }
 
-export async function add_shopping_list_ingredient_by_user_id(userId: string, ingredient: Ingredient):
+export async function add_shopping_list_ingredient_by_user_id(userId: string, ingredient: NewIngredient):
     Promise<Ingredient | null>
 {
-    const shoppingList = await prisma.shoppingList.findUnique({
-        where: { userId },
-    });
-  
-    if (!shoppingList) {
+    try
+    {
+        const shoppingList = await prisma.shoppingList.findUnique({
+            where: { userId },
+        });
+      
+        if (!shoppingList) {
+            return null;
+        }
+      
+        const shoppingListIngredient = await prisma.ingredient.create({
+            data: {
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                quantityUnit: ingredient.quantityUnit,
+                form: ingredient.form,
+                shoppingListId: shoppingList.id,
+            },
+        });
+      
+        return shoppingListIngredient;
+    }
+    catch
+    {
         return null;
     }
-  
-    const shoppingListIngredient = await prisma.ingredient.create({
-        data: {
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            quantityUnit: ingredient.quantityUnit,
-            form: ingredient.form,
-            pantryId: shoppingList.id,
-        },
-    });
-  
-    return shoppingListIngredient;
+    
 }
 
 export async function delete_pantry_ingredient_by_id(ingredientId: string):
@@ -134,4 +150,29 @@ export async function update_shopping_list_ingredient_by_id(ingredientId: string
   
     return updatedIngredient;
 }
-  
+
+export async function create_pantry_by_user_id(userId: string): 
+    Promise<Pantry | null> 
+{
+    const pantry = await prisma.pantry.create({
+        data: { userId },
+        include: {
+            ingredients: true,
+        },
+    });
+
+    return pantry;
+}
+
+export async function create_shopping_list_by_user_id(userId: string): 
+    Promise<Pantry | null> 
+{
+    const shoppingList = await prisma.shoppingList.create({
+        data: { userId },
+        include: {
+            ingredients: true,
+        },
+    });
+
+    return shoppingList;
+}
