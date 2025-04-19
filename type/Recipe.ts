@@ -10,8 +10,25 @@ export type Recipe = {
     dietTags: DietTag[],
     isPublic: boolean,
     userId: string
-    authorUsername?: string
 }
+
+export type DisplayRecipe = {
+    id: string,
+    name: string,
+    ingredients: Ingredient[],
+    instructions: string,
+    prepTime: string,
+    cookTime: string,
+    dateAdded: Date,
+    dateUpdated: Date,
+    dietTags: DietTag[],
+    isPublic: boolean,
+    userId: string
+    user: {
+        username: string
+    }
+}
+
 
 export type Ingredient = {
     id: string,
@@ -45,4 +62,11 @@ export type DietTag = {
 export type RecipeControllerResponse = {
     status: number;
     payload: Recipe[] | Recipe | Ingredient[] | string;
+}
+
+export type RecipeFilterCheckboxes = {
+    haveIngredients: boolean
+    lowOnIngredients: boolean
+    mightHaveIngredients: boolean
+    dontHaveIngredients: boolean
 }

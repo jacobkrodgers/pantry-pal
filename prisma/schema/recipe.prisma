@@ -14,6 +14,7 @@ model Recipe {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   dietTags     DietTag[]
 
+  @@fulltext([name])
   @@unique([name, userId]) // Users can't have duplicate recipes with the same name
 }
 

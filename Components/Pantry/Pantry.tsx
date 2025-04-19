@@ -1,14 +1,28 @@
 'use client';
 
 import { Ingredient } from "@/type/Recipe";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Divider, IconButton, List, Typography, TextField, Button, Snackbar, Alert } from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Divider,
+    IconButton,
+    List,
+    Typography,
+    TextField,
+    Button,
+    Snackbar,
+    Alert,
+} from "@mui/material";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState, useEffect } from 'react';
 import NewPantryItemInputs from "./NewPantryItemInputs";
 import { deleteItemById, getPantry, getShoppingList, updateItem } from './actions';
 
-interface PantryProps {
+interface PantryProps 
+{
     tabName: string;
     pantryItems: Ingredient[];
     setPantryItems: React.Dispatch<React.SetStateAction<Ingredient[]>>;
@@ -26,7 +40,8 @@ export default function Pantry({ tabName, pantryItems, setPantryItems }: PantryP
 
     const fetchPantryItems = async () => {
         const response = tabName === "Pantry" ? await getPantry() : await getShoppingList();
-        if (response.status === 201 && response.payload) {
+        if (response.status === 201 && response.payload) 
+        {
             setCurrentPantryItems(response.payload.ingredients || []);
             setPantryItems(response.payload.ingredients || []);
         }
@@ -50,25 +65,24 @@ export default function Pantry({ tabName, pantryItems, setPantryItems }: PantryP
                 ingredient.quantityUnit === original.quantityUnit)
         );
     };
-    
+
     const handleSave = async (ingredient: Ingredient) => {
-            setErrorRefresh?.(false);
-        
-            let response = await updateItem(ingredient.id, ingredient.quantity, ingredient.quantityUnit);
-        
-            if (response.status !== 200 || !response.payload) {
-                setSaveError(true);
-                
-            }
-            fetchPantryItems();
-        };
+        setErrorRefresh(false);
+        const response = await updateItem(
+            ingredient.id, ingredient.quantity, 
+            ingredient.quantityUnit);
+        if (response.status !== 200 || !response.payload) {
+            setSaveError(true);
+        }
+        fetchPantryItems();
+    };
 
     const handleDeleteItem = async (id: string) => {
         await deleteItemById(id);
         await fetchPantryItems();
     };
 
-    let pantryType = tabName === "Pantry" ? "pantry" : "shoppingList";
+    const pantryType = tabName === "Pantry" ? "pantry" : "shoppingList";
 
     return (
         <>
@@ -81,81 +95,124 @@ export default function Pantry({ tabName, pantryItems, setPantryItems }: PantryP
             <Box>
                 <NewPantryItemInputs
                     pantryIngredients={currentPantryItems}
-                    onAddItem={fetchPantryItems} // Passing the refresh function
+                    onAddItem={fetchPantryItems}
                     pantryType={pantryType}
                     errorRefresh={errorRefresh}
                     setErrorRefresh={setErrorRefresh}
                 />
 
-                <List>
-                    {currentPantryItems.map((ingredient) => (
-                        <Box key={ingredient.id} sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                            <Box sx={{ flexGrow: 1 }}>
-                                <Accordion>
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls={`panel-${ingredient.id}-content`}
-                                        id={`panel-${ingredient.id}-header`}
-                                    >
-                                        <Typography variant="body1" sx={{ flex: 1 }}>
-                                            {ingredient.form} {ingredient.name}
-                                        </Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Divider sx={{ mb: 2 }} />
-                                        <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', pb:2 }}>
-                                        <TextField
-                                            label="Quantity"
-                                            type="number"
-                                            value={ingredient.quantity}
-                                            onChange={(e) => handleItemChange(ingredient.id, "quantity", Number(e.target.value))}
-                                            sx={{ flex: 1 }}
-                                        />
-                                        <TextField
-                                            label="Quantity Unit"
-                                            value={ingredient.quantityUnit}
-                                            onChange={(e) => handleItemChange(ingredient.id, "quantityUnit", e.target.value)}
-                                            sx={{ flex: 1 }}
-                                        />
-                                        </Box>
-                                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            onClick={() => handleSave(ingredient)}
-                                            disabled={disableSaveCheck(ingredient)}
-                                        >
-                                            Save
-                                        </Button>
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-                            </Box>
-                            <IconButton
-                                aria-label="delete"
-                                color="error"
-                                onClick={() => handleDeleteItem(ingredient.id)}
-                                sx={{ ml: 2 }}
+                <Box 
+                    sx={{ 
+                        maxHeight: '60vh', 
+                        overflowY: 'auto', 
+                        pr: 1 }}
+                >
+                    <List>
+                        {currentPantryItems.map((ingredient, index) => (
+                            <Box 
+                                key={index} 
+                                sx={{ 
+                                    mb: 2, 
+                                    display: 'flex', 
+                                    alignItems: 'center' }}
                             >
-                                <DeleteForeverIcon />
-                            </IconButton>
-                        </Box>
-                    ))}
-                    <Snackbar 
-                        open={saveError} 
-                        autoHideDuration={3000} 
+                                <Box 
+                                    sx={{ flexGrow: 1 }}
+                                >
+                                    <Accordion>
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls={`panel-${ingredient.id}-content`}
+                                            id={`panel-${ingredient.id}-header`}
+                                        >
+                                            <Typography 
+                                                variant="body1" 
+                                                sx={{ flex: 1 }}
+                                            >
+                                                {ingredient.form} {ingredient.name}
+                                            </Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Divider 
+                                                sx={{ mb: 2 }} 
+                                            />
+                                            <Box 
+                                                sx={{ 
+                                                    display: 'flex', 
+                                                    gap: 2, 
+                                                    flexDirection: 'column', 
+                                                    pb: 2 
+                                                }}
+                                            >
+                                                <TextField
+                                                    label="Quantity"
+                                                    type="number"
+                                                    value={ingredient.quantity}
+                                                    onChange={(e) =>
+                                                        handleItemChange(
+                                                            ingredient.id, "quantity", 
+                                                            Number(e.target.value))
+                                                    }
+                                                    sx={{ flex: 1 }}
+                                                />
+                                                <TextField
+                                                    label="Quantity Unit"
+                                                    value={ingredient.quantityUnit}
+                                                    onChange={(e) =>
+                                                        handleItemChange(
+                                                            ingredient.id, 
+                                                            "quantityUnit", 
+                                                            e.target.value)
+                                                    }
+                                                    sx={{ flex: 1 }}
+                                                />
+                                            </Box>
+                                            <Box 
+                                                sx={{ 
+                                                    display: 'flex', 
+                                                    gap: 2, 
+                                                    justifyContent: 'flex-end' 
+                                                    }}
+                                            >
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    onClick={() => handleSave(ingredient)}
+                                                    disabled={disableSaveCheck(ingredient)}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </Box>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </Box>
+                                <IconButton
+                                    aria-label="delete"
+                                    color="error"
+                                    onClick={() => handleDeleteItem(ingredient.id)}
+                                    sx={{ ml: 2 }}
+                                >
+                                    <DeleteForeverIcon />
+                                </IconButton>
+                            </Box>
+                        ))}
+                    </List>
+                </Box>
+
+                <Snackbar
+                    open={saveError}
+                    autoHideDuration={3000}
+                    onClose={() => setSaveError(false)}
+                >
+                    <Alert
                         onClose={() => setSaveError(false)}
+                        severity="error"
+                        variant="outlined"
+                        sx={{ width: '100%' }}
                     >
-                        <Alert
-                            onClose={() => setSaveError(false)}
-                            severity="error"
-                            variant="outlined"
-                            sx={{ width: '100%' }}
-                        >
-                            Something went wrong! Refreshing.
-                        </Alert>
-                    </Snackbar>
-                </List>
+                        Something went wrong! Refreshing.
+                    </Alert>
+                </Snackbar>
             </Box>
         </>
     );

@@ -5,9 +5,10 @@ import { find_recipe_by_recipe_id,
          find_recipes_by_user_id,
          create_recipe_by_user_id, 
          find_recipe_by_recipe_name,
+         get_recipes,
         } 
     from "@/model/recipeModel";
-import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient } from "@/type/Recipe";
+import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient, DisplayRecipe, RecipeFilterCheckboxes } from "@/type/Recipe";
 import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
@@ -53,7 +54,7 @@ export async function getRecipeByRecipeId(apiKey: string, recipeId: string):
  *          or an error response.
  */
 export async function getRecipeByRecipeName(sessionId: string, authorUsername: string, recipeName: string): 
-    Promise<ActionResponse<Recipe>> 
+    Promise<ActionResponse<DisplayRecipe>> 
 {
     const user = await get_public_user_by_session(sessionId);
     if (!user)
@@ -78,7 +79,6 @@ export async function getRecipeByRecipeName(sessionId: string, authorUsername: s
         return { message: "Unauthorized", status: 401 };
     }
 
-    recipe.authorUsername = author.username;
 
     return { payload: recipe, status: 200 };
 }
@@ -278,4 +278,34 @@ export async function getMissingIngredientsByRecipeId(
 
 
     return { payload: missingIngredients, status: 200 };
+}
+
+/**
+ * Gets a list of all recipes the user has permission to view based on their API key.
+ * @param apiKey - The user's API Key.
+ * @returns response - A response object containing a list of recipes as the payload.
+ * @returns response - A response containing an HTTP status code and error message.
+ */
+export async function getRecipesBySession(
+    sessionId: string, searchString: string, 
+    page: number, resultsPerPage: number, 
+    sortBy: string, sortAsc: boolean, 
+    filterByIngredients: boolean, checkboxes: RecipeFilterCheckboxes
+): 
+    Promise<ActionResponse<{recipes: DisplayRecipe[], count: number}>>
+{
+    // Verify that the user exists in the database
+    const user = await get_public_user_by_session(sessionId);
+    if(!user) return {message: "Unauthorized", status: 401};
+
+    // Get recipe list
+    const {recipes, count} = await get_recipes(
+        searchString, user.id, page, 
+        resultsPerPage, sortBy, sortAsc, 
+        checkboxes, filterByIngredients);
+
+    // Check if any recipes were found
+    if(!count) return {payload: {recipes: [], count: 0}, status: 200};
+
+    return {payload: {recipes, count}, status: 200}
 }
