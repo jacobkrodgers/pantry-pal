@@ -35,13 +35,14 @@ export default function RecipeBody(
                     recipeIngredients.map((recipeIngredient, index) => 
                     {
                         const ingredientOnHand = pantryIngredients.find(
-                            item => item.name === recipeIngredient.name && item.form === recipeIngredient.form
+                            item => item.name === recipeIngredient.name && 
+                            item.form === recipeIngredient.form
                         );
 
                         return (
                             
                             <IngredientListItem 
-                                key={recipeIngredient.name} 
+                                key={index} 
                                 ingredient={recipeIngredient} 
                                 pantryIngredient={ingredientOnHand}
                                 highlight={highlight} 

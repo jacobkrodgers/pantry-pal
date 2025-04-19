@@ -1,5 +1,7 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/prisma/dbClient";
-import { Ingredient, NewRecipe, Recipe } from "@/type/Recipe";
+import { DisplayRecipe, Ingredient, NewRecipe, Recipe, RecipeFilterCheckboxes } from "@/type/Recipe";
+import unitConversion from "@/utils/dicts/unitConversion";
 
 /**
  * Retrieves a recipe by its ID.
@@ -26,7 +28,7 @@ export async function find_recipe_by_recipe_id(id: string):
  * @param name - The name of the recipe.
  * @returns A recipe object or null.
  */
-export async function find_recipe_by_recipe_name(userId: string, name: string): Promise<Recipe | null>
+export async function find_recipe_by_recipe_name(userId: string, name: string): Promise<DisplayRecipe | null>
 {
     const recipe = await prisma.recipe.findUnique({
         where: {
@@ -37,6 +39,11 @@ export async function find_recipe_by_recipe_name(userId: string, name: string): 
         include: {
             ingredients: true,
             dietTags: true,
+            user: {
+                select: {
+                    username: true
+                }
+            }
         }
     });
 
@@ -203,18 +210,6 @@ export async function find_recipes_by_user_id(userId: string):
 export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe): 
     Promise<Recipe | null>
 {
-    // Fetch existing ingredients that match provided names
-    const existingIngredients = await prisma.ingredient.findMany({
-        where: { name: { in: recipe.ingredients.map(ing => ing.name) } }
-    });
-
-    // Extract names of existing items to avoid duplication
-    const existingIngredientNames = new Set(existingIngredients.map(ing => ing.name));
-
-    // Separate new ingredients and diets (only create those that don't exist)
-    const newIngredients = recipe.ingredients
-        .filter(ing => ing.name && !existingIngredientNames.has(ing.name));
-
     try
     {
         const newRecipe = await prisma.recipe.create({
@@ -225,10 +220,8 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                 cookTime: recipe.cookTime,
                 userId,
 
-                // Connect existing ingredients & create new ones
                 ingredients: {
-                    connect: existingIngredients.map(ing => ({ id: ing.id })),
-                    create: newIngredients.map(ing => ({
+                    create: recipe.ingredients.map(ing => ({
                         name: ing.name,
                         quantityUnit: ing.quantityUnit,
                         quantity: ing.quantity,
@@ -242,22 +235,23 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
                         create: { name: tag }
                     }))
                 },
+
                 isPublic: recipe.isPublic ?? false
-                
             },
             include: {
                 ingredients: true,
                 dietTags: true
-            },
+            }
         });
 
         return newRecipe;
     }
-    catch(e)
+    catch (e)
     {
         return null;
     }
 }
+
 
 export async function delete_ingredient_by_id(id: string):
     Promise<Ingredient | null>
@@ -277,3 +271,325 @@ export async function delete_ingredient_by_id(id: string):
         return null;
     }
 }
+
+export async function get_recipes(
+    searchString: string,
+    userId: string,
+    page: number,
+    resultsPerPage: number,
+    sortBy: string,
+    sortAsc: boolean,
+    checkboxes: RecipeFilterCheckboxes,
+    filterByIngredients: boolean
+  ): Promise<{ recipes: DisplayRecipe[]; count: number }> 
+{
+    const direction = sortAsc ? "asc" : "desc";
+    let orderBy: Prisma.RecipeOrderByWithRelationInput = {};
+  
+    if (sortBy === "name" && searchString !== "") 
+    {
+        orderBy = {
+            _relevance: {
+            fields: [Prisma.RecipeOrderByRelevanceFieldEnum.name],
+            search: searchString,
+            sort: direction,
+            },
+        };
+    } 
+    else if (sortBy === "name") 
+    {
+        orderBy = { name: direction };
+    } 
+    else if (sortBy === "date") 
+    {
+        orderBy = { dateUpdated: direction };
+    }
+  
+    const pantry = await prisma.pantry.findUnique({
+        where: { userId },
+        include: { ingredients: true },
+    });
+  
+    if (!pantry) return { recipes: [], count: 0 };
+  
+    const pantryIngredients = pantry.ingredients;
+    const recipeIdSet = new Set<string>();
+  
+    if (
+      filterByIngredients &&
+      (checkboxes.haveIngredients ||
+        checkboxes.lowOnIngredients ||
+        checkboxes.dontHaveIngredients ||
+        checkboxes.mightHaveIngredients)
+    ) 
+    {
+        const allRecipes = await prisma.recipe.findMany(
+        {
+            where: { userId },
+            include: { ingredients: true },
+        });
+  
+        const haveSet = new Set<string>();
+        const lowSet = new Set<string>();
+        const dontSet = new Set<string>();
+        const mightSet = new Set<string>();
+  
+        for (const recipe of allRecipes) 
+        {
+            const ingredients = recipe.ingredients;
+  
+            if (checkboxes.haveIngredients && 
+                matchesHaveIngredients(ingredients, pantryIngredients))
+            {
+            haveSet.add(recipe.id);
+            }
+  
+            if (checkboxes.lowOnIngredients && 
+                matchesLowOnIngredients(ingredients, pantryIngredients)) 
+            {
+                lowSet.add(recipe.id);
+            }
+    
+            if (checkboxes.dontHaveIngredients && 
+                matchesDontHaveIngredients(ingredients, pantryIngredients)) 
+            {
+                dontSet.add(recipe.id);
+            }
+    
+            if (checkboxes.mightHaveIngredients && 
+                matchesMightHaveIngredients(ingredients, pantryIngredients)) 
+            {
+                mightSet.add(recipe.id);
+            }
+        }
+  
+        for (const id of haveSet) recipeIdSet.add(id);
+        for (const id of lowSet) recipeIdSet.add(id);
+        for (const id of dontSet) recipeIdSet.add(id);
+        for (const id of mightSet) recipeIdSet.add(id);
+    }
+  
+    const whereClause: Prisma.RecipeWhereInput = {
+      userId,
+      name: { contains: searchString },
+    };
+  
+    if (
+      filterByIngredients &&
+      (checkboxes.haveIngredients ||
+        checkboxes.lowOnIngredients ||
+        checkboxes.dontHaveIngredients ||
+        checkboxes.mightHaveIngredients)
+    ) 
+    {
+        whereClause.id = { in: Array.from(recipeIdSet) };
+    }
+  
+    const filteredRecipes = await prisma.recipe.findMany({
+        where: whereClause,
+        include: {
+            ingredients: true,
+            dietTags: true,
+            user: {
+                select: { username: true },
+            },
+        },
+        orderBy,
+        skip: (page - 1) * resultsPerPage,
+        take: resultsPerPage,
+    });
+  
+    const count = await prisma.recipe.count({ where: whereClause });
+  
+    return { recipes: filteredRecipes, count };
+}
+  
+function matchesHaveIngredients(
+    recipeIngredients: Ingredient[],
+    pantryIngredients: Ingredient[]
+): boolean 
+{
+    for (const ingredient of recipeIngredients) 
+    {
+        const match = pantryIngredients.find((pi) => 
+        {
+            const sameName = pi.name === ingredient.name;
+            const sameUnit = pi.quantityUnit === ingredient.quantityUnit;
+            const canConvert =
+                pi.quantityUnit in unitConversion &&
+                ingredient.quantityUnit in unitConversion;
+
+            return sameName && (sameUnit || canConvert);
+        });
+
+        if (!match) return false;
+
+        let matchQuantity = match.quantity;
+        let ingredientQuantity = ingredient.quantity;
+
+        if (match.quantityUnit !== ingredient.quantityUnit) 
+        {
+            const fromUnit = match.quantityUnit;
+            const toUnit = ingredient.quantityUnit;
+
+            if (
+                fromUnit in unitConversion &&
+                toUnit in unitConversion
+                ) 
+            {
+                matchQuantity *= unitConversion[fromUnit];
+                ingredientQuantity *= unitConversion[toUnit];
+            } 
+            else 
+            {
+                return false;
+            }
+        }
+
+        if (matchQuantity < ingredientQuantity) return false;
+    }
+
+    return true;
+}
+
+export function matchesLowOnIngredients(
+  recipeIngredients: Ingredient[],
+  pantryIngredients: Ingredient[]
+): boolean 
+{
+    for (const ingredient of recipeIngredients) 
+    {
+        const match = pantryIngredients.find((pi) => 
+        {
+            const sameName = pi.name === ingredient.name;
+            const sameUnit = pi.quantityUnit === ingredient.quantityUnit;
+            const canConvert =
+                pi.quantityUnit in unitConversion &&
+                ingredient.quantityUnit in unitConversion;
+
+            return sameName && (sameUnit || canConvert);
+        });
+
+        if (!match) 
+        {
+            return false;
+        }
+
+        let matchQuantity = match.quantity;
+        let ingredientQuantity = ingredient.quantity;
+
+        if (match.quantityUnit !== ingredient.quantityUnit) 
+        {
+            const fromUnit = match.quantityUnit;
+            const toUnit = ingredient.quantityUnit;
+
+            if (fromUnit in unitConversion && toUnit in unitConversion)
+            {
+                matchQuantity *= unitConversion[fromUnit];
+                ingredientQuantity *= unitConversion[toUnit];
+            } 
+            else 
+            {
+                return false;
+            }
+        }
+
+        if (!(matchQuantity < ingredientQuantity)) 
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+export function matchesDontHaveIngredients(
+    recipeIngredients: Ingredient[],
+    pantryIngredients: Ingredient[]
+): boolean 
+{
+    for (const ingredient of recipeIngredients) 
+    {
+        const match = pantryIngredients.find((pi) => pi.name === ingredient.name);
+
+        if (!match) continue;
+
+        if (match.quantityUnit === ingredient.quantityUnit) 
+        {
+            if (match.quantity >= ingredient.quantity) return false;
+            if (match.quantity < ingredient.quantity) return false;
+        } 
+        else 
+        {
+            const fromUnit = match.quantityUnit;
+            const toUnit = ingredient.quantityUnit;
+
+            const canConvert =
+                fromUnit in unitConversion &&
+                toUnit in unitConversion;
+
+            if (canConvert) 
+            {
+                const matchQuantity = match.quantity * unitConversion[fromUnit];
+                const ingredientQuantity = ingredient.quantity * unitConversion[toUnit];
+
+                if (matchQuantity >= ingredientQuantity) return false;
+                if (matchQuantity < ingredientQuantity) return false;
+            } 
+            else 
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+  
+  
+
+export function matchesMightHaveIngredients( 
+    recipeIngredients: Ingredient[],
+    pantryIngredients: Ingredient[]
+): boolean 
+{
+    for (const ingredient of recipeIngredients) 
+    {
+        const match = pantryIngredients.find((pi) => pi.name === ingredient.name);
+  
+        if (!match) continue;
+  
+        if (match.quantityUnit === ingredient.quantityUnit) 
+        {
+            if (match.quantity >= ingredient.quantity) return false;
+            if (match.quantity < ingredient.quantity) return false;
+        } 
+        else 
+        {
+            const fromUnit = match.quantityUnit;
+            const toUnit = ingredient.quantityUnit;
+    
+            const canConvert =
+            fromUnit in unitConversion &&
+            toUnit in unitConversion;
+    
+            if (canConvert)
+            {
+                const matchQuantity = match.quantity * unitConversion[fromUnit];
+                const ingredientQuantity = ingredient.quantity * unitConversion[toUnit];
+        
+                if (matchQuantity >= ingredientQuantity) return false;
+                if (matchQuantity < ingredientQuantity) return false; 
+            } 
+            else 
+            {
+                return true;
+            }
+        }
+    }
+  
+    return false;
+}
+  
