@@ -3,14 +3,12 @@
 import { Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { ClientUser, UserControllerResponse } from "@/type/User"
-import { useRouter } from "next/router";
 import { getUser, updatePassword, updateUsernameOrEmail, deleteUser } from "./actions"
 import UserSettings from "@/Components/User/Settings";
 
 export default function Page() {
-    const route = useRouter()
     const [user, setUser] = useState<ClientUser | null>(null);
-    const [updatedUser, setUpdatedUser] = useState<ClientUser | UserControllerResponse>();
+    const [error, setError] = useState<string | null>(null);
     
 
     useEffect(() => {
@@ -25,8 +23,11 @@ export default function Page() {
     const handleUpdateUsernameOrEmail = useCallback(
         async (username: string, email: string) => {
             const updatedUser = await updateUsernameOrEmail(username, email);
-            if(updatedUser) {
-                setUpdatedUser(updatedUser);
+            if(typeof(updatedUser) === 'string') {
+                setError(updatedUser);
+            } else {
+                setUser(updatedUser);
+                setError(null);
             }
         },
     []);
@@ -34,8 +35,11 @@ export default function Page() {
     const handleUpdatePassword = useCallback(
         async (oldPassword: string, newPassword: string) => {
             const updatedUser = await updatePassword(oldPassword, newPassword);
-            if(updatedUser) {
-                setUpdatedUser(updatedUser);
+            if(typeof(updatedUser) === 'string') {
+                setError(updatedUser);
+            } else {
+                setUser(updatedUser);
+                setError(null);
             }
         },
     []);
@@ -43,15 +47,17 @@ export default function Page() {
     const handleDeleteUser = useCallback(
         async (username: string, password: string) => {
             const deletedUser = await deleteUser(username, password);
-            if(deletedUser) {
+            if(typeof(deletedUser) === 'string') {
+                setError(deletedUser);
+            } else {
                 setUser(null);
-                route.push('/login')
+                setError(null);
             }
         },
     []);
 
-    if(!user || !updatedUser) {
-        return <Typography>Loading...</Typography>
+    if(!user) {
+        return <Typography>{error || "Loading..."}</Typography>
     }
 
     return (

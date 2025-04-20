@@ -1,6 +1,6 @@
 'use client'
 
-import { ClientUser } from '@/type/User';
+import { ClientUser, UserControllerResponse } from '@/type/User';
 import React, { useState } from 'react';
 import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';

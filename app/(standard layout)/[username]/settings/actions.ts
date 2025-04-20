@@ -7,11 +7,11 @@ import { getClientUserBySessionId,
          updateUserPasswordBySession,
          deleteUserWithSession } from "@/controller/userController";
 import { ClientUser, UserControllerResponse } from "@/type/User";
-import { userUpdateSchema } from "@/validation/userValidation"
+import { loginValidationSchema, userUpdateSchema } from "@/validation/userValidation"
 
 
-export async function getUser():
-    Promise<ClientUser | null> {
+export async function getUser():Promise<ClientUser | null> 
+{
     const cookieStore = await cookies();
     const sessionId = cookieStore.get('session')?.value;
 
@@ -25,12 +25,12 @@ export async function getUser():
 }
 
 export async function updateUsernameOrEmail(username: string, email: string):
-    Promise<ClientUser | UserControllerResponse> 
+    Promise<ClientUser | string | null> 
 {
     const { error } = await userUpdateSchema.validate({ username, email })
 
     if(error) {
-        return {status: 400, payload: error.details[0].message}
+        return error.details[0].message;
     }
     
     const cookieStore = await cookies();
@@ -45,25 +45,25 @@ export async function updateUsernameOrEmail(username: string, email: string):
     const userId = user.payload?.id;
 
     if(!userId) {
-        return {status: 401, payload: "Not Authorized"}
+        return null;
     }
 
     const updatedUser = await updateUserBySession(sessionId, userId, username, email);
 
-    if(!updatedUser || !updatedUser.payload) {
-        return {status: 500, payload: "Internal Server Error"}
+    if(!updatedUser) {
+        return null;
     }
 
-    return updatedUser.payload;
+    return updatedUser.payload ?? null;
 }
 
 export async function updatePassword(oldPassword: string, newPassword: string):
-    Promise<ClientUser | UserControllerResponse>
+    Promise<ClientUser | string | null>
 {
     const { error } = await userUpdateSchema.validate({ oldPassword, newPassword })
 
     if(error) {
-        return {status: 400, payload: error.details[0].message}
+        return error.details[0].message;
     }
     
     const cookieStore = await cookies();
@@ -80,25 +80,25 @@ export async function updatePassword(oldPassword: string, newPassword: string):
     const email = user.payload?.email;
 
     if(!userId || !username || !email) {
-        return {status: 401, payload: "Not Authorized"}
+        return null;
     }
 
     const updatedUser = await updateUserPasswordBySession(sessionId, userId, username, email, oldPassword, newPassword);
 
     if(!updatedUser || !updatedUser.payload) {
-        return {status: 500, payload: "Internal Server Error"}
+        return null;
     }
 
     return updatedUser.payload;
 }
 
 export async function deleteUser(username: string, password: string):
-    Promise<ClientUser | UserControllerResponse>
+    Promise<ClientUser | string | null>
 {
-    const { error } = await userUpdateSchema.validate({ username, password })
+    const { error } = await loginValidationSchema.validate({ username, password })
 
     if(error) {
-        return {status: 400, payload: error.details[0].message}
+        return error.details[0].message;
     }
     
     const cookieStore = await cookies();
@@ -114,14 +114,15 @@ export async function deleteUser(username: string, password: string):
     const email = user.payload?.email;
 
     if(!userId || !email) {
-        return {status: 401, payload: "Not Authorized"}
+        return null;
     }
 
     const deletedUser = await deleteUserWithSession(sessionId, userId, username, email, password);
 
-    if(!deletedUser || !deletedUser.payload) {
-        return {status: 500, payload: "Internal Server Error"}
+    if(!deletedUser) {
+        return null;
+    } else {
+        redirect(`/login`);
+        return deletedUser.payload ?? null;
     }
-
-    return {status: 200, payload: deletedUser.payload}
 }
