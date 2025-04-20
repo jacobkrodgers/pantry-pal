@@ -2,12 +2,15 @@
 
 import { Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
-import { ClientUser } from "@/type/User"
+import { ClientUser, UserControllerResponse } from "@/type/User"
+import { useRouter } from "next/router";
 import { getUser, updatePassword, updateUsernameOrEmail, deleteUser } from "./actions"
 import UserSettings from "@/Components/User/Settings";
 
 export default function Page() {
+    const route = useRouter()
     const [user, setUser] = useState<ClientUser | null>(null);
+    const [updatedUser, setUpdatedUser] = useState<ClientUser | UserControllerResponse>();
     
 
     useEffect(() => {
@@ -23,7 +26,7 @@ export default function Page() {
         async (username: string, email: string) => {
             const updatedUser = await updateUsernameOrEmail(username, email);
             if(updatedUser) {
-                setUser(updatedUser);
+                setUpdatedUser(updatedUser);
             }
         },
     []);
@@ -32,7 +35,7 @@ export default function Page() {
         async (oldPassword: string, newPassword: string) => {
             const updatedUser = await updatePassword(oldPassword, newPassword);
             if(updatedUser) {
-                setUser(updatedUser);
+                setUpdatedUser(updatedUser);
             }
         },
     []);
@@ -42,11 +45,12 @@ export default function Page() {
             const deletedUser = await deleteUser(username, password);
             if(deletedUser) {
                 setUser(null);
+                route.push('/login')
             }
         },
     []);
 
-    if(!user) {
+    if(!user || !updatedUser) {
         return <Typography>Loading...</Typography>
     }
 
