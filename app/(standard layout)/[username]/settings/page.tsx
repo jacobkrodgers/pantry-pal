@@ -5,10 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import { ClientUser, UserControllerResponse } from "@/type/User"
 import { getUser, updatePassword, updateUsernameOrEmail, deleteUser } from "./actions"
 import UserSettings from "@/Components/User/Settings";
+import { loginValidationSchema, userUpdateSchema } from "@/validation/userValidation";
 
 export default function Page() {
     const [user, setUser] = useState<ClientUser | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>('');
     
 
     useEffect(() => {
@@ -22,36 +23,68 @@ export default function Page() {
 
     const handleUpdateUsernameOrEmail = useCallback(
         async (username: string, email: string) => {
-            const updatedUser = await updateUsernameOrEmail(username, email);
-            if(typeof(updatedUser) === 'string') {
-                setError(updatedUser);
-            } else {
+            const { error } = userUpdateSchema.validate({ username, email });
+            if(error) {
+                setError(error.details[0].message);
+            }
+
+            try {
+                const updatedUser = await updateUsernameOrEmail(username, email);
+
+                if(!updatedUser) {
+                    setError('User did not update');
+                }
+
                 setUser(updatedUser);
-                setError(null);
+                setError('');
+            } catch(err) {
+                setError(err instanceof Error ? err.message : 'Unexpected error occurred.');
             }
         },
     []);
 
     const handleUpdatePassword = useCallback(
         async (oldPassword: string, newPassword: string) => {
-            const updatedUser = await updatePassword(oldPassword, newPassword);
-            if(typeof(updatedUser) === 'string') {
-                setError(updatedUser);
-            } else {
+            const { error } = userUpdateSchema.validate({oldPassword, newPassword});
+
+            if(error) {
+                setError(error.details[0].message);
+            }
+
+            try {
+                const updatedUser = await updatePassword(oldPassword, newPassword);
+
+                if(!updatedUser) {
+                    setError('User did not update');
+                }
+
                 setUser(updatedUser);
-                setError(null);
+                setError('');
+            } catch(err) {
+                setError(err instanceof Error ? err.message : 'Unexpected error occurred.')
             }
         },
     []);
 
     const handleDeleteUser = useCallback(
         async (username: string, password: string) => {
-            const deletedUser = await deleteUser(username, password);
-            if(typeof(deletedUser) === 'string') {
-                setError(deletedUser);
-            } else {
+            const { error } = loginValidationSchema.validate({username, password});
+
+            if(error) {
+                setError(error.details[0].message);
+            }
+
+            try {
+                const deletedUser = await deleteUser(username, password);
+
+                if(!deletedUser) {
+                    setError('User did not get deleted');
+                }
+
                 setUser(null);
-                setError(null);
+                setError('');
+            } catch(err) {
+                setError(err instanceof Error ? err.message : 'Unexpected error occurred.')
             }
         },
     []);

@@ -25,12 +25,12 @@ export async function getUser():Promise<ClientUser | null>
 }
 
 export async function updateUsernameOrEmail(username: string, email: string):
-    Promise<ClientUser | string | null> 
+    Promise<ClientUser| null> 
 {
     const { error } = await userUpdateSchema.validate({ username, email })
 
     if(error) {
-        return error.details[0].message;
+        throw new Error(error.details[0].message);
     }
     
     const cookieStore = await cookies();
@@ -45,25 +45,25 @@ export async function updateUsernameOrEmail(username: string, email: string):
     const userId = user.payload?.id;
 
     if(!userId) {
-        return null;
+        throw new Error('User not found.');
     }
 
     const updatedUser = await updateUserBySession(sessionId, userId, username, email);
 
     if(!updatedUser) {
-        return null;
+        throw new Error('Failed to update user.');
     }
 
     return updatedUser.payload ?? null;
 }
 
 export async function updatePassword(oldPassword: string, newPassword: string):
-    Promise<ClientUser | string | null>
+    Promise<ClientUser | null>
 {
     const { error } = await userUpdateSchema.validate({ oldPassword, newPassword })
 
     if(error) {
-        return error.details[0].message;
+        throw new Error(error.details[0].message);
     }
     
     const cookieStore = await cookies();
@@ -80,25 +80,25 @@ export async function updatePassword(oldPassword: string, newPassword: string):
     const email = user.payload?.email;
 
     if(!userId || !username || !email) {
-        return null;
+        throw new Error('');
     }
 
     const updatedUser = await updateUserPasswordBySession(sessionId, userId, username, email, oldPassword, newPassword);
 
     if(!updatedUser || !updatedUser.payload) {
-        return null;
+        throw new Error('');
     }
 
     return updatedUser.payload;
 }
 
 export async function deleteUser(username: string, password: string):
-    Promise<ClientUser | string | null>
+    Promise<ClientUser| null>
 {
     const { error } = await loginValidationSchema.validate({ username, password })
 
     if(error) {
-        return error.details[0].message;
+        throw new Error(error.details[0].message);
     }
     
     const cookieStore = await cookies();
@@ -114,13 +114,13 @@ export async function deleteUser(username: string, password: string):
     const email = user.payload?.email;
 
     if(!userId || !email) {
-        return null;
+        throw new Error('');
     }
 
     const deletedUser = await deleteUserWithSession(sessionId, userId, username, email, password);
 
     if(!deletedUser) {
-        return null;
+        throw new Error('');
     } else {
         redirect(`/login`);
         return deletedUser.payload ?? null;
