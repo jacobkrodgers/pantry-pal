@@ -6,6 +6,7 @@ import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActio
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { userUpdateSchema, loginValidationSchema } from '@/validation/userValidation';
 
 type Props = {
   user: ClientUser;
@@ -26,6 +27,13 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
   const [deleteUsername, setDeleteUsername] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
 
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [oldPasswordError, setOldPasswordError] = useState('');
+  const [deleteUsernameError, setDeleteUsernameError] = useState('');
+  const [deletePasswordError, setDeletePasswordError] = useState('');
+
   const handleEdit = (type: 'username' | 'email' | 'password') => {
     setField(type);
     setOpen(true);
@@ -39,13 +47,66 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
   };
 
   const handleSave = async () => {
-    if (field === 'username' || field === 'email') {
-      await onUpdateUsernameOrEmail(username, email);
-    } else if (field === 'password') {
-      await onUpdatePassword(oldPassword, password);
+    // Reset any existing error messages
+    setUsernameError('');
+    setEmailError('');
+    setPasswordError('');
+    setOldPasswordError('');
+
+    // Prepare the payload depending on what field we're editing
+    const input = {
+      username: field === 'username' ? username : undefined,
+      email: field === 'email' ? email : undefined,
+      oldPassword: field === 'password' ? oldPassword : undefined,
+      newPassword: field === 'password' ? password : undefined,
+    };
+
+    const { error } = userUpdateSchema.validate(input, { abortEarly: false });
+
+    if (error) {
+      error.details.forEach(({ path, message }) => {
+        const key = path[0];
+
+        switch (key) {
+          case 'username':
+            setUsernameError(message);
+            break;
+          case 'email':
+            setEmailError(message);
+            break;
+          case 'oldPassword':
+            setOldPasswordError(message);
+            break;
+          case 'newPassword':
+            setPasswordError(message);
+            break;
+        }
+      });
+
+      return; // Prevent modal from closing
     }
-    handleClose();
+
+    // If validation passes, call update function
+    try {
+      if (field === 'username' || field === 'email') {
+        await onUpdateUsernameOrEmail(username, email);
+      } else if (field === 'password') {
+        await onUpdatePassword(oldPassword, password);
+      }
+
+      handleClose(); // Only close if all good
+    } catch (err: any) {
+      const msg = err.message || 'Something went wrong';
+
+      if (field === 'username') setUsernameError(msg);
+      else if (field === 'email') setEmailError(msg);
+      else if (field === 'password') {
+        if (msg.toLowerCase().includes('old')) setOldPasswordError(msg);
+        else setPasswordError(msg);
+      }
+    }
   };
+  
 
   const handleDeleteClose = () => {
     setDeleteOpen(false);
@@ -54,9 +115,39 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
   };
 
   const handleDeleteSubmit = async () => {
-    await onDeleteUser(deleteUsername, deletePassword);
-    handleDeleteClose();
+    setDeleteUsernameError('');
+    setDeletePasswordError('');
+
+    // Joi validation
+    const { error } = loginValidationSchema.validate(
+      {
+        username: deleteUsername,
+        password: deletePassword,
+      },
+      { abortEarly: false }
+    );
+  
+    if (error) {
+      error.details.forEach(({ path, message }) => {
+        if (path[0] === 'username') setDeleteUsernameError(message);
+        if (path[0] === 'password') setDeletePasswordError(message);
+      });
+      return;
+    }
+
+    if(deleteUsername !== username) {
+      setDeleteUsernameError('Not current username.');
+      return;
+    }else if(deletePassword !== password) {
+      setDeletePasswordError('Not current password.');
+      return;
+    } else if(deleteUsername !== username && deletePassword !== password) {
+      setDeleteUsernameError('Not current username.');
+      setDeletePasswordError('Not current password.');
+      return;
+    }
   };
+  
 
   return (    
     <Box sx={{ width: '100%' }}>
@@ -114,29 +205,51 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
                     type="password"
                     label="Old Password"
                     value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
+                    onChange={(e) => {
+                      setOldPassword(e.target.value);
+                      setOldPasswordError('');
+                    }}
+                    error={!!oldPasswordError}
+                    helperText={oldPasswordError ||
+                      "(At least 8 characters, include a special character and a number)"}
                     sx={{ mt: 2 }}
                   />
+
                   <TextField
                     fullWidth
                     type="password"
                     label="New Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError('');
+                    }}
+                    error={!!passwordError}
+                    helperText={passwordError ||
+                      "(At least 8 characters, include a special character and a number)"}
                     sx={{ mt: 2 }}
                   />
+
                 </>
             ) : (
-                <TextField
-                  fullWidth
-                  type="text"
-                  label={`New ${field}`}
-                  value={field === 'username' ? username : email}
-                  onChange={(e) =>
-                    field === 'username' ? setUsername(e.target.value) : setEmail(e.target.value)
+              <TextField
+                fullWidth
+                type="text"
+                label={`New ${field}`}
+                value={field === 'username' ? username : email}
+                onChange={(e) => {
+                  if (field === 'username') {
+                    setUsername(e.target.value);
+                    setUsernameError('');
+                  } else {
+                    setEmail(e.target.value);
+                    setEmailError('');
                   }
-                  sx={{ mt: 2 }}
-                />
+                }}
+                error={!!(field === 'username' ? usernameError : emailError)}
+                helperText={field === 'username' ? usernameError || "(Letters and numbers only)" : emailError || "(Use a valid email address)"}
+                sx={{ mt: 2 }}
+              />
             )}
         </DialogContent>
         <DialogActions>
@@ -156,7 +269,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
       </Dialog>
 
       {/* Delete Confirmation Modal */}
-      <Dialog open={deleteOpen} onClose={handleClose}>
+      <Dialog open={deleteOpen} onClose={handleDeleteClose}>
         <DialogTitle>Delete Account</DialogTitle>
         <DialogContent>
           <Typography variant='body2' color='error' sx={{ mb: 2 }}>
@@ -166,7 +279,12 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             fullWidth
             label="Username"
             value={deleteUsername}
-            onChange={(e) => setDeleteUsername(e.target.value)}
+            onChange={(e) => {
+              setDeleteUsername(e.target.value)
+              setDeleteUsernameError('')
+            }}
+            error={!!deleteUsernameError}
+            helperText={deleteUsernameError || 'Enter current username (Letters and numbers only)'}
             sx={{ mt: 2 }}
           />
           <TextField 
@@ -174,7 +292,12 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             type='password'
             label='Password'
             value={deletePassword}
-            onChange={(e) => setDeletePassword(e.target.value)}
+            onChange={(e) => {
+              setDeletePassword(e.target.value)
+              setDeletePasswordError('')
+            }}
+            error={!!deletePasswordError}
+            helperText={deletePasswordError || 'Enter current password (At least 8 characters, include a special character and a number)'}
             sx={{ mt: 2 }}
           />
         </DialogContent>
