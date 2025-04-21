@@ -141,10 +141,6 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     }else if(deletePassword !== password) {
       setDeletePasswordError('Not current password.');
       return;
-    } else if(deleteUsername !== username && deletePassword !== password) {
-      setDeleteUsernameError('Not current username.');
-      setDeletePasswordError('Not current password.');
-      return;
     }
   };
   
