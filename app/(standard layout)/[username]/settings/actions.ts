@@ -114,15 +114,15 @@ export async function deleteUser(username: string, password: string):
     const email = user.payload?.email;
 
     if(!userId || !email) {
-        throw new Error('');
+        throw new Error('User not found');
     }
 
     const deletedUser = await deleteUserWithSession(sessionId, userId, username, email, password);
 
-    if(!deletedUser) {
-        throw new Error('');
-    } else {
-        redirect(`/login`);
-        return deletedUser.payload ?? null;
+    if(!deletedUser || !deletedUser.payload) {
+        throw new Error('Invalid username or password. Account not deleted.');
     }
+        
+    redirect(`/login`);
+    return deletedUser.payload ?? null;
 }
