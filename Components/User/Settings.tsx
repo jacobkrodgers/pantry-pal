@@ -6,6 +6,7 @@ import { Box, Typography, Paper, Dialog, DialogTitle, DialogContent, DialogActio
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import FormInput from "@/Components/Inputs/FormInput";
 import { userUpdateSchema, loginValidationSchema } from '@/validation/userValidation';
 
 type Props = {
@@ -146,118 +147,114 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
   
 
   return (    
-    <Box sx={{ width: '100%' }}>
-      {/* Top Section with Delete Button */}
-      <Button variant='outlined' color='error' onClick={() => setDeleteOpen(true)}>
+    <Box sx={{ maxWidth: 500, margin: 'auto', mt: 4 }}>
+      {/* Delete Account Button */}
+      <Button
+        variant="outlined"
+        color="error"
+        onClick={() => setDeleteOpen(true)}
+        sx={{ mb: 2 }}
+      >
         Delete Account
       </Button>
-      <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
 
-        {/* Username */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Typography variant="h5">
-            Username: {user.username}
-          </Typography>
-          <Tooltip title="Edit Username">
-            <IconButton size="small" onClick={() => handleEdit('username')}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+      {/* Main Settings Form */}
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSave();
+        }}
+        noValidate
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <FormInput
+          label="Username"
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            setUsernameError('');
+          }}
+          errorMessage={usernameError}
+          helperText={usernameError || '(Letters and numbers only)'}
+        />
 
-        {/* Password */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Typography variant="h5">
-            Password
-          </Typography>
-          <Tooltip title="Edit Password">
-            <IconButton size="small" onClick={() => handleEdit('password')}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <FormInput
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setEmailError('');
+          }}
+          errorMessage={emailError}
+          helperText={emailError || '(Use a valid email address)'}
+        />
 
-        {/* Email */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h5">
-            Email: {user.email}
-          </Typography>
-          <Tooltip title="Edit Email">
-            <IconButton size="small" onClick={() => handleEdit('email')}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Paper>
-      
-      {/* Edit Modal */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit {field}</DialogTitle>
+        <Button
+          variant="outlined"
+          onClick={() => handleEdit('password')}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          Change Password
+        </Button>
+
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={!username.trim() || !email.trim()}
+          sx={{
+            backgroundColor: 'black',
+            color: 'white',
+            ':hover': { backgroundColor: '#333' },
+          }}
+        >
+          Save Changes
+        </Button>
+      </Box>
+
+      {/* Edit Password Modal */}
+      <Dialog open={open && field === 'password'} onClose={handleClose}>
+        <DialogTitle>Edit Password</DialogTitle>
         <DialogContent>
-            {field === 'password' ? (
-                <>
-                  <TextField 
-                    fullWidth
-                    type="password"
-                    label="Old Password"
-                    value={oldPassword}
-                    onChange={(e) => {
-                      setOldPassword(e.target.value);
-                      setOldPasswordError('');
-                    }}
-                    error={!!oldPasswordError}
-                    helperText={oldPasswordError ||
-                      "(At least 8 characters, include a special character and a number)"}
-                    sx={{ mt: 2 }}
-                  />
+          <FormInput
+            label="Old Password"
+            type="password"
+            value={oldPassword}
+            onChange={(e) => {
+              setOldPassword(e.target.value);
+              setOldPasswordError('');
+            }}
+            errorMessage={oldPasswordError}
+            helperText={
+              oldPasswordError ||
+              '(At least 8 characters, include a special character and a number)'
+            }
+            sx={{ mt: 2 }}
+          />
 
-                  <TextField
-                    fullWidth
-                    type="password"
-                    label="New Password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError('');
-                    }}
-                    error={!!passwordError}
-                    helperText={passwordError ||
-                      "(At least 8 characters, include a special character and a number)"}
-                    sx={{ mt: 2 }}
-                  />
-
-                </>
-            ) : (
-              <TextField
-                fullWidth
-                type="text"
-                label={`New ${field}`}
-                value={field === 'username' ? username : email}
-                onChange={(e) => {
-                  if (field === 'username') {
-                    setUsername(e.target.value);
-                    setUsernameError('');
-                  } else {
-                    setEmail(e.target.value);
-                    setEmailError('');
-                  }
-                }}
-                error={!!(field === 'username' ? usernameError : emailError)}
-                helperText={field === 'username' ? usernameError || "(Letters and numbers only)" : emailError || "(Use a valid email address)"}
-                sx={{ mt: 2 }}
-              />
-            )}
+          <FormInput
+            label="New Password"
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setPasswordError('');
+            }}
+            errorMessage={passwordError}
+            helperText={
+              passwordError ||
+              '(At least 8 characters, include a special character and a number)'
+            }
+            sx={{ mt: 2 }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={handleSave}
-            variant = "contained"
-            disabled = {
-                (field === 'username' && !username.trim()) ||
-                (field === 'email' && !email.trim()) ||
-                (field === 'password' && (!oldPassword || !password))
-            }
+            variant="contained"
+            disabled={!oldPassword || !password}
           >
             Save
           </Button>
@@ -268,40 +265,45 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
       <Dialog open={deleteOpen} onClose={handleDeleteClose}>
         <DialogTitle>Delete Account</DialogTitle>
         <DialogContent>
-          <Typography variant='body2' color='error' sx={{ mb: 2 }}>
+          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
             Please confirm your credentials to delete your account.
           </Typography>
-          <TextField 
-            fullWidth
+
+          <FormInput
             label="Username"
             value={deleteUsername}
             onChange={(e) => {
-              setDeleteUsername(e.target.value)
-              setDeleteUsernameError('')
+              setDeleteUsername(e.target.value);
+              setDeleteUsernameError('');
             }}
-            error={!!deleteUsernameError}
-            helperText={deleteUsernameError || 'Enter current username (Letters and numbers only)'}
+            errorMessage={deleteUsernameError}
+            helperText={
+              deleteUsernameError || 'Enter current username (Letters and numbers only)'
+            }
             sx={{ mt: 2 }}
           />
-          <TextField 
-            fullWidth
-            type='password'
-            label='Password'
+
+          <FormInput
+            label="Password"
+            type="password"
             value={deletePassword}
             onChange={(e) => {
-              setDeletePassword(e.target.value)
-              setDeletePasswordError('')
+              setDeletePassword(e.target.value);
+              setDeletePasswordError('');
             }}
-            error={!!deletePasswordError}
-            helperText={deletePasswordError || 'Enter current password (At least 8 characters, include a special character and a number)'}
+            errorMessage={deletePasswordError}
+            helperText={
+              deletePasswordError ||
+              'Enter current password (At least 8 characters, include a special character and a number)'
+            }
             sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteClose}>Cancel</Button>
           <Button
-            color='error'
-            variant='contained'
+            color="error"
+            variant="contained"
             onClick={handleDeleteSubmit}
             disabled={!deleteUsername || !deletePassword}
           >
