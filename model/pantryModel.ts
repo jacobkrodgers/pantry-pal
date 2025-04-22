@@ -51,10 +51,10 @@ export async function add_pantry_ingredient_by_user_id(userId: string, ingredien
       
         const pantryIngredient = await prisma.ingredient.create({
             data: {
-                name: ingredient.name,
+                name: ingredient.name.toLowerCase(),
                 quantity: ingredient.quantity,
-                quantityUnit: ingredient.quantityUnit,
-                form: ingredient.form,
+                quantityUnit: ingredient.quantityUnit.toLowerCase(),
+                form: ingredient.form.toLowerCase(),
                 pantryId: pantry.id,
             },
         });
@@ -83,10 +83,10 @@ export async function add_shopping_list_ingredient_by_user_id(userId: string, in
       
         const shoppingListIngredient = await prisma.ingredient.create({
             data: {
-                name: ingredient.name,
+                name: ingredient.name.toLowerCase(),
                 quantity: ingredient.quantity,
-                quantityUnit: ingredient.quantityUnit,
-                form: ingredient.form,
+                quantityUnit: ingredient.quantityUnit.toLowerCase(),
+                form: ingredient.form.toLowerCase(),
                 shoppingListId: shoppingList.id,
             },
         });

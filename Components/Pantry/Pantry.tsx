@@ -20,6 +20,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState, useEffect } from 'react';
 import NewPantryItemInputs from "./NewPantryItemInputs";
 import { deleteItemById, getPantry, getShoppingList, updateItem } from './actions';
+import { capitalize } from "@/utils/stringUtils";
 
 interface PantryProps 
 {
@@ -129,7 +130,7 @@ export default function Pantry({ tabName, pantryItems, setPantryItems }: PantryP
                                                 variant="body1" 
                                                 sx={{ flex: 1 }}
                                             >
-                                                {ingredient.form} {ingredient.name}
+                                                {capitalize(ingredient.form)} {capitalize(ingredient.name)}
                                             </Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>

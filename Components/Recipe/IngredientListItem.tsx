@@ -8,6 +8,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { Ingredient } from '@/type/Recipe';
 import unitConversion from '@/utils/dicts/unitConversion';
 import { alpha } from '@mui/system';
+import { capitalize } from '@/utils/stringUtils';
 
 
 interface IngredientListItemProps
@@ -25,7 +26,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
             <ListItem sx={{ display: "flex", alignItems: "center", pl: 0 }}>
                 <CircleIcon sx={{ pr: 1 }} />
                 <ListItemText sx={{ display: 'list-item', pl: 1 }}>
-                    <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                    <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                 </ListItemText>
             </ListItem>
         )
@@ -40,7 +41,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
                 </Tooltip>
                 <Tooltip title="You are missing this ingredient" placement="right-end">
                     <ListItemText sx={{ display: 'list-item', pl: 1, bgcolor: (theme) => alpha(theme.palette.error.main, 0.7), pr:1, borderRadius: 2}}>
-                        <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                        <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                     </ListItemText>
                 </Tooltip>
             </ListItem>
@@ -56,7 +57,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
                 </Tooltip>
                 <Tooltip title="You don't have enough of this ingredient" placement="right-end">
                     <ListItemText sx={{ display: 'list-item', pl: 1, bgcolor: (theme) => alpha(theme.palette.warning.main, 0.7), pr:1, borderRadius: 2}}>
-                        <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                        <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                     </ListItemText>
                 </Tooltip>
             </ListItem>
@@ -72,7 +73,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
                 </Tooltip>
                 <Tooltip title="Incompatible unit conversion" placement="right-end">
                     <ListItemText sx={{ display: 'list-item', pl: 1, bgcolor: (theme) => alpha(theme.palette.primary.main, 0.7), pr:1, borderRadius: 2}}>
-                        <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                        <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                     </ListItemText>
                 </Tooltip>
             </ListItem>
@@ -90,7 +91,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
                 </Tooltip>
                 <Tooltip title="You are missing this ingredient" placement="right-end">
                     <ListItemText sx={{ display: 'list-item', pl: 1, bgcolor: (theme) => alpha(theme.palette.warning.main, 0.7), pr:1, borderRadius: 2}}>
-                        <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                        <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                     </ListItemText>
                 </Tooltip>
             </ListItem>
@@ -104,7 +105,7 @@ export default function IngredientListItem({ingredient, pantryIngredient, highli
             </Tooltip>
             <Tooltip title="You have enough of this ingredient" placement="right-end">
                 <ListItemText sx={{ display: 'list-item', pl: 1, bgcolor: (theme) => alpha(theme.palette.success.main, 0.7), pr:1, borderRadius: 2}}>
-                    <Typography>{ingredient.quantity} {ingredient.quantityUnit} {ingredient.name} {ingredient.form}</Typography>
+                    <Typography>{ingredient.quantity} {capitalize(ingredient.quantityUnit)} {capitalize(ingredient.name)} {capitalize(ingredient.form)}</Typography>
                 </ListItemText>
             </Tooltip>
         </ListItem>
