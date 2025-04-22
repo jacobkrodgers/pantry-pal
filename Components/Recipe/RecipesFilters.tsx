@@ -55,7 +55,7 @@ export default function RecipesFilters({
 }: RecipesFiltersProps) 
 {
     return (
-        <Box sx={{ pl: 2, pr: 3 }}>
+        <Box sx={{ pl: 2, pr: 3, mt: 3 }}>
             <Box
                 sx={{
                     width: "100%",

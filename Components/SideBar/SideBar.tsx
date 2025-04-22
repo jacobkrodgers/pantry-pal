@@ -196,11 +196,7 @@ export default function SideBar({ user, children }: SideBarProps) {
                         )}
                     </Toolbar>
                 </AppBar>
-
-                <Box sx={{ flexGrow: 1 }}>
-                    {children}
-                </Box>
-
+                {children}
                 <Modal open={modalOpen} onClose={handleModalToggle}>
                     <Box sx={{
                         position: 'absolute',

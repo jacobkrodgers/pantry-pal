@@ -23,7 +23,7 @@ export default async function LoginPage() {
 
     // Otherwise, render the client login form
     return (
-        <Paper style={{ height: '100vh', padding: 10 }}>
+        <Paper sx={{height: '100vh', m: 3 }}>
             <LoginForm />
         </Paper>
     );

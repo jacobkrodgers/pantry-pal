@@ -37,14 +37,14 @@ export default function Page() {
 
     return (
         <>
-            <FormGroup>
+            <FormGroup sx={{mx: 3, mt: 3}}>
                 <FormControlLabel 
                     control={<Switch checked={highlight} onChange={toggleHighlight}/>} 
                     label="Show Ingredient Indicators"
                     labelPlacement="start"
                 />
             </FormGroup>
-            <Paper style={{ height: '100vh', padding: 10 }}>
+            <Paper sx={{ mx: 3, mb: 3, p: 2 }}>
                 <RecipeHeader 
                     name={recipe.name} 
                     dietTags={recipe.dietTags} 
