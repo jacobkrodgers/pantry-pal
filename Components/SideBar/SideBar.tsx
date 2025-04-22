@@ -108,10 +108,10 @@ export default function SideBar({ user, children }: SideBarProps) {
     let sideBarItems;
     if (user) {
         sideBarItems = [
-            <Link key="accountIcon" href={`${user.username}`}>
+            <Link key="accountIcon" href={`/${user.username}`}>
                 <SideBarItem open={open} name="Profile" icon={<AccountBoxIcon />} handleClick={() => {}} />
             </Link>,
-            <Link key="recipesIcon" href="recipes">
+            <Link key="recipesIcon" href="/recipes">
                 <SideBarItem open={open} name="Recipes" icon={<MenuBookIcon />} handleClick={() => {}} />
             </Link>,
             <Divider key="div" />,
@@ -125,10 +125,10 @@ export default function SideBar({ user, children }: SideBarProps) {
         ];
     } else {
         sideBarItems = [
-            <Link key="loginIcon" href="login">
+            <Link key="loginIcon" href="/login">
                 <SideBarItem open={open} name="Login" icon={<LoginIcon />} />
             </Link>,
-            <Link key="registerIcon" href="register">
+            <Link key="registerIcon" href="/register">
                 <SideBarItem open={open} name="Create Account" icon={<AppRegistration />} />
             </Link>,
         ];

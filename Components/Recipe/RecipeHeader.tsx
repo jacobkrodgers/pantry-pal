@@ -71,7 +71,7 @@ export default function RecipeHeader(
                             <MUILink 
                                 underline="none" 
                                 component={Link} 
-                                href={`/users/${username}`} 
+                                href={`/${username}`} 
                                 onClick={(e) => e.stopPropagation()}>
                                     {username}
                             </MUILink>
