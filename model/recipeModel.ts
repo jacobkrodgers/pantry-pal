@@ -77,20 +77,20 @@ export async function update_recipe_by_recipe_id(
         const existingIngredients = await prisma.ingredient.findMany({
             where: {
                 OR: recipeUpdateData.ingredients?.map(ing => ({
-                    name: ing.name,
-                    form: ing.form
+                    name: ing.name.toLowerCase(),
+                    form: ing.form.toLowerCase()
                 })) || []
             }
         });
         
         // Extract existing ingredient identifiers
         const existingIngredientMap = new Map(
-            existingIngredients.map(ing => [`${ing.name}-${ing.form}`, ing])
+            existingIngredients.map(ing => [`${ing.name.toLowerCase()}-${ing.form.toLowerCase()}`, ing])
         );
         
         // Separate new ingredients and diets
         const newIngredients = (recipeUpdateData.ingredients || [])
-            .filter(ing => !existingIngredientMap.has(`${ing.name}-${ing.form}`));
+            .filter(ing => !existingIngredientMap.has(`${ing.name.toLowerCase()}-${ing.form.toLowerCase()}`));
 
         // Update the recipe
         const updatedRecipeData = await prisma.recipe.update({
@@ -104,21 +104,21 @@ export async function update_recipe_by_recipe_id(
                     set: [],
                     connect: existingIngredients.map(ing => ({ id: ing.id })),
                     create: newIngredients.map(ing => ({
-                        name: ing.name,
-                        quantityUnit: ing.quantityUnit,
+                        name: ing.name.toLowerCase(),
+                        quantityUnit: ing.quantityUnit.toLowerCase(),
                         quantity: ing.quantity,
-                        form: ing.form
+                        form: ing.form.toLowerCase()
                     })),
                     update: recipeUpdateData.ingredients
                         ?.map(ing => {
-                            const existingIngredient = existingIngredientMap.get(`${ing.name}-${ing.form}`);
+                            const existingIngredient = existingIngredientMap.get(`${ing.name.toLowerCase()}-${ing.form.toLowerCase()}`);
                             return existingIngredient
                                 ? {
                                     where: { id: existingIngredient.id },
                                     data: {
                                         quantity: ing.quantity,
-                                        quantityUnit: ing.quantityUnit,
-                                        form: ing.form
+                                        quantityUnit: ing.quantityUnit.toLowerCase(),
+                                        form: ing.form.toLowerCase()
                                     }
                                 }
                                 : null;
@@ -222,10 +222,10 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
 
                 ingredients: {
                     create: recipe.ingredients.map(ing => ({
-                        name: ing.name,
-                        quantityUnit: ing.quantityUnit,
+                        name: ing.name.toLowerCase(),
+                        quantityUnit: ing.quantityUnit.toLowerCase(),
                         quantity: ing.quantity,
-                        form: ing.form
+                        form: ing.form.toLowerCase()
                     }))
                 },
 
