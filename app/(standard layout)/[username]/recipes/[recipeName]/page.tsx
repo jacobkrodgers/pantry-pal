@@ -1,12 +1,13 @@
 "use client";
 
-import { FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
+import { Box, FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getPantry, getRecipe } from "./actions";
 import { Ingredient, Recipe } from "@/type/Recipe";
 import RecipeHeader from "@/Components/Recipe/RecipeHeader";
 import RecipeBody from "@/Components/Recipe/RecipeBody";
+import theme from "@/app/theme";
 
 export default function Page() {
     const params = useParams<{ username: string; recipeName: string }>();
@@ -36,15 +37,15 @@ export default function Page() {
     }
 
     return (
-        <>
-            <FormGroup sx={{mx: 3, mt: 3}}>
+        <Box sx={{ pb: 5 }}>
+            <FormGroup sx={{ mx: 3, mt: 3 }}>
                 <FormControlLabel 
-                    control={<Switch checked={highlight} onChange={toggleHighlight}/>} 
+                    control={<Switch checked={highlight} onChange={toggleHighlight} />} 
                     label="Show Ingredient Indicators"
                     labelPlacement="start"
                 />
             </FormGroup>
-            <Paper sx={{ mx: 3, mb: 3, p: 2 }}>
+            <Paper sx={{ mx: 3, p: 2, minHeight: `calc(100vh - ${theme.spacing(20)})` }}>
                 <RecipeHeader 
                     name={recipe.name} 
                     dietTags={recipe.dietTags} 
@@ -61,6 +62,6 @@ export default function Page() {
                     highlight={highlight} 
                 />
             </Paper>
-        </>
+        </Box>
     );
 }
