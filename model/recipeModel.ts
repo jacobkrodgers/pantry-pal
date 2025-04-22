@@ -252,7 +252,6 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     }
 }
 
-
 export async function delete_ingredient_by_id(id: string):
     Promise<Ingredient | null>
 {
@@ -329,44 +328,128 @@ export async function get_recipes(
             include: { ingredients: true },
         });
   
-        const haveSet = new Set<string>();
-        const lowSet = new Set<string>();
-        const dontSet = new Set<string>();
-        const mightSet = new Set<string>();
-  
         for (const recipe of allRecipes) 
         {
             const ingredients = recipe.ingredients;
-  
-            if (checkboxes.haveIngredients && 
-                matchesHaveIngredients(ingredients, pantryIngredients))
+            let add = true;
+            if (!(checkboxes.haveIngredients))
             {
-            haveSet.add(recipe.id);
+                if (matchesHaveOneIngredient(ingredients, pantryIngredients)) add = false;
             }
-  
-            if (checkboxes.lowOnIngredients && 
-                matchesLowOnIngredients(ingredients, pantryIngredients)) 
+            if (!(checkboxes.lowOnIngredients))
             {
-                lowSet.add(recipe.id);
+                if (matchesLowOnOneIngredient(ingredients, pantryIngredients)) add = false;
             }
-    
-            if (checkboxes.dontHaveIngredients && 
-                matchesDontHaveIngredients(ingredients, pantryIngredients)) 
+            if (!(checkboxes.dontHaveIngredients))
             {
-                dontSet.add(recipe.id);
+                if (matchesDontHaveOneIngredient(ingredients, pantryIngredients)) add = false;
             }
-    
-            if (checkboxes.mightHaveIngredients && 
-                matchesMightHaveIngredients(ingredients, pantryIngredients)) 
+            if (!(checkboxes.mightHaveIngredients))
             {
-                mightSet.add(recipe.id);
+                if (matchesMightHaveOneIngredient(ingredients, pantryIngredients)) add = false;
             }
+
+            if (checkboxes.haveIngredients)
+            {
+                if (!checkboxes.dontHaveIngredients)
+                {
+                    if (matchesDontHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        console.log(`adding false for ${recipe.name}`)
+                        add = false;
+                    }
+                }
+                if (!checkboxes.lowOnIngredients)
+                {
+                    if (matchesLowOnOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.mightHaveIngredients)
+                {
+                    if (matchesMightHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+            }
+            if (checkboxes.dontHaveIngredients)
+            {
+                if (!checkboxes.haveIngredients)
+                {
+                    if (matchesHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.lowOnIngredients)
+                {
+                    if (matchesLowOnOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.mightHaveIngredients)
+                {
+                    if (matchesMightHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+            }
+            if (checkboxes.lowOnIngredients)
+            {
+                if (!checkboxes.haveIngredients)
+                {
+                    if (matchesHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.dontHaveIngredients)
+                {
+                    if (matchesDontHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.mightHaveIngredients)
+                {
+                    if (matchesMightHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+            }
+            if (checkboxes.mightHaveIngredients)
+            {
+                if (!checkboxes.haveIngredients)
+                {
+                    if (matchesHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.dontHaveIngredients)
+                {
+                    if (matchesDontHaveOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+                if (!checkboxes.lowOnIngredients)
+                {
+                    if (matchesLowOnOneIngredient(ingredients, pantryIngredients))
+                    {
+                        add = false;
+                    }
+                }
+            }
+
+            if (add) recipeIdSet.add(recipe.id)
+
         }
-  
-        for (const id of haveSet) recipeIdSet.add(id);
-        for (const id of lowSet) recipeIdSet.add(id);
-        for (const id of dontSet) recipeIdSet.add(id);
-        for (const id of mightSet) recipeIdSet.add(id);
     }
   
     const whereClause: Prisma.RecipeWhereInput = {
@@ -404,7 +487,8 @@ export async function get_recipes(
     return { recipes: filteredRecipes, count };
 }
   
-function matchesHaveIngredients(
+
+function matchesHaveOneIngredient(
     recipeIngredients: Ingredient[],
     pantryIngredients: Ingredient[]
 ): boolean 
@@ -422,7 +506,7 @@ function matchesHaveIngredients(
             return sameName && (sameUnit || canConvert);
         });
 
-        if (!match) return false;
+        if (!match) continue;
 
         let matchQuantity = match.quantity;
         let ingredientQuantity = ingredient.quantity;
@@ -435,76 +519,72 @@ function matchesHaveIngredients(
             if (
                 fromUnit in unitConversion &&
                 toUnit in unitConversion
-                ) 
+            ) 
             {
                 matchQuantity *= unitConversion[fromUnit];
                 ingredientQuantity *= unitConversion[toUnit];
             } 
             else 
             {
-                return false;
+                continue;
             }
         }
 
-        if (matchQuantity < ingredientQuantity) return false;
+        if (matchQuantity >= ingredientQuantity) return true;
     }
 
-    return true;
+    return false;
 }
 
-export function matchesLowOnIngredients(
-  recipeIngredients: Ingredient[],
-  pantryIngredients: Ingredient[]
-): boolean 
-{
-    for (const ingredient of recipeIngredients) 
-    {
-        const match = pantryIngredients.find((pi) => 
-        {
-            const sameName = pi.name === ingredient.name;
-            const sameUnit = pi.quantityUnit === ingredient.quantityUnit;
-            const canConvert =
-                pi.quantityUnit in unitConversion &&
-                ingredient.quantityUnit in unitConversion;
-
-            return sameName && (sameUnit || canConvert);
-        });
-
-        if (!match) 
-        {
-            return false;
-        }
-
-        let matchQuantity = match.quantity;
-        let ingredientQuantity = ingredient.quantity;
-
-        if (match.quantityUnit !== ingredient.quantityUnit) 
-        {
-            const fromUnit = match.quantityUnit;
-            const toUnit = ingredient.quantityUnit;
-
-            if (fromUnit in unitConversion && toUnit in unitConversion)
-            {
-                matchQuantity *= unitConversion[fromUnit];
-                ingredientQuantity *= unitConversion[toUnit];
-            } 
-            else 
-            {
-                return false;
-            }
-        }
-
-        if (!(matchQuantity < ingredientQuantity)) 
-        {
-            return false;
-        }
-    }
-
-    return true;
+export function matchesLowOnOneIngredient(
+    recipeIngredients: Ingredient[],
+    pantryIngredients: Ingredient[]
+  ): boolean 
+  {
+      for (const ingredient of recipeIngredients) 
+      {
+          const match = pantryIngredients.find((pi) => 
+          {
+              const sameName = pi.name === ingredient.name;
+              const sameUnit = pi.quantityUnit === ingredient.quantityUnit;
+              const canConvert =
+                  pi.quantityUnit in unitConversion &&
+                  ingredient.quantityUnit in unitConversion;
+  
+              return sameName && (sameUnit || canConvert);
+          });
+  
+          if (!match) continue;
+  
+          let matchQuantity = match.quantity;
+          let ingredientQuantity = ingredient.quantity;
+  
+          if (match.quantityUnit !== ingredient.quantityUnit) 
+          {
+              const fromUnit = match.quantityUnit;
+              const toUnit = ingredient.quantityUnit;
+  
+              if (fromUnit in unitConversion && toUnit in unitConversion)
+              {
+                  matchQuantity *= unitConversion[fromUnit];
+                  ingredientQuantity *= unitConversion[toUnit];
+              } 
+              else 
+              {
+                  continue;
+              }
+          }
+  
+          if (matchQuantity < ingredientQuantity) 
+          {
+              return true;
+          }
+      }
+  
+      return false;
 }
 
-
-export function matchesDontHaveIngredients(
+export function matchesDontHaveOneIngredient(
     recipeIngredients: Ingredient[],
     pantryIngredients: Ingredient[]
 ): boolean 
@@ -513,12 +593,11 @@ export function matchesDontHaveIngredients(
     {
         const match = pantryIngredients.find((pi) => pi.name === ingredient.name);
 
-        if (!match) continue;
+        if (!match) return true;
 
         if (match.quantityUnit === ingredient.quantityUnit) 
         {
-            if (match.quantity >= ingredient.quantity) return false;
-            if (match.quantity < ingredient.quantity) return false;
+            if (match.quantity < ingredient.quantity) return true;
         } 
         else 
         {
@@ -534,23 +613,16 @@ export function matchesDontHaveIngredients(
                 const matchQuantity = match.quantity * unitConversion[fromUnit];
                 const ingredientQuantity = ingredient.quantity * unitConversion[toUnit];
 
-                if (matchQuantity >= ingredientQuantity) return false;
-                if (matchQuantity < ingredientQuantity) return false;
+                if (matchQuantity < ingredientQuantity) return true;
             } 
-            else 
-            {
-                return false;
-            }
         }
     }
 
-    return true;
+    return false;
 }
 
-  
-  
 
-export function matchesMightHaveIngredients( 
+export function matchesMightHaveOneIngredient( 
     recipeIngredients: Ingredient[],
     pantryIngredients: Ingredient[]
 ): boolean 
@@ -563,8 +635,7 @@ export function matchesMightHaveIngredients(
   
         if (match.quantityUnit === ingredient.quantityUnit) 
         {
-            if (match.quantity >= ingredient.quantity) return false;
-            if (match.quantity < ingredient.quantity) return false;
+            continue;
         } 
         else 
         {
@@ -572,18 +643,10 @@ export function matchesMightHaveIngredients(
             const toUnit = ingredient.quantityUnit;
     
             const canConvert =
-            fromUnit in unitConversion &&
-            toUnit in unitConversion;
+                fromUnit in unitConversion &&
+                toUnit in unitConversion;
     
-            if (canConvert)
-            {
-                const matchQuantity = match.quantity * unitConversion[fromUnit];
-                const ingredientQuantity = ingredient.quantity * unitConversion[toUnit];
-        
-                if (matchQuantity >= ingredientQuantity) return false;
-                if (matchQuantity < ingredientQuantity) return false; 
-            } 
-            else 
+            if (!canConvert)
             {
                 return true;
             }
@@ -592,4 +655,3 @@ export function matchesMightHaveIngredients(
   
     return false;
 }
-  
