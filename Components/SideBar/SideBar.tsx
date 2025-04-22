@@ -16,14 +16,14 @@ import { List, AppBar, Toolbar, Typography, IconButton, Modal } from '@mui/mater
 import SideBarToggle from './SideBarToggle';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import GroupIcon from '@mui/icons-material/Group';
 import LoginIcon from '@mui/icons-material/Login';
-import { DarkMode, LightMode, Logout, Restaurant } from '@mui/icons-material';
+import { AppRegistration, DarkMode, LightMode, Logout, Restaurant } from '@mui/icons-material';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import Link from 'next/link';
 import { PublicUser } from '@/type/User';
 import PantryTabs from '../Pantry/PantryTabs';
 import theme from '@/app/theme';
+import { logout } from './actions';
 
 const drawerWidth = 240;
 
@@ -101,24 +101,26 @@ export default function SideBar({ user, children }: SideBarProps) {
 
     const handleModalToggle = () => setModalOpen(prev => !prev);
 
+    const handleLogout = async () => {
+        await logout();
+    }
+
     let sideBarItems;
     if (user) {
         sideBarItems = [
-            <Link key="accountIcon" href={`/${user.username}`}>
+            <Link key="accountIcon" href={`${user.username}`}>
                 <SideBarItem open={open} name="Profile" icon={<AccountBoxIcon />} handleClick={() => {}} />
             </Link>,
-            <Link key="recipesIcon" href="/recipes">
+            <Link key="recipesIcon" href="recipes">
                 <SideBarItem open={open} name="Recipes" icon={<MenuBookIcon />} handleClick={() => {}} />
             </Link>,
-            <Link key="followingIcon" href="/following">
-                <SideBarItem open={open} name="Following" icon={<GroupIcon />} handleClick={() => {}} />
-            </Link>,
+            <Divider key="div" />,
             <SideBarItem
                 key="logoutIcon"
                 open={open}
                 name="Log Out"
                 icon={<Logout />}
-                handleClick={() => {}}
+                handleClick={handleLogout}
             />,
         ];
     } else {
@@ -126,20 +128,22 @@ export default function SideBar({ user, children }: SideBarProps) {
             <Link key="loginIcon" href="login">
                 <SideBarItem open={open} name="Login" icon={<LoginIcon />} />
             </Link>,
+            <Link key="registerIcon" href="register">
+                <SideBarItem open={open} name="Create Account" icon={<AppRegistration />} />
+            </Link>,
         ];
     }
 
     return (
         <Box sx={{ display: 'flex', height: '100vh' }}>
             <Drawer variant="permanent" open={open}>
-                <List disablePadding>
+            <List disablePadding sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Box>
                     <SideBarToggle open={open} handleClick={drawerToggle} />
                     <Divider />
-                    <Link href="/">
-                        <SideBarItem open={open} name="PantryPal" icon={<Restaurant />} handleClick={() => {}} />
-                    </Link>
-                    <Divider />
                     {sideBarItems.map((item) => item)}
+                </Box>
+                <Box sx={{ mt: 'auto' }}>
                     <Divider />
                     <SideBarItem
                         open={open}
@@ -147,18 +151,44 @@ export default function SideBar({ user, children }: SideBarProps) {
                         icon={getThemeModeIcon()}
                         handleClick={themeToggle}
                     />
-                </List>
+                </Box>
+            </List>
+
             </Drawer>
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <AppBar position="static" elevation={1} sx={{ backgroundColor: theme.palette.primary.main }}  >
-                    <Toolbar sx={{ justifyContent: 'flex-end' }}>
-                        {user &&
-                            <IconButton color="inherit" onClick={handleModalToggle}>
-                                <KitchenIcon />
+                <AppBar position="static" elevation={1} sx={{ backgroundColor: theme.palette.primary.main }}>
+                    <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
+                        <Link
+                            href="/"
+                            style={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                            }}
+                        >
+                            <Restaurant sx={{ fontSize: 36, mr:1 }} />
+                            <Typography
+                                variant="h4"
+                                noWrap
+                                sx={{
+                                    fontWeight: 500,
+                                    fontFamily: 'Comfortaa, sans-serif',
+                                    letterSpacing: 1,
+                                }}
+                            >
+                                PantryPal
+                            </Typography>
+                        </Link>
+                        {user && (
+                            <IconButton color="inherit" onClick={handleModalToggle} sx={{ ml: 'auto' }}>
+                                <KitchenIcon sx={{ fontSize: 32 }} />
                             </IconButton>
-                        }
+                        )}
                     </Toolbar>
                 </AppBar>
+
                 <Box sx={{ flexGrow: 1 }}>
                     {children}
                 </Box>
