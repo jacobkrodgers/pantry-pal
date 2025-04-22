@@ -38,14 +38,12 @@ export default async function RootLayout({children}: Readonly<{children: React.R
     return (
         <html lang="en" suppressHydrationWarning>
         <body className={roboto.variable}>
-            <AppRouterCacheProvider>
+        <AppRouterCacheProvider>
                 <InitColorSchemeScript attribute="class" />
                 <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <SideBar user={user}>
-                    <Box sx={[{p: 3}]}>
-                        {children}
-                    </Box>
+                    {children}
                 </SideBar>
                 </ThemeProvider>
             </AppRouterCacheProvider>

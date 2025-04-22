@@ -20,7 +20,7 @@ export default async function RegisterPage() {
 
     // Otherwise, render the client registration form
     return (
-        <Paper style={{ height: '100vh', padding: 10 }}>
+        <Paper sx={{height: '100vh', m: 3 }}>
             <RegistrationForm />
         </Paper>
     );
