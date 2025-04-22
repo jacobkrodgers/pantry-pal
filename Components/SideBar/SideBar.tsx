@@ -156,7 +156,7 @@ export default function SideBar({ user, children }: SideBarProps) {
 
             </Drawer>
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <AppBar position="static" elevation={1} sx={{ backgroundColor: theme.palette.primary.main }}>
+                <AppBar position="sticky" elevation={1} sx={{ backgroundColor: theme.palette.primary.main }}>
                     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
                         <Link
                             href="/"
