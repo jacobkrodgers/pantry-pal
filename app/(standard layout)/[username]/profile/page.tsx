@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Box, Paper } from '@mui/material';
 import Profile from '@/Components/Users/Profile';
 import { ClientUser } from '@/type/User';
 import { fetchProfileUserFromSession, getRecipeCount } from './action';
@@ -27,5 +28,11 @@ export default function UserProfilePage() {
 
   if (!user) return <p>Loading profile...</p>;
 
-  return <Profile user={user} recipeCount={recipeCount} />;
+  return (
+    <Paper sx={{ height: '100vh', m: 3 }}>  
+        <Box sx={{ p: 4, m: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Profile user={user} recipeCount={recipeCount} />;
+        </Box>
+    </Paper>    
+  )
 }

@@ -11,12 +11,10 @@ type ProfileProps = {
 
 export default function Profile({ user, recipeCount }: ProfileProps) {
   return (
-    <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
+    <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="h5">{user.username}</Typography>
-        <IconButton aria-label="edit profile" size="small">
-          <EditIcon />
-        </IconButton>
+        <Typography variant="h3" sx={{ fontsize: 'clamp(1.5rem, 4vw, 2.5rem)'}}>{user.username}</Typography>
+    
       </Box>
 
       <Link
@@ -26,6 +24,6 @@ export default function Profile({ user, recipeCount }: ProfileProps) {
       >
         View all recipes ({recipeCount})
       </Link>
-    </Paper>
+    </>
   );
 }
