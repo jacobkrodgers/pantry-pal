@@ -133,7 +133,7 @@ export default function NewPantryItemInputs({
     return (
         <>
             {!showInputs && (
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end', position: 'relative', pr: 1 }}>
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end', position: 'relative', pr: 2 }}>
                     <Button
                         variant="contained"
                         color="primary"
@@ -147,7 +147,7 @@ export default function NewPantryItemInputs({
 
             {showInputs && (
                 <>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, pr:7 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, pr: 8 }}>
                         <TextField
                             name="form"
                             label="Form"
@@ -190,7 +190,7 @@ export default function NewPantryItemInputs({
                             required
                         />
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pr:7, mb:2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pr:8, mb:2 }}>
                         <Button variant="outlined" color="error" onClick={handleCancel}>
                             Cancel
                         </Button>
