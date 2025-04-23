@@ -1,19 +1,33 @@
 import Joi from 'joi';
 
-//Validation schema for user login
+// Validation schema for user login
 export const loginValidationSchema = Joi.object({
     username: Joi.string()
         .alphanum()
         .min(5)
         .max(15)
-        .required(),
+        .required()
+        .messages({
+            'string.base': 'Username must be a type of text.',
+            'string.empty': 'Please enter your username.',
+            'string.min': 'Username must be at least 5 characters.',
+            'string.max': 'Username must not exceed 15 characters.',
+            'any.required': 'Username is a required field.'
+        }),
     password: Joi.string()
         .min(7)
-        .pattern(new RegExp('(?=.*?[#?!@$ %^&*-])(?=.*?[0-9])'))
+        .pattern(new RegExp('(?=.*?[#?!@$%^&*-])(?=.*?[0-9])'))
         .required()
+        .messages({
+            'string.base': 'Password must be text.',
+            'string.empty': 'Password cannot be an empty field',
+            'string.min': 'Password must be at least 7 characters.',
+            'string.pattern.base': 'Password must contain at least one special character and one number.',
+            'any.required': 'Password is a required field.'
+        })
 });
 
-//Validation schema for user registration (sign up)
+// Validation schema for user registration (sign up)
 export const registerValidationSchema = Joi.object({
     username: Joi.string()
         .alphanum()
