@@ -10,7 +10,7 @@ export const newRecipeSchema = Joi.object({
     Joi.object({
       name: Joi.string().required(),
       quantityUnit: Joi.string().required(),
-      quantity: Joi.number().required(),
+      quantity: Joi.number().required().positive(),
       form: Joi.string().required()
     })
   ),

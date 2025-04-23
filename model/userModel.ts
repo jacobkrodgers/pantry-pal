@@ -432,7 +432,6 @@ export async function delete_user_by_id(id: string):
     }
     catch(e)
     {
-        console.log(e)
         return null;
     }
 }

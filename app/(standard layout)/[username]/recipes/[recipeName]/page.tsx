@@ -1,39 +1,67 @@
-import { Typography } from "@mui/material";
-import { redirect } from 'next/navigation'
-import { cookies } from "next/headers";
-import { getRecipeByRecipeName } from "@/controller/recipeController";
-import RecipePage from "@/Components/Recipe/RecipePage";
+"use client";
 
-export default async function Page(
-    {params}: {params: Promise<{ username: string, recipeName: string }>}
-)
-{
-    // Parse username and recipeId from path parameters
-    const { username, recipeName } = await params;
+import { Box, FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getPantry, getRecipe } from "./actions";
+import { Ingredient, Recipe } from "@/type/Recipe";
+import RecipeHeader from "@/Components/Recipe/RecipeHeader";
+import RecipeBody from "@/Components/Recipe/RecipeBody";
+import theme from "@/app/theme";
 
-    // Attempt to get session ID from user cookies
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get('session')?.value;
-    
-    // If the user isn't logged in, redirect
-    if (!sessionId)
-    {
-        redirect(`/login`);
-    }
+export default function Page() {
+    const params = useParams<{ username: string; recipeName: string }>();
 
-    // Convert URL encoding to recipe name string
-    const parsedRecipeName = recipeName.replaceAll("%20", " ",)
+    const [recipe, setRecipe] = useState<Recipe | null>(null);
+    const [pantryIngredients, setPantryIngredients] = useState<Ingredient[] | []>([]);
+    const [highlight, setHighlight] = useState(true);
 
-    // Attempt to get recipe from the database
-    const recipe = await getRecipeByRecipeName(sessionId, username, parsedRecipeName);
+    const toggleHighlight = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHighlight(event.target.checked);
+    };
 
-    // If a recipe was not found or the user was not authorized
-    if (!recipe.payload)
-    {
-        return <Typography>{recipe.message}</Typography>
+    useEffect(() => {
+        async function fetchData() {
+            const recipeData = await getRecipe(params.username, params.recipeName);
+            setRecipe(recipeData);
+
+            const pantryData = await getPantry();
+            setPantryIngredients(pantryData);
+        }
+
+        fetchData();
+    }, [params]);
+
+    if (!recipe) {
+        return <Typography>Loading...</Typography>;
     }
 
     return (
-        <RecipePage recipe={recipe.payload} />
+        <Box sx={{ pb: 5 }}>
+            <FormGroup sx={{ mx: 3, mt: 3 }}>
+                <FormControlLabel 
+                    control={<Switch checked={highlight} onChange={toggleHighlight} />} 
+                    label="Show Ingredient Indicators"
+                    labelPlacement="start"
+                />
+            </FormGroup>
+            <Paper sx={{ mx: 3, p: 2, minHeight: `calc(100vh - ${theme.spacing(20)})` }}>
+                <RecipeHeader 
+                    name={recipe.name} 
+                    dietTags={recipe.dietTags} 
+                    username={recipe.authorUsername!} 
+                    created={recipe.dateAdded} 
+                    updated={recipe.dateUpdated} 
+                />
+                <RecipeBody 
+                    prepTime={recipe.prepTime} 
+                    cookTime={recipe.prepTime} 
+                    recipeIngredients={recipe.ingredients} 
+                    pantryIngredients={pantryIngredients} 
+                    directions={recipe.instructions} 
+                    highlight={highlight} 
+                />
+            </Paper>
+        </Box>
     );
 }
