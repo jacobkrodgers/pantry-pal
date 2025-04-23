@@ -8,7 +8,6 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import FormInput from "@/Components/Inputs/FormInput";
 import { userUpdateSchema, loginValidationSchema } from '@/validation/userValidation';
-import { deleteUser } from '@/app/(standard layout)/[username]/settings/actions';
 
 type Props = {
   user: ClientUser;
@@ -155,10 +154,8 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     if(deleteUsername !== username) {
       setDeleteUsernameError('Not current username.');
       return;
-    }else if(deletePassword !== password) {
-      setDeletePasswordError('Not current password.');
-      return;
     }
+    onDeleteUser(deleteUsername, deletePassword);
   };
 
   useEffect(() => {
@@ -230,7 +227,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
                 <Button
                   variant='contained'
                   size='small'
-                  onClick={() => handleEdit('username')}
+                  onClick={() => saveUsernameOrEmail()}
                   disabled={!isUsernameValid || username === user.username}
                 >
                   Save
@@ -276,7 +273,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
                 <Button
                   variant='contained'
                   size='small'
-                  onClick={() => handleEdit('email')}
+                  onClick={() => saveUsernameOrEmail()}
                   disabled={!isEmailValid || email === user.email}
                 >
                   Save
@@ -419,8 +416,8 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             disabled={
                 !deleteUsername || 
                 !deletePassword ||
-                deleteUsername !== username ||
-                deletePassword !== password ||
+                //deleteUsername !== username ||
+                //deletePassword !== password ||
                 !!deleteUsernameError ||
                 !!deletePasswordError
             }

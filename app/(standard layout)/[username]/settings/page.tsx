@@ -77,12 +77,10 @@ export default function Page() {
             try {
                 const deletedUser = await deleteUser(username, password);
 
-                if(!deletedUser) {
+                if(deletedUser?.status !== 200) {
                     setError('User did not get deleted');
                 }
-
-                setUser(null);
-                setError('');
+                
             } catch(err) {
                 setError(err instanceof Error ? err.message : 'Unexpected error occurred.')
             }

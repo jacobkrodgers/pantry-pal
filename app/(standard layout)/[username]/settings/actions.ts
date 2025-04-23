@@ -6,7 +6,8 @@ import { getClientUserBySessionId,
          updateUserBySession,
          updateUserPasswordBySession,
          deleteUserWithSession } from "@/controller/userController";
-import { ClientUser, UserControllerResponse } from "@/type/User";
+import { ClientUser } from "@/type/User";
+import { ActionResponse } from '@/type/Generic';
 import { loginValidationSchema, userUpdateSchema } from "@/validation/userValidation"
 
 
@@ -93,12 +94,12 @@ export async function updatePassword(oldPassword: string, newPassword: string):
 }
 
 export async function deleteUser(username: string, password: string):
-    Promise<ClientUser| null>
+    Promise<ActionResponse<ClientUser> | null>
 {
     const { error } = await loginValidationSchema.validate({ username, password })
 
     if(error) {
-        throw new Error(error.details[0].message);
+        return { status: 401 }
     }
     
     const cookieStore = await cookies();
@@ -107,22 +108,23 @@ export async function deleteUser(username: string, password: string):
     if(!sessionId) {
         redirect(`/login`);
     }
-
     const user = await getClientUserBySessionId(sessionId);
 
     const userId = user.payload?.id;
     const email = user.payload?.email;
 
     if(!userId || !email) {
-        throw new Error('User not found');
+        return { status: 404 }
     }
 
     const deletedUser = await deleteUserWithSession(sessionId, userId, username, email, password);
 
     if(!deletedUser || !deletedUser.payload) {
-        throw new Error('Invalid username or password. Account not deleted.');
+        return { status: 404 }
     }
-        
-    redirect(`/login`);
-    return deletedUser.payload ?? null;
+    
+    if(deletedUser) {
+        redirect(`/login`);
+    }
+    return { status: 200 }
 }

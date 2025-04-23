@@ -521,7 +521,7 @@ export async function delete_user_by_id(id: string):
                 email: true
             }
         })
-    
+        console.log(updatedUser);
         return updatedUser;
     }
     catch(e)
