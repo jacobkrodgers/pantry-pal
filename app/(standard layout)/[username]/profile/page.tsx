@@ -1,34 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Profile from '@/Components/Users/Profile';
-import { PublicUser } from '@/type/User';
+import { ClientUser } from '@/type/User';
+import { fetchProfileUserFromSession, getRecipeCount } from './action';
 
 export default function UserProfilePage() {
-  const { username } = useParams(); 
-  const [user, setUser] = useState<PublicUser | null>(null);
-  const [recipeCount, setRecipeCount] = useState<number>(0);
+  const [user, setUser] = useState<ClientUser | null>(null);
+  const [recipeCount, setRecipeCount] = useState(0);
 
   useEffect(() => {
-    const fetchUserAndRecipes = async () => {
+    const fetchData = async () => {
       try {
-        const userRes = await fetch(`/api/users/username/${username}`); // Adjust if needed
-        const userData = await userRes.json();
+        const userData = await fetchProfileUserFromSession();
         setUser(userData);
 
-        const countRes = await fetch(`/api/users/${userData.id}/recipeCount`);
-        const countData = await countRes.json();
-        setRecipeCount(countData.count);
+        const count = await getRecipeCount(userData.id);
+        setRecipeCount(count);
       } catch (error) {
-        console.error('Error loading user or recipe count:', error);
+        console.error('Error fetching profile data:', error);
       }
     };
 
-    if (username) fetchUserAndRecipes();
-  }, [username]);
+    fetchData();
+  }, []);
 
-  if (!user) return <p>Loading user profile...</p>;
+  if (!user) return <p>Loading profile...</p>;
 
   return <Profile user={user} recipeCount={recipeCount} />;
 }

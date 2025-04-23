@@ -2,10 +2,10 @@
 
 import { Box, IconButton, Typography, Paper, Link } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { PublicUser } from '@/type/User';
+import { ClientUser } from '@/type/User';
 
 type ProfileProps = {
-  user: PublicUser;
+  user: ClientUser;
   recipeCount: number;
 };
 

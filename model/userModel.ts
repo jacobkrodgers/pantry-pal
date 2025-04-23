@@ -307,6 +307,26 @@ export async function get_public_user_by_session(id: string):
     return session ? session.user : null;
 }
 
+export async function get_client_user_by_session(id: string):
+    Promise<ClientUser | null>
+{
+    const session = await prisma.session.findUnique({
+        where: { id },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    email: true,
+                    username: true,
+                },
+            },
+        },
+    });
+
+    return session ? session.user : null;
+}
+
+
 export async function get_public_user_by_id(id: string):
     Promise<PublicUser | null>
 {

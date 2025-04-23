@@ -3,6 +3,7 @@ import { find_user_by_username_or_email, create_new_user,
          find_server_user_by_username, create_or_update_api_key_by_user_id, 
          delete_api_key, delete_api_key_by_user_id, 
          get_public_user_by_session,
+         get_client_user_by_session,
          get_user_by_api_key,
          get_client_user_by_id,
          update_user_by_id,
@@ -146,6 +147,19 @@ export async function getPublicUserBySessionId(sessionId: string):
     }
 
     return {status: 200, payload: publicUser}
+}
+
+export async function getClientUserBySessionId(sessionId: string):
+    Promise<ActionResponse<ClientUser>>
+{
+    const clientUser = await get_client_user_by_session(sessionId);
+    
+    if (!clientUser)
+    {
+        return {status: 401}
+    }
+
+    return {status: 200, payload: clientUser}
 }
 
 export async function getUserByUserId(apiKey: string, userId: string):
