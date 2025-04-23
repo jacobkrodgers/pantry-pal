@@ -307,6 +307,20 @@ export async function get_public_user_by_session(id: string):
     return session ? session.user : null;
 }
 
+export async function get_public_user_by_id(id: string):
+    Promise<PublicUser | null>
+{
+    const user = await prisma.user.findUnique({
+        where: {id},
+        select: {
+            id: true,
+            username: true
+        }
+    })
+
+    return user;
+}
+
 /**
  * Gets a user from the database using a provided session.
  * @param id - The session id of the user.

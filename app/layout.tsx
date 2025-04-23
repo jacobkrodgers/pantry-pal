@@ -6,7 +6,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { Roboto } from 'next/font/google';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
-import { CssBaseline } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import SideBar from "../Components/SideBar/SideBar";
 import { cookies } from "next/headers";
 import { getPublicUserBySessionId } from "@/controller/userController";
@@ -38,7 +38,7 @@ export default async function RootLayout({children}: Readonly<{children: React.R
     return (
         <html lang="en" suppressHydrationWarning>
         <body className={roboto.variable}>
-            <AppRouterCacheProvider>
+        <AppRouterCacheProvider>
                 <InitColorSchemeScript attribute="class" />
                 <ThemeProvider theme={theme}>
                 <CssBaseline />

@@ -18,7 +18,7 @@ export type ApiKey = {
 
 export type UserControllerResponse = {
     status: number;
-    payload: ClientUser | ApiKey | string;
+    payload: ClientUser | ApiKey | string | { user: ClientUser; session: any };
 }
 
 export type LoginInformation = {
