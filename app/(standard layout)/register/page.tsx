@@ -5,26 +5,26 @@ import { useRouter } from "next/navigation";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [sessionChecked, setSessionChecked] = useState(false);
+    const router = useRouter();
+    const [sessionChecked, setSessionChecked] = useState(false);
 
-  useEffect(() => {
-    async function checkSession() {
-      const res = await fetch("/api/session-check");
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.username) {
-          // Redirect to the user's profile 
-          router.push(data.username);
-          return;
+    useEffect(() => {
+        async function checkSession() {
+            const res = await fetch("/api/session-check");
+            if (res.ok) {
+                const data = await res.json();
+                if (data?.username) {
+                    // Redirect to the user's profile 
+                    router.push(data.username);
+                    return;
+                }
+            }
+            setSessionChecked(true);
         }
-      }
-      setSessionChecked(true);
-    }
-    checkSession();
-  }, [router]);
+        checkSession();
+    }, [router]);
 
-  if (!sessionChecked) return null;
+    if (!sessionChecked) return null;
 
-  return <RegistrationForm />;
+    return <RegistrationForm />;
 }

@@ -5,26 +5,26 @@ import { useRouter } from "next/navigation";
 import LoginForm from "@/Components/Forms/Login/LoginForm";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [sessionChecked, setSessionChecked] = useState(false);
+    const router = useRouter();
+    const [sessionChecked, setSessionChecked] = useState(false);
 
-  useEffect(() => {
-    async function checkSession() {
-      const res = await fetch("/api/session-check");
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.username) {
-          // Redirect to the user's profile using the username 
-          router.push(data.username);
-          return;
+    useEffect(() => {
+        async function checkSession() {
+            const res = await fetch("/api/session-check");
+            if (res.ok) {
+                const data = await res.json();
+                if (data?.username) {
+                    // Redirect to the user's profile using the username 
+                    router.push(data.username);
+                    return;
+                }
+            }
+            setSessionChecked(true);
         }
-      }
-      setSessionChecked(true);
-    }
-    checkSession();
-  }, [router]);
+        checkSession();
+    }, [router]);
 
-  if (!sessionChecked) return null; 
+    if (!sessionChecked) return null;
 
-  return <LoginForm />;
+    return <LoginForm />;
 }
