@@ -1,7 +1,6 @@
 'use client';
 
 import { Box, IconButton, Typography, Paper, Link } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import { ClientUser } from '@/type/User';
 
 type ProfileProps = {
