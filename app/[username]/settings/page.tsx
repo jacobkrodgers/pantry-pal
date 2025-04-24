@@ -1,6 +1,6 @@
 'use client'
 
-import { Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { ClientUser, UserControllerResponse } from "@/type/User"
 import { getUser, updatePassword, updateUsernameOrEmail, deleteUser } from "./actions"
@@ -92,11 +92,13 @@ export default function Page() {
     }
 
     return (
-        <UserSettings 
-            user={user} 
-            onUpdateUsernameOrEmail={handleUpdateUsernameOrEmail}
-            onUpdatePassword={handleUpdatePassword}
-            onDeleteUser={handleDeleteUser}
-        />
+        <Paper sx={{height: '100vh', m: 3 }}>
+            <UserSettings 
+                user={user} 
+                onUpdateUsernameOrEmail={handleUpdateUsernameOrEmail}
+                onUpdatePassword={handleUpdatePassword}
+                onDeleteUser={handleDeleteUser}
+            />
+        </Paper>
     )
 }

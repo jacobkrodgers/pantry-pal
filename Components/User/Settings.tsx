@@ -2,7 +2,19 @@
 
 import { ClientUser } from '@/type/User';
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Stack,
+  FormGroup,
+  InputAdornment
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -53,7 +65,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
       if (field === 'email') setEmailError(msg);
     }
   };
-  
+
   const savePassword = async () => {
     try {
       await onUpdatePassword(oldPassword, password);
@@ -75,28 +87,27 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
   };
 
   const handleClose = () => {
-    setOpen(false); // Close modal
-    setField(null); // Reset field
+    setOpen(false);
+    setField(null);
     setOldPassword('');
     setPassword('');
   };
 
   const handleSave = async () => {
-    // Reset any existing error messages
     setUsernameError('');
     setEmailError('');
     setPasswordError('');
     setOldPasswordError('');
-  
+
     const input = {
       username: field === 'username' ? username : undefined,
       email: field === 'email' ? email : undefined,
       oldPassword: field === 'password' ? oldPassword : undefined,
       newPassword: field === 'password' ? password : undefined,
     };
-  
+
     const { error } = userUpdateSchema.validate(input, { abortEarly: false });
-  
+
     if (error) {
       error.details.forEach(({ path, message }) => {
         const key = path[0];
@@ -109,7 +120,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     }
 
     let success = false;
-  
+
     if (field === 'username' || field === 'email') {
       await saveUsernameOrEmail();
       success = true;
@@ -118,11 +129,9 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     }
 
     if(success) {
-        handleClose();
+      handleClose();
     }
   };
-  
-  
 
   const handleDeleteClose = () => {
     setDeleteOpen(false);
@@ -134,7 +143,6 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     setDeleteUsernameError('');
     setDeletePasswordError('');
 
-    // Joi validation
     const { error } = loginValidationSchema.validate(
       {
         username: deleteUsername,
@@ -142,7 +150,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
       },
       { abortEarly: false }
     );
-  
+
     if (error) {
       error.details.forEach(({ path, message }) => {
         if (path[0] === 'username') setDeleteUsernameError(message);
@@ -162,28 +170,28 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
     const usernameResult = userUpdateSchema.validate({ username }, { abortEarly: false });
     const emailResult = userUpdateSchema.validate({ email }, { abortEarly: false });
     const passwordResult = userUpdateSchema.validate({ oldPassword, newPassword: password }, { abortEarly: false });
-  
+
     setUsernameError('');
     setEmailError('');
     setOldPasswordError('');
     setPasswordError('');
-  
+
     setIsUsernameValid(!usernameResult.error);
     setIsEmailValid(!emailResult.error);
     setIsPasswordValid(!passwordResult.error);
-  
+
     if (usernameResult.error) {
       usernameResult.error.details.forEach(({ path, message }) => {
         if (path[0] === 'username') setUsernameError(message);
       });
     }
-  
+
     if (emailResult.error) {
       emailResult.error.details.forEach(({ path, message }) => {
         if (path[0] === 'email') setEmailError(message);
       });
     }
-  
+
     if (passwordResult.error) {
       passwordResult.error.details.forEach(({ path, message }) => {
         if (path[0] === 'oldPassword') setOldPasswordError(message);
@@ -191,107 +199,122 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
       });
     }
   }, [username, email, oldPassword, password]);
-  
-  
 
-  return (    
+  return (
     <Box sx={{ maxWidth: 500, margin: 'auto', mt: 4 }}>
-      {/* Main Settings Form */}
-      <Box
-        component="form"
-        noValidate
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FormInput
-              label="Username"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                setUsernameError('');
-              }}
-              errorMessage={usernameError}
-              helperText={usernameError || '(Letters and numbers only)'}
-              disabled={isUsernameDisabled}
-              fullWidth
-              sx={{ flexGrow: 1, mr: 1 }}
-            />
-            {isUsernameDisabled ? (
-              <Tooltip title="Edit Username">
-                <IconButton onClick={() => setIsUsernameDisabled(false)} size="small">
-                  <EditIcon fontSize='small' />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                <Button
-                  variant='contained'
-                  size='small'
-                  onClick={() => saveUsernameOrEmail()}
-                  disabled={!isUsernameValid || username === user.username}
-                >
-                  Save
-                </Button>
-                <Button
-                  variant='outlined'
-                  size='small'
-                  onClick={() => {
-                    setUsername(user.username);
-                    setUsernameError('');
-                    setIsUsernameDisabled(true);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-        </Box>
+        <Typography variant="h5" align="center" gutterBottom>
+            Settings
+        </Typography>
+        <Box 
+            component="form" 
+            noValidate 
+            sx={{ 
+                display: 'flex', 
+                flexDirection: 
+                'column', gap: 5 
+                }}
+            >
+            <FormGroup>
+                <TextField
+                    label="Username"
+                    value={username}
+                    onChange={(e) => {
+                        setUsername(e.target.value);
+                        setUsernameError('');
+                    }}
+                    error={Boolean(usernameError)}
+                    helperText={usernameError ? usernameError : ''}
+                    disabled={isUsernameDisabled}
+                    fullWidth
+                    slotProps={{
+                        input: {
+                            endAdornment: 
+                                <IconButton 
+                                    color="primary"  
+                                    onClick={() => setIsUsernameDisabled(false)} 
+                                    disabled={!isUsernameDisabled}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                        },
+                    }}
+                    sx={{mb: 2}}
+                />
+                {!isUsernameDisabled && (
+                    <Stack direction="row" spacing={1}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => saveUsernameOrEmail()}
+                            disabled={!isUsernameValid || username === user.username}
+                        >
+                            Save
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                            setUsername(user.username);
+                            setUsernameError('');
+                            setIsUsernameDisabled(true);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </Stack>
+                )}
+            </FormGroup>
+            <FormGroup>
+                <TextField
+                    label="Email"
+                    value={email}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError('');
+                    }}
+                    error={Boolean(emailError)}
+                    helperText={emailError ? emailError : ''}
+                    disabled={isEmailDisabled}
+                    fullWidth
+                    slotProps={{
+                        input: {
+                            endAdornment: 
+                                <IconButton 
+                                    color="primary"  
+                                    onClick={() => setIsEmailDisabled(false)} 
+                                    disabled={!isEmailDisabled}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                        },
+                    }}
+                    sx={{mb: 2}}
+                />
+                {!isEmailDisabled && (
+                    <Stack direction="row" spacing={1}>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => saveUsernameOrEmail()}
+                        disabled={!isEmailValid || email === user.email}
+                    >
+                        Save
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                        setEmail(user.email);
+                        setEmailError('');
+                        setIsEmailDisabled(true);
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    </Stack>
+                )}
+            </FormGroup>
 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FormInput
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setEmailError('');
-              }}
-              errorMessage={emailError}
-              helperText={emailError || '(Use a valid email address)'}
-              disabled={isEmailDisabled}
-              fullWidth
-              sx={{ flexGrow: 1, mr: 1 }}
-            />
-            {isEmailDisabled ? (
-              <Tooltip title="Edit Email">
-                <IconButton onClick={() => setIsEmailDisabled(false)} size='small'>
-                  <EditIcon fontSize='small' />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                <Button
-                  variant='contained'
-                  size='small'
-                  onClick={() => saveUsernameOrEmail()}
-                  disabled={!isEmailValid || email === user.email}
-                >
-                  Save
-                </Button>
-                <Button
-                  variant='outlined'
-                  size='small'
-                  onClick={() => {
-                    setEmail(user.email);
-                    setEmailError('');
-                    setIsEmailDisabled(true);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-        </Box>
         <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
           <Button
             variant="outlined"
@@ -301,7 +324,6 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
           >
             Change Password
           </Button>
-          {/* Delete Account Button */}
           <Button
             variant="outlined"
             color="error"
@@ -314,7 +336,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
         </Box>
       </Box>
 
-      {/* Edit Password Modal */}
+      {/* Password Dialog */}
       <Dialog open={open && field === 'password'} onClose={handleClose}>
         <DialogTitle>Edit Password</DialogTitle>
         <DialogContent>
@@ -356,12 +378,12 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             onClick={handleSave}
             variant="contained"
             disabled={
-                !oldPassword || 
-                !password || 
-                !isPasswordValid ||
-                !!oldPasswordError ||
-                !!passwordError ||
-                password === oldPassword
+              !oldPassword ||
+              !password ||
+              !isPasswordValid ||
+              !!oldPasswordError ||
+              !!passwordError ||
+              password === oldPassword
             }
           >
             Save
@@ -369,7 +391,7 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Dialog */}
       <Dialog open={deleteOpen} onClose={handleDeleteClose}>
         <DialogTitle>Delete Account</DialogTitle>
         <DialogContent>
@@ -414,12 +436,10 @@ export default function UserSettings({user, onUpdateUsernameOrEmail, onUpdatePas
             variant="contained"
             onClick={handleDeleteSubmit}
             disabled={
-                !deleteUsername || 
-                !deletePassword ||
-                //deleteUsername !== username ||
-                //deletePassword !== password ||
-                !!deleteUsernameError ||
-                !!deletePasswordError
+              !deleteUsername ||
+              !deletePassword ||
+              !!deleteUsernameError ||
+              !!deletePasswordError
             }
           >
             Delete Account
