@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Box, Typography, Button } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { registerValidationSchema } from "@/validation/userValidation";
-import { registerUser } from "../../../app/(standard layout)/register/actions";
+import { registerUser } from "../../../app/register/actions";
 
 export default function RegistrationForm() {
     const router = useRouter();
