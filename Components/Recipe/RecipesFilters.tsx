@@ -17,13 +17,15 @@ import {
     Tooltip,
     Paper,
     Collapse,
-    Divider
+    Divider,
+    Icon
 } from "@mui/material";
 import SortIcon from '@mui/icons-material/Sort';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HelpIcon from '@mui/icons-material/Help';
+import StraightIcon from '@mui/icons-material/Straight';
 
 interface RecipesFiltersProps {
     handleSearchUpdate: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -121,26 +123,33 @@ export default function RecipesFilters({
                             </MenuItem>
                         </Select>
                     </FormControl>
-                <IconButton 
-                    onClick={toggleSortAsc} 
-                    sx={{ 
+                    <IconButton 
+                        onClick={toggleSortAsc} 
+                        sx={{ 
                             display: "flex", 
                             alignItems: "center", 
-                            gap: 0.5 
-                        }}>
-                    <Typography 
-                        variant="body2"
+                            gap: 0.5
+                        }}
                     >
-                        {sortAsc ? 'Ascending' : 'Descending'}
-                    </Typography>
-                    <SortIcon
-                    sx={{
-                        transform: sortAsc ? "rotate(0deg)" : "rotate(180deg)",
-                        transition: "transform 0.2s ease"
-                    }}
-                    />
-                </IconButton>
-            </Box>
+                        <Typography>
+                            {sortAsc ? 'Ascending' : 'Descending'}
+                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0 }}>
+                            <StraightIcon
+                                sx={{
+                                    transform: sortAsc ? "rotate(0deg)" : "rotate(180deg)",
+                                    transition: "transform 0.2s ease",
+                                    mr: '-3px'
+                                }}
+                            />
+                            <SortIcon
+                                sx={{
+                                    ml: '-3px'
+                                }}
+                            />
+                        </Box>
+                    </IconButton>
+                </Box>
             <FormGroup>
             <FormControlLabel
                 control={

@@ -1,14 +1,13 @@
 'use client';
 
-import { Ingredient, NewIngredient } from "@/type/Recipe";
+import { NewIngredient } from "@/type/Recipe";
 import { Alert, Box, Button, Snackbar, TextField } from "@mui/material";
 import { useState, useEffect } from "react";
 import { ingredientStringSchema, ingredientNumberSchema } from "@/validation/ingredientValidation";
 import { addPantryItem, addShoppingListItem } from "./actions";
-import { useRouter } from "next/navigation";
+import { usePantry } from "../Providers/PantryProvider";
 
 interface NewPantryItemInputProps {
-    pantryIngredients: Ingredient[];
     onAddItem: () => void;
     pantryType: string;
     errorRefresh?: boolean;
@@ -22,12 +21,14 @@ interface InputControl {
 }
 
 export default function NewPantryItemInputs({
-    pantryIngredients,
     onAddItem,
     pantryType,
     errorRefresh = false,
     setErrorRefresh
 }: NewPantryItemInputProps) {
+
+    const { pantryItems, refreshPantry, refreshShoppingList } = usePantry();
+
     const [showInputs, setShowInputs] = useState<boolean>(false);
     const [saveError, setSaveError] = useState<boolean>(errorRefresh);
 
@@ -39,7 +40,7 @@ export default function NewPantryItemInputs({
     const [disableSaveButton, setDisableSaveButton] = useState<boolean>(false);
 
     const isDuplicate = () => {
-        return pantryIngredients.some(
+        return pantryItems.some(
             (ingredient) =>
                 ingredient.name.toLowerCase() === ingredientName.value.trim().toLowerCase() &&
                 ingredient.form.toLowerCase() === ingredientForm.value.trim().toLowerCase()
@@ -103,6 +104,11 @@ export default function NewPantryItemInputs({
             onAddItem(); // Refresh pantry after successful save
             handleCancel();
         }
+
+        if (pantryType == 'pantry')
+            refreshPantry();
+        else
+            refreshShoppingList();
     };
     
 
@@ -133,7 +139,7 @@ export default function NewPantryItemInputs({
     return (
         <>
             {!showInputs && (
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end', position: 'relative', pr: 1 }}>
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end', position: 'relative', pr: 2 }}>
                     <Button
                         variant="contained"
                         color="primary"
@@ -147,27 +153,7 @@ export default function NewPantryItemInputs({
 
             {showInputs && (
                 <>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, pr:7 }}>
-                        <TextField
-                            name="form"
-                            label="Form"
-                            value={ingredientForm.value}
-                            sx={{ flex: 1 }}
-                            onChange={(e) => handleChange(e, setIngredientForm)}
-                            error={ingredientForm.error}
-                            helperText={ingredientForm.helperText}
-                            required
-                        />
-                        <TextField
-                            name="name"
-                            label="Name"
-                            value={ingredientName.value}
-                            sx={{ flex: 1 }}
-                            onChange={(e) => handleChange(e, setIngredientName)}
-                            error={ingredientName.error}
-                            helperText={ingredientName.helperText}
-                            required
-                        />
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, pr: 8 }}>
                         <TextField
                             name="quantity"
                             label="Quantity"
@@ -189,8 +175,28 @@ export default function NewPantryItemInputs({
                             helperText={ingredientQuantityUnit.helperText}
                             required
                         />
+                        <TextField
+                            name="name"
+                            label="Name"
+                            value={ingredientName.value}
+                            sx={{ flex: 1 }}
+                            onChange={(e) => handleChange(e, setIngredientName)}
+                            error={ingredientName.error}
+                            helperText={ingredientName.helperText}
+                            required
+                        />
+                        <TextField
+                            name="form"
+                            label="Form"
+                            value={ingredientForm.value}
+                            sx={{ flex: 1 }}
+                            onChange={(e) => handleChange(e, setIngredientForm)}
+                            error={ingredientForm.error}
+                            helperText={ingredientForm.helperText}
+                            required
+                        />
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pr:7, mb:2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pr:8, mb:2 }}>
                         <Button variant="outlined" color="error" onClick={handleCancel}>
                             Cancel
                         </Button>

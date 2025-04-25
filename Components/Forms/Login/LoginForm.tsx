@@ -96,15 +96,18 @@ export default function LoginForm() {
                         passwordError ||
                         "(At least 8 characters, include a special character and a number)"
                     }
-                    inputProps={{ minLength: 8 }}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton onClick={handleToggleShowPassword} edge="end">
-                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
+                    // Using slotProps to forward both HTML input attributes and input adornments.
+                    slotProps={{
+                        htmlInput: { minLength: 8 },
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={handleToggleShowPassword} edge="end">
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
                 <FormControlLabel
