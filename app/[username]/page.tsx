@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 
-import ProfileComponent from "@/Components/Profile/ProfileComponent";
-import SettingsComponent from "@/Components/Settings/SettingsComponent";
+import ProfileComponent from "@/Components/User/Profile";
+import SettingsComponent from "@/Components/User/Settings";
 
 export default function ProfilePage() {
     const [tab, setTab] = useState(0);
