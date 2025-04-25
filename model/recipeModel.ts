@@ -355,7 +355,6 @@ export async function get_recipes(
                 {
                     if (matchesDontHaveOneIngredient(ingredients, pantryIngredients))
                     {
-                        console.log(`adding false for ${recipe.name}`)
                         add = false;
                     }
                 }
@@ -594,11 +593,6 @@ export function matchesDontHaveOneIngredient(
         const match = pantryIngredients.find((pi) => pi.name === ingredient.name);
 
         if (!match) return true;
-
-        if (match.quantityUnit === ingredient.quantityUnit) 
-        {
-            if (match.quantity < ingredient.quantity) return true;
-        } 
         else 
         {
             const fromUnit = match.quantityUnit;
