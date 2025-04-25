@@ -22,7 +22,7 @@ model Ingredient {
   id             String        @id @default(uuid())
   name           String
   quantityUnit   String
-  quantity       Int
+  quantity       Float
   form           String
   recipes        Recipe[]
   Pantry         Pantry?       @relation(fields: [pantryId], references: [id])

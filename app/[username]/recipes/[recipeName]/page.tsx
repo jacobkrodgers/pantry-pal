@@ -3,17 +3,17 @@
 import { Box, FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPantry, getRecipe } from "./actions";
-import { Ingredient, Recipe } from "@/type/Recipe";
+import { getRecipe } from "./actions";
+import { Recipe } from "@/type/Recipe";
 import RecipeHeader from "@/Components/Recipe/RecipeHeader";
 import RecipeBody from "@/Components/Recipe/RecipeBody";
 import theme from "@/app/theme";
+import { usePantry } from "@/Components/Providers/PantryProvider";
 
 export default function Page() {
     const params = useParams<{ username: string; recipeName: string }>();
-
+    const { pantryItems } = usePantry();
     const [recipe, setRecipe] = useState<Recipe | null>(null);
-    const [pantryIngredients, setPantryIngredients] = useState<Ingredient[] | []>([]);
     const [highlight, setHighlight] = useState(true);
 
     const toggleHighlight = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,9 +24,6 @@ export default function Page() {
         async function fetchData() {
             const recipeData = await getRecipe(params.username, params.recipeName);
             setRecipe(recipeData);
-
-            const pantryData = await getPantry();
-            setPantryIngredients(pantryData);
         }
 
         fetchData();
@@ -57,7 +54,7 @@ export default function Page() {
                     prepTime={recipe.prepTime} 
                     cookTime={recipe.prepTime} 
                     recipeIngredients={recipe.ingredients} 
-                    pantryIngredients={pantryIngredients} 
+                    pantryIngredients={pantryItems} 
                     directions={recipe.instructions} 
                     highlight={highlight} 
                 />

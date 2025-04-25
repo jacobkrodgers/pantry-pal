@@ -3,16 +3,19 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Ingredient } from '@/type/Recipe';
-import { getPantry, getShoppingList } from './actions';
+import { getPantry, getShoppingList, addPantryItem, addShoppingListItem } from './actions';
 
-interface PantryContextProps {
+interface PantryContextType {
     pantryItems: Ingredient[];
     setPantryItems: React.Dispatch<React.SetStateAction<Ingredient[]>>;
     shoppingListItems: Ingredient[];
     setShoppingListItems: React.Dispatch<React.SetStateAction<Ingredient[]>>;
+    refreshPantry: () => Promise<void>;
+    refreshShoppingList: () => Promise<void>;
 }
 
-const PantryContext = createContext<PantryContextProps | undefined>(undefined);
+// Instead of defaulting to undefined, pass a dummy fallback (you’ll never use it)
+const PantryContext = createContext<PantryContextType | null>(null);
 
 export const PantryProvider = ({ children }: { children: React.ReactNode }) => {
     const [pantryItems, setPantryItems] = useState<Ingredient[]>([]);
@@ -33,17 +36,34 @@ export const PantryProvider = ({ children }: { children: React.ReactNode }) => {
         fetchData();
     }, []);
 
+    const refreshPantry = async () => {
+        const result = await getPantry();
+
+        if (result.status === 201) {
+            setPantryItems(result.payload!.ingredients);
+        }
+    };
+
+    const refreshShoppingList = async () => {
+        const result = await getShoppingList();
+
+        if (result.status === 201) {
+            setShoppingListItems(result.payload!.ingredients);
+        }
+    };
+    
+
     return (
-        <PantryContext.Provider value={{ pantryItems, setPantryItems, shoppingListItems, setShoppingListItems }}>
+        <PantryContext.Provider value={{ pantryItems, setPantryItems, shoppingListItems, setShoppingListItems, refreshPantry, refreshShoppingList }}>
             {children}
         </PantryContext.Provider>
     );
 };
 
-export const usePantry = () => {
+export const usePantry = (): PantryContextType => {
     const context = useContext(PantryContext);
     if (!context) {
-        return;
+        throw new Error('usePantry must be used within a PantryProvider');
     }
     return context;
 };
