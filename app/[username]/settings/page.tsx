@@ -1,17 +1,15 @@
 'use client'
 
 import { Paper, Typography } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
-import { ClientUser, UserControllerResponse } from "@/type/User"
+import { useEffect, useState } from "react";
+import { ClientUser } from "@/type/User"
 import { getUser, updatePassword, updateUsername, updateEmail, deleteUser } from "./actions"
 import Settings from "@/Components/User/Settings";
 import { emailValidationSchema, loginValidationSchema, usernameValidationSchema, userUpdateSchema } from "@/validation/userValidation";
-import { useRouter } from "next/navigation";
 import { ActionResponse } from "@/type/Generic";
 
 export default function Page() 
 {
-    const router = useRouter();
 
     const [user, setUser] = useState<ClientUser | null>(null);
 
