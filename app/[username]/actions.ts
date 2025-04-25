@@ -10,6 +10,7 @@ import { getClientUserBySessionId,
 import { ClientUser } from "@/type/User";
 import { ActionResponse } from '@/type/Generic';
 import { emailValidationSchema, loginValidationSchema, usernameValidationSchema, userUpdateSchema } from "@/validation/userValidation"
+import { get_recipe_count_by_user_id } from '@/controller/recipeController';
 
 
 export async function getUser():Promise<ClientUser | null> 
@@ -151,4 +152,9 @@ export async function deleteUser(username: string, password: string):
         redirect(`/login`);
     }
     return { status: 200 }
+}
+
+export async function getRecipeCount(userId: string): Promise<number> 
+{
+    return await get_recipe_count_by_user_id(userId);
 }
