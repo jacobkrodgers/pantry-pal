@@ -29,7 +29,7 @@ export default function UserProfilePage() {
   if (!user) return <p>Loading profile...</p>;
 
   return (
-    <Paper sx={{ height: '100vh', m: 3 }}>  
+    <Paper sx={{ height: '100vh', m: 1 }}>  
         <Profile user={user} recipeCount={recipeCount} />
     </Paper>    
   )

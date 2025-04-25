@@ -186,7 +186,7 @@ export default function ProfilePage() {
                     }}
                 />
             </Tabs>
-            <Paper sx={{height: '100vh', mx: 3, mt: 3, p: 3 }}>
+            <Paper sx={{height: '100vh', mx: 3, mt: 3, p: 1 }}>
                 {tab === 0 && 
                     (!user ? 
                         <Typography>{"Loading..."}</Typography> :

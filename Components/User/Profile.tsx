@@ -10,7 +10,7 @@ type ProfileProps = {
 
 export default function Profile({ user, recipeCount }: ProfileProps) {
   return (
-    <Card variant="outlined" sx={{margin: 5}}>
+    <Card variant="outlined" sx={{margin: 1}}>
         <CardContent>
             <Box 
                 sx={{ 
