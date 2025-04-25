@@ -30,15 +30,7 @@ export default function UserProfilePage() {
 
   return (
     <Paper sx={{ height: '100vh', m: 3 }}>  
-        <Card sx={{ maxWidth: 600,
-                    mx: 'auto',
-                    m:4, p:2,
-                    borderRadius: 3,
-                    backgroundColor:theme => theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100'}}>
-            <CardContent>
-                <Profile user={user} recipeCount={recipeCount} />
-            </CardContent>
-        </Card>
+        <Profile user={user} recipeCount={recipeCount} />
     </Paper>    
   )
 }
