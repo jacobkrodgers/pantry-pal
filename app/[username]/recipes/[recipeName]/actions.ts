@@ -3,12 +3,12 @@
 import { getPantryBySession } from "@/controller/pantryController";
 import { getRecipeByRecipeName } from "@/controller/recipeController";
 import { Pantry } from "@/type/Pantry";
-import { Ingredient, Recipe } from "@/type/Recipe";
+import { DisplayRecipe, Ingredient, Recipe } from "@/type/Recipe";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function getRecipe(username: string, recipeName: string):
-    Promise<Recipe | null>
+    Promise<DisplayRecipe | null>
 {
     // Attempt to get session ID from user cookies
     const cookieStore = await cookies();
