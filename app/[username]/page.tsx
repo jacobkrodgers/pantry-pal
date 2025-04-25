@@ -7,22 +7,31 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ProfileComponent from "@/Components/User/Profile";
 import SettingsComponent from "@/Components/User/Settings";
 import { Paper, Typography } from "@mui/material";
-import { getUser, updatePassword, updateUsername, updateEmail, deleteUser } from "./actions"
+import { getUser, updatePassword, updateUsername, updateEmail, deleteUser, getRecipeCount } from "./actions"
 import Settings from "@/Components/User/Settings";
 import { emailValidationSchema, loginValidationSchema, usernameValidationSchema, userUpdateSchema } from "@/validation/userValidation";
 import { useRouter } from "next/navigation";
 import { ActionResponse } from "@/type/Generic";
 import { ClientUser } from "@/type/User";
+import Profile from "@/Components/User/Profile";
 
 export default function ProfilePage() {
 
     const [user, setUser] = useState<ClientUser | null>(null);
+    const [recipeCount, setRecipeCount] = useState(0);
+
     const [tab, setTab] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
             const userData = await getUser();
+
+            let count;
+            if (userData)
+                count = await getRecipeCount(userData.id);
+            
             setUser(userData);
+            setRecipeCount(count ? count : 0);
         }
         
         fetchData();
@@ -178,7 +187,12 @@ export default function ProfilePage() {
                 />
             </Tabs>
             <Paper sx={{height: '100vh', mx: 3, mt: 3, p: 3 }}>
-                {tab === 0 && <ProfileComponent />}
+                {tab === 0 && 
+                    (!user ? 
+                        <Typography>{"Loading..."}</Typography> :
+                        <Profile user={user} recipeCount={recipeCount}/>
+                    )
+                }
                 {tab === 1 &&
                     (!user ? 
                         <Typography>{"Loading..."}</Typography> :
