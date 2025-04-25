@@ -10,6 +10,7 @@ import { Box, CssBaseline } from "@mui/material";
 import SideBar from "../Components/SideBar/SideBar";
 import { cookies } from "next/headers";
 import { getPublicUserBySessionId } from "@/controller/userController";
+import { PantryProvider } from "@/Components/Providers/PantryProvider";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -42,9 +43,11 @@ export default async function RootLayout({children}: Readonly<{children: React.R
                 <InitColorSchemeScript attribute="class" />
                 <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <SideBar user={user}>
-                    {children}
-                </SideBar>
+                <PantryProvider>
+                    <SideBar user={user}>
+                        {children}
+                    </SideBar>
+                </PantryProvider>
                 </ThemeProvider>
             </AppRouterCacheProvider>
         </body>

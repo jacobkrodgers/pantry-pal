@@ -5,11 +5,11 @@ import { Tabs, Tab, Box } from "@mui/material";
 import Pantry from "./Pantry";
 import { Ingredient } from "@/type/Recipe";
 import { getPantry, getShoppingList } from './actions';
+import { usePantry } from '@/Components/Providers/PantryProvider';
 
 export default function PantryTabs() {
     const [tabIndex, setTabIndex] = useState(0);
-    const [pantryItems, setPantryItems] = useState<Ingredient[]>([]);
-    const [shoppingListItems, setShoppingListItems] = useState<Ingredient[]>([]);
+    const { pantryItems, setPantryItems, shoppingListItems, setShoppingListItems } = usePantry();
 
     useEffect(() => {
         async function fetchData() {

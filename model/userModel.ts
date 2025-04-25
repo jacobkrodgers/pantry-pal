@@ -341,6 +341,31 @@ export async function get_public_user_by_id(id: string):
     return user;
 }
 
+/**
+ * Gets a user from the database using a provided session.
+ * @param id - The session id of the user.
+ * @returns An object representing a client user
+ * @returns null
+ */
+export async function get_client_user_by_session(id: string):
+    Promise<ClientUser | null>
+{
+    const session = await prisma.session.findUnique({
+        where: { id },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                },
+            },
+        },
+    });
+
+    return session ? session.user : null;
+}
+
 export async function get_client_user_by_id(id: string):
     Promise<ClientUser | null>
 {
@@ -388,6 +413,56 @@ export async function update_user_by_id(id: string, username?: string, email?: s
     }
 }
 
+export async function update_username_by_id(id: string, username: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                username: username
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch(e)
+    {
+        return null;
+    }
+}
+
+export async function update_email_by_id(id: string, email: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                email: email
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch(e)
+    {
+        return null;
+    }
+}
+
 export async function update_user_password_by_id(id: string, passwordHash: string):
     Promise<ClientUser | null>
 {
@@ -427,7 +502,6 @@ export async function delete_user_by_id(id: string):
                 email: true
             }
         })
-    
         return updatedUser;
     }
     catch(e)

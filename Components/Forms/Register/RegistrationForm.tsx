@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Box, Typography, Button } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { registerValidationSchema } from "@/validation/userValidation";
-import { registerUser } from "../../../app/(standard layout)/register/actions";
+import { registerUser } from "../../../app/register/actions";
 
 export default function RegistrationForm() {
     const router = useRouter();
@@ -64,7 +64,7 @@ export default function RegistrationForm() {
         try {
             const result = await registerUser(username, email, password);
             if (result.status === 201) {
-                router.push("/login");
+                router.push("login");
             } else {
                 const msg = result.payload as string;
                 if (msg.toLowerCase().includes("username")) {

@@ -114,3 +114,40 @@ export const userUpdateSchema = Joi.object({
 .messages({
     "object.missing": "At least one field (username, email, or password) must be provided"
 });
+
+export const passwordValidationSchema = Joi
+        .string()
+        .min(7)
+        .pattern(new RegExp('(?=.*?[#?!@$%^&*-])(?=.*?[0-9])'))
+        .required()
+        .messages({
+            'string.base': 'Password must be text.',
+            'string.empty': 'Password cannot be an empty field',
+            'string.min': 'Password must be at least 7 characters.',
+            'string.pattern.base': 'Password must contain at least one special character and one number.',
+            'any.required': 'Password is a required field.'
+        })
+
+export const usernameValidationSchema = Joi
+        .string()
+        .min(5)
+        .max(15)
+        .alphanum()
+        .optional()
+        .messages({
+            'string.base': 'Username should be a type of text',
+            'string.empty': 'Username cannot be an empty field',
+            'string.min': 'Username must be at least 5 characters long',
+            'string.max': 'Username must not exceed 15 characters',
+            'any.required': 'Username is a required field'
+        })
+
+export const emailValidationSchema = Joi
+        .string()
+        .email({ tlds: { allow: false } })
+        .required().messages({
+            'string.base': 'Email should be a type of text',
+            'string.empty': 'Email cannot be an empty field',
+            'string.email': 'Email must be a valid email',
+            'any.required': 'Email is a required field'
+        })

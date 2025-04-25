@@ -7,8 +7,13 @@ import { useState, useEffect } from 'react';
 import { getPantry, getRecipes } from './actions';
 import RecipesFilters from '@/Components/Recipe/RecipesFilters';
 import { SelectChangeEvent } from '@mui/material';
+import { usePantry } from '@/Components/Providers/PantryProvider';
 
-export default function Page() {
+export default function Page() 
+{
+
+    const {pantryItems} = usePantry();
+
     const [recipes, setRecipes] = useState<DisplayRecipe[]>([]);
     const [searchString, setSearchString] = useState<string>("");
     const [currPageNumber, setCurrPageNumber] = useState<number>(1);
@@ -23,7 +28,6 @@ export default function Page() {
         mightHaveIngredients: false,
         dontHaveIngredients: false,
       });
-    const [pantry, setPantry] = useState<Ingredient[]>([]);
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCurrPageNumber(1);
@@ -45,12 +49,9 @@ export default function Page() {
                 sortBy, sortAsc, highlight, checkboxes);
             setRecipes(recipeData.payload!.recipes);
             setTotalRecipes(recipeData.payload!.count)
-
-            const pantryData = await getPantry();
-            setPantry(pantryData.payload ? pantryData.payload.ingredients : []);
         }
         fetchRecipes();
-    }, [searchString, currPageNumber, recipesPerPage, sortBy, sortAsc, checkboxes]);
+    }, [searchString, currPageNumber, recipesPerPage, sortBy, sortAsc, checkboxes, pantryItems]);
 
     function toggleHighlight()
     {
@@ -85,7 +86,7 @@ export default function Page() {
                     <RecipePreview 
                         key={index} 
                         recipe={recipe} 
-                        pantryIngredients={pantry} 
+                        pantryIngredients={pantryItems} 
                         highlight={highlight} 
                         username={recipe.user.username}/>
                 ))}

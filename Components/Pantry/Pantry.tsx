@@ -95,7 +95,6 @@ export default function Pantry({ tabName, pantryItems, setPantryItems }: PantryP
             <Divider sx={{ mb: 3 }} />
             <Box>
                 <NewPantryItemInputs
-                    pantryIngredients={currentPantryItems}
                     onAddItem={fetchPantryItems}
                     pantryType={pantryType}
                     errorRefresh={errorRefresh}

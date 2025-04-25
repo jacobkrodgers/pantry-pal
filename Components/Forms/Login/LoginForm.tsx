@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
-import { loginUser } from "../../../app/(standard layout)/login/actions";
+import { loginUser } from "../../../app/login/actions";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
@@ -96,15 +96,18 @@ export default function LoginForm() {
                         passwordError ||
                         "(At least 8 characters, include a special character and a number)"
                     }
-                    inputProps={{ minLength: 8 }}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton onClick={handleToggleShowPassword} edge="end">
-                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
+                    // Using slotProps to forward both HTML input attributes and input adornments.
+                    slotProps={{
+                        htmlInput: { minLength: 8 },
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={handleToggleShowPassword} edge="end">
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                 />
                 <FormControlLabel

@@ -44,15 +44,11 @@ export default function RecipeHeader(
                 gap={1}
             >
                     {dietTags.map((tag, index) => (
-                        <Link 
-                            key={index} 
-                            href="test"
-                        >
-                            <Chip 
-                                label={tag.name} 
-                                size="small" 
-                                onClick={(e) => e.stopPropagation()}/>
-                        </Link>
+                        <Chip
+                            key={index}
+                            label={tag.name} 
+                            size="small" 
+                        />
                     ))}
                 </Box>
             </List>
