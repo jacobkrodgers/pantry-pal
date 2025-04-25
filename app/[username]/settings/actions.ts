@@ -3,12 +3,13 @@
 import { redirect } from 'next/navigation'
 import { cookies } from "next/headers";
 import { getClientUserBySessionId,
-         updateUserBySession,
+         updateUsernameBySession,
+         updateEmailBySession,
          updateUserPasswordBySession,
          deleteUserWithSession } from "@/controller/userController";
 import { ClientUser } from "@/type/User";
 import { ActionResponse } from '@/type/Generic';
-import { loginValidationSchema, userUpdateSchema } from "@/validation/userValidation"
+import { emailValidationSchema, loginValidationSchema, usernameValidationSchema, userUpdateSchema } from "@/validation/userValidation"
 
 
 export async function getUser():Promise<ClientUser | null> 
@@ -25,37 +26,60 @@ export async function getUser():Promise<ClientUser | null>
     return user.payload ?? null;
 }
 
-export async function updateUsernameOrEmail(username: string, email: string):
-    Promise<ClientUser| null> 
+export async function updateUsername(username: string):
+    Promise<ActionResponse<ClientUser>> 
 {
-    const { error } = await userUpdateSchema.validate({ username, email })
+    const { error: usernameValidationError } = await usernameValidationSchema.validate(username)
 
-    if(error) {
-        throw new Error(error.details[0].message);
+    if(usernameValidationError) 
+    {
+        return {message: usernameValidationError.message, status: 500}
     }
     
     const cookieStore = await cookies();
     const sessionId = cookieStore.get('session')?.value;
 
-    if(!sessionId) {
+    if(!sessionId)
+    {
         redirect(`/login`);
     }
 
-    const user = await getClientUserBySessionId(sessionId);
+    const updatedUser = await updateUsernameBySession(sessionId, username);
 
-    const userId = user.payload?.id;
-
-    if(!userId) {
-        throw new Error('User not found.');
+    if(!updatedUser.payload) 
+    {
+        return {message: "Internal Server Error", status: 500}
     }
 
-    const updatedUser = await updateUserBySession(sessionId, userId, username, email);
+    return {payload: updatedUser.payload, status: 200, message: 'success'};
+}
 
-    if(!updatedUser) {
-        throw new Error('Failed to update user.');
+export async function updateEmail(email: string):
+    Promise<ActionResponse<ClientUser>> 
+{
+    const { error: emailValidationError } = await emailValidationSchema.validate(email)
+
+    if(emailValidationError) 
+    {
+        return {message: emailValidationError.message, status: 500}
+    }
+    
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get('session')?.value;
+
+    if(!sessionId)
+    {
+        redirect(`/login`);
     }
 
-    return updatedUser.payload ?? null;
+    const updatedUser = await updateEmailBySession(sessionId, email);
+
+    if(!updatedUser.payload) 
+    {
+        return {message: "Internal Server Error", status: 500}
+    }
+
+    return {payload: updatedUser.payload, status: 200, message: 'success'};
 }
 
 export async function updatePassword(oldPassword: string, newPassword: string):

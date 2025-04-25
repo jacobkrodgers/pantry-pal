@@ -345,96 +345,7 @@ export async function get_client_user_by_session(id: string):
 
     return session ? session.user : null;
 }
-/*
-export async function get_people_followed_by_user_id(userId: string, page: number, peopleFollowedPerPage: number):
-    Promise<PublicUser[] | null>
-{
-    const followedUsers = await prisma.followedUser.findMany({
-        where: { userId },
-        select: {
-            user: true
-        },
-        skip: page * peopleFollowedPerPage,
-        take: peopleFollowedPerPage * 5,
-    });
 
-    return followedUsers.length > 0
-        ? followedUsers.map(followedUser => {
-            const user = followedUser.user;
-            return {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                passwordHash: user.passwordHash,
-                // Add any additional properties here if needed
-            } as PublicUser; // Ensure the shape matches the PublicUser type
-        })
-        : [];
-}
-
-export async function add_person_to_followed_by_user_id(userId: string, followedUserId: string):
-    Promise<PublicUser | null>
-{
-    try
-    {
-        const existingFollow = await prisma.followedUser.findUnique({
-            where: {
-                userId,
-                id: followedUserId
-            }
-        });
-
-        if(existingFollow)
-        {
-            return null;
-        }
-
-        const newFollowedUser = await prisma.followedUser.create({
-            data: {userId, id: followedUserId}
-        });
-
-        if(!newFollowedUser)
-        {
-            return null;
-        }
-
-        return newFollowedUser;
-    }
-    catch
-    {
-        return null;
-    }
-}
-
-export async function delete_person_from_followed_by_user_id(userId: string, followedUserId: string):
-    Promise<PublicUser | null>
-{
-    try
-    {
-        const followedUser = await prisma.user.findUnique({
-            where: {id: followedUserId}
-        });
-
-        if(!followedUser)
-        {
-            return null;
-        }
-
-        const deletedFollowedUser = await prisma.followedUser.delete({
-            where: {
-                userId,
-                id: followedUserId
-            }
-        });
-
-        return deletedFollowedUser;
-    }
-    catch
-    {
-        return null;
-    }
-}
-*/
 export async function get_client_user_by_id(id: string):
     Promise<ClientUser | null>
 {
@@ -477,6 +388,56 @@ export async function update_user_by_id(id: string, username?: string, email?: s
         return updatedUser;
     }
     catch
+    {
+        return null;
+    }
+}
+
+export async function update_username_by_id(id: string, username: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                username: username
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch(e)
+    {
+        return null;
+    }
+}
+
+export async function update_email_by_id(id: string, email: string):
+    Promise<ClientUser | null>
+{
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where: {id},
+            data: {
+                email: email
+            },
+            select: {
+                id: true,
+                username: true,
+                email: true
+            }
+        })
+    
+        return updatedUser;
+    }
+    catch(e)
     {
         return null;
     }
@@ -525,7 +486,6 @@ export async function delete_user_by_id(id: string):
     }
     catch(e)
     {
-        console.log(e)
         return null;
     }
 }

@@ -1,14 +1,17 @@
 import * as argon2 from "argon2";
-import { find_user_by_username_or_email, create_new_user, create_session,
-         find_server_user_by_username, create_or_update_api_key_by_user_id, 
-         delete_api_key, delete_api_key_by_user_id, 
-         get_public_user_by_session,
-         get_user_by_api_key,
-         get_client_user_by_id,
-         update_user_by_id,
-         update_user_password_by_id,
-         delete_user_by_id,
-         get_client_user_by_session
+import { 
+            find_user_by_username_or_email, create_new_user, create_session,
+            find_server_user_by_username, create_or_update_api_key_by_user_id, 
+            delete_api_key, delete_api_key_by_user_id, 
+            get_public_user_by_session,
+            get_user_by_api_key,
+            get_client_user_by_id,
+            update_user_by_id,
+            update_user_password_by_id,
+            delete_user_by_id,
+            get_client_user_by_session,
+            update_username_by_id,
+            update_email_by_id
         } 
     from "@/model/userModel";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
@@ -338,99 +341,39 @@ export async function getClientUserBySessionId(sessionId: string):
 
     return {status: 200, payload: clientUser}
 }
-/*
-export async function getFollowedUsersByUsername(username: string, page: number, peopleFollowedPerPage: number):
-    Promise<ActionResponse<PublicUser[]>>
-{
-    const userExists = await find_server_user_by_username(username);
 
-    if(!userExists)
-    {
-        return { status: 404 }
-    }
-    
-    const followedUsers: PublicUser[] | null = await get_people_followed_by_user_id(userExists.id, page, peopleFollowedPerPage);
-
-    if(!followedUsers)
-    {
-        return { status: 500 }
-    }
-
-    return { status: 200, payload: followedUsers }
-}
-
-export async function updateFollowedUsers(username: string, followedUsername: string):
-    Promise<ActionResponse<PublicUser>>
-{
-    const userExists = await find_server_user_by_username(username);
-
-    if(!userExists)
-    {
-        return { status: 404 };
-    }
-
-    const followedUserExists = await find_server_user_by_username(followedUsername);
-
-    if(!followedUserExists)
-    {
-        return { status: 401 };
-    }
-
-    const newFollowedUser: PublicUser | null = await add_person_to_followed_by_user_id(userExists.id, followedUserExists.id);
-
-    if(!newFollowedUser)
-    {
-        return { status: 500 };
-    }
-
-    return { status: 200, payload: newFollowedUser }
-}
-
-export async function deleteUserFromFollowed(username: string, followedUsername: string):
-    Promise<GenericAPIResponse>
-{
-    const userExists = await find_server_user_by_username(username);
-
-    if(!userExists)
-    {
-        return { status: 404, payload: "Not Found" };
-    }
-
-    const followedUserExists = await find_server_user_by_username(followedUsername);
-
-    if(!followedUserExists)
-    {
-        return { status: 401, payload: "Unauthorized" };
-    }
-
-    const deletedFollowedUser: PublicUser | null = await delete_person_from_followed_by_user_id(userExists.id, followedUserExists.id);
-
-    if(!deletedFollowedUser)
-    {
-        return { status: 500, payload: "Internal Server Error" };
-    }
-
-    return { status: 200, payload: "OK" };
-}
-*/
-export async function updateUserBySession(
-    sessionId: string, userId: string, 
-    username?: string, email?: string):
+export async function updateUsernameBySession(
+    sessionId: string, username: string):
         Promise<ActionResponse<ClientUser>>
 {
-    const requestingUser = await get_public_user_by_session(sessionId);
+    const user = await get_public_user_by_session(sessionId);
     
-    if (!requestingUser)
+    if (!user)
+    {
+        return {message: "Not Authorized.", status: 401};
+    }
+    const updatedUser = await update_username_by_id(user.id, username);
+
+    if (!updatedUser)
+    {
+        return {message: "Internal Server Error", status: 500};
+    }
+
+    return {status: 200, payload: updatedUser};
+}
+
+export async function updateEmailBySession(
+    sessionId: string, email: string):
+        Promise<ActionResponse<ClientUser>>
+{
+    const user = await get_public_user_by_session(sessionId);
+    
+    if (!user)
     {
         return {message: "Not Authorized.", status: 401};
     }
 
-    if (!(requestingUser.id === userId))
-    {
-        return {message: "Not Authorized.", status: 401};
-    }
-
-    const updatedUser = await update_user_by_id(userId, username, email);
+    const updatedUser = await update_email_by_id(user.id, email);
 
     if (!updatedUser)
     {
