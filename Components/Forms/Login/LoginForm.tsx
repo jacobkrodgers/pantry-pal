@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
-import { loginUser } from "../../../app/(standard layout)/login/actions";
+import { loginUser } from "../../../app/login/actions";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
