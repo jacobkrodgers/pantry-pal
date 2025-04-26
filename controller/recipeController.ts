@@ -361,3 +361,35 @@ export async function createRecipeBySessionId(sessionId: string, recipe: NewReci
     return {status: 201, payload: displayRecipe}
 
 }
+
+export async function deleteRecipeBySession(sessionId: string, recipeId: string):
+    Promise<RecipeControllerResponse | GenericAPIResponse> 
+{
+    // Check if the user is authorized.
+    const user = await get_client_user_by_session(sessionId);
+    if (!user)
+    {
+        return { payload: "Unauthorized", status: 401 };
+    }
+
+    // Check if the recipe exists.
+    const recipe = await find_recipe_by_recipe_id(recipeId);
+    if (!recipe)
+    {
+        return { payload: "Not Found", status: 404 };
+    }
+
+    // Check if the user is the author.
+    if (recipe.userId !== user.id)
+    {
+        return { payload: "Forbidden", status: 403 };
+    }
+
+    // Delete the recipe.
+    const deletedRecipe = await delete_recipe_by_recipe_id(recipeId);
+    if (!deletedRecipe)
+    {
+        return { payload: "Internal Server Error", status: 500 };
+    }
+    return { payload: "Recipe deleted successfully", status: 200 };
+}

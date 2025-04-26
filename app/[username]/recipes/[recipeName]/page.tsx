@@ -1,9 +1,9 @@
 "use client";
 
-import { Box, FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
+import { Box, Button, FormControlLabel, FormGroup, Paper, Switch, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getRecipe } from "./actions";
+import { deleteRecipe, getRecipe } from "./actions";
 import { DisplayRecipe, Recipe } from "@/type/Recipe";
 import RecipeHeader from "@/Components/Recipe/RecipeHeader";
 import RecipeBody from "@/Components/Recipe/RecipeBody";
@@ -42,7 +42,7 @@ export default function Page() {
                     labelPlacement="start"
                 />
             </FormGroup>
-            <Paper sx={{ mx: 3, p: 2, minHeight: `calc(100vh - ${theme.spacing(20)})` }}>
+            <Paper sx={{ mx: 3, p: 2, minHeight: `calc(100vh - ${theme.spacing(25)})` }}>
                 <RecipeHeader 
                     name={recipe.name} 
                     dietTags={recipe.dietTags} 
@@ -59,6 +59,15 @@ export default function Page() {
                     highlight={highlight} 
                 />
             </Paper>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 3, pt: 2 }}>
+                <Button
+                    variant="contained"
+                    color='error'
+                    onClick={() => deleteRecipe(recipe.id)}
+                >
+                    Delete Recipe
+                </Button>
+            </Box>
         </Box>
     );
 }

@@ -1,7 +1,8 @@
 "use server"
 
 import { getPantryBySession } from "@/controller/pantryController";
-import { getRecipeByRecipeName } from "@/controller/recipeController";
+import { deleteRecipeByRecipeId, deleteRecipeBySession, getRecipeByRecipeName } from "@/controller/recipeController";
+import { getClientUserBySessionId } from "@/controller/userController";
 import { Pantry } from "@/type/Pantry";
 import { DisplayRecipe, Ingredient, Recipe } from "@/type/Recipe";
 import { cookies } from "next/headers";
@@ -50,4 +51,33 @@ export async function getPantry():
     }
 
     return pantry.payload.ingredients;
+}
+
+export async function deleteRecipe(recipeId: string)
+{
+    // Attempt to get session ID from user cookies
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get('session')?.value;
+
+    // If the user isn't logged in, redirect
+    if (!sessionId)
+    {
+        redirect(`/login`);
+    }
+
+    const user = await getClientUserBySessionId(sessionId);
+
+    if (!user.payload)
+    {
+        redirect('/login');
+    }
+
+    const deletedRecipeResponse = await deleteRecipeBySession(sessionId, recipeId);
+
+    if (deletedRecipeResponse.status === 200)
+    {
+        redirect(`/${user.payload.username}/recipes`)
+    }
+
+    return {status: 500}
 }
