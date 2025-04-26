@@ -215,7 +215,7 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     {
         const newRecipe = await prisma.recipe.create({
             data: {
-                name: recipe.name,
+                name: recipe.name.replaceAll('%20', ''),
                 instructions: recipe.instructions,
                 prepTime: recipe.prepTime,
                 cookTime: recipe.cookTime,

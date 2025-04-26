@@ -112,14 +112,6 @@ export default function NewRecipe()
         }
 
         if (isFormValid) {
-            console.log("Form is valid. Submitting...", {
-                recipeName: recipeName.value.trim(),
-                dietTags: dietTags.value,
-                prepTime: { quantity: typeof prepTimeQuantity.value === 'number' ? prepTimeQuantity.value : 0, unit: prepTimeUnit.value },
-                cookTime: { quantity: typeof cookTimeQuantity.value === 'number' ? cookTimeQuantity.value : 0, unit: cookTimeUnit.value },
-                ingredients: ingredients.value,
-                directions: directions.value.trim(),
-            });
 
             await createRecipe({
                 name: recipeName.value.trim(),
@@ -131,7 +123,7 @@ export default function NewRecipe()
             });
 
         } else {
-            console.log("Form has errors. Please fix them.");
+            return;
         }
     };
 

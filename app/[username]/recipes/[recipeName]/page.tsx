@@ -18,6 +18,7 @@ export default function Page() {
 
     const toggleHighlight = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHighlight(event.target.checked);
+
     };
 
     useEffect(() => {

@@ -58,7 +58,9 @@ export default function RecipeBody(
             <List>
                 <ListItem>
                     <ListItemText>
-                        <Typography>{directions}</Typography>
+                        {directions.split('\n').map((line, index) => (
+                            <Typography key={index}>{line}</Typography>
+                        ))}
                     </ListItemText>
                 </ListItem>
             </List>
