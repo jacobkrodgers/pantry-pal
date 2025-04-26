@@ -47,3 +47,23 @@ export const ingredientSchema = Joi
             .string()
             .required()
     })
+
+export const ingredientsSchema = Joi
+        .array() 
+        .items( 
+            Joi.object({
+                name: Joi
+                    .string()
+                    .required(),
+                quantityUnit: Joi
+                    .string()
+                    .required(),
+                quantity: Joi
+                    .number()
+                    .required()
+                    .positive(),
+                form: Joi
+                    .string()
+                    .required()
+            })
+);

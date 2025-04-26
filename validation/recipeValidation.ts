@@ -22,3 +22,11 @@ export const newRecipeSchema = Joi.object({
   ).optional(),
   isPublic: Joi.boolean().optional()
 });
+
+export const dietTagSchema = Joi
+        .array()
+        .items(Joi
+                .string()
+                .valid(...diets)
+            )
+        .optional()

@@ -6,10 +6,11 @@ import { find_recipe_by_recipe_id,
          create_recipe_by_user_id, 
          find_recipe_by_recipe_name,
          get_recipes,
+         get_recipe_by_name,
         } 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient, DisplayRecipe, RecipeFilterCheckboxes } from "@/type/Recipe";
-import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session } from "@/model/userModel";
+import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session, get_client_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 import { Action } from "@prisma/client/runtime/library";
@@ -319,4 +320,44 @@ export async function getRecipesBySession(
 export async function get_recipe_count_by_user_id(userId: string): Promise<number> {
   const recipes = await find_recipes_by_user_id(userId);
   return recipes ? recipes.length : 0;
+}
+
+export async function getRecipeByName(sessionId: string, recipeName: string):
+    Promise<ActionResponse<Recipe>>
+{
+    const user = await get_client_user_by_session(sessionId)
+
+    if (!user)
+    {
+        return { status: 400 }
+    }
+
+    const recipe = await get_recipe_by_name(sessionId, recipeName);
+
+    if (!recipe)
+    {
+        return {status: 404}
+    }
+
+    return {status: 200, payload: recipe}
+}
+
+export async function createRecipeBySessionId(sessionId: string, recipe: NewRecipe): 
+    Promise<ActionResponse<DisplayRecipe>> 
+{
+    // Get user associated with API Key
+    const user = await get_client_user_by_session(sessionId);
+    if(!user) return {message: "Unauthorized", status: 401};
+
+    // Attempt to create new recipe
+    const newRecipe = await create_recipe_by_user_id(user.id, recipe);
+
+    if (!newRecipe) return {message: "Something went wrong!", status: 500}
+
+    const displayRecipe = await find_recipe_by_recipe_name(user.id, newRecipe.name)
+
+    if (!displayRecipe) return {message: "Internal Server Error", status: 500};
+
+    return {status: 201, payload: displayRecipe}
+
 }
