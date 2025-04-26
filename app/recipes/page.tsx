@@ -2,12 +2,13 @@
 
 import RecipePreview from '@/Components/Recipe/RecipePreview';
 import { DisplayRecipe, Ingredient } from '@/type/Recipe';
-import { Box, Pagination } from '@mui/material';
+import { Box, Button, Modal, Pagination } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { getPantry, getRecipes } from './actions';
 import RecipesFilters from '@/Components/Recipe/RecipesFilters';
 import { SelectChangeEvent } from '@mui/material';
 import { usePantry } from '@/Components/Providers/PantryProvider';
+import NewRecipe from '@/Components/Recipe/NewRecipe';
 
 export default function Page() 
 {
@@ -28,6 +29,7 @@ export default function Page()
         mightHaveIngredients: false,
         dontHaveIngredients: false,
       });
+    const [newRecipeModalOpen, setNewRecipeModalOpen] = useState(false);
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCurrPageNumber(1);
@@ -81,6 +83,14 @@ export default function Page()
                 checkboxes={checkboxes} 
                 handleCheckboxChange={handleCheckboxChange}
             />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 3, pt: 2 }}>
+                <Button
+                    variant="contained"
+                    onClick={() => setNewRecipeModalOpen(!newRecipeModalOpen)}
+                >
+                    + New Recipe
+                </Button>
+            </Box>
             <Box sx={{ p: 3 }}>
                 {recipes.map((recipe, index) => (
                     <RecipePreview 
@@ -112,6 +122,23 @@ export default function Page()
                     />
                 </Box>
             )}
+
+                <Modal open={newRecipeModalOpen} onClose={()=>setNewRecipeModalOpen(false)}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: 2,
+                        minWidth: 800,
+                        maxWidth: 800,
+                    }}>
+                        <NewRecipe />
+                    </Box>
+                </Modal>
         </>
     );
 }

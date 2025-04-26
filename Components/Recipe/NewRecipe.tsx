@@ -124,8 +124,8 @@ export default function NewRecipe()
             await createRecipe({
                 name: recipeName.value.trim(),
                 dietTags: dietTags.value,
-                prepTime: String(prepTimeQuantity.value) + prepTimeUnit.value,
-                cookTime: String(cookTimeQuantity.value) + cookTimeUnit.value,
+                prepTime: String(prepTimeQuantity.value) + ' ' + prepTimeUnit.value,
+                cookTime: String(cookTimeQuantity.value) + ' ' + cookTimeUnit.value,
                 ingredients: ingredients.value,
                 instructions: directions.value
             });
@@ -274,8 +274,12 @@ export default function NewRecipe()
                             required
                         >
                             <MenuItem value=""><em>Select Unit</em></MenuItem>
+                            <MenuItem value="seconds">Seconds</MenuItem>
                             <MenuItem value="minutes">Minutes</MenuItem>
                             <MenuItem value="hours">Hours</MenuItem>
+                            <MenuItem value="days">Days</MenuItem>
+                            <MenuItem value="weeks">Weeks</MenuItem>
+
                         </Select>
                         {prepTimeUnit.errorMsg && <FormHelperText>{prepTimeUnit.errorMsg}</FormHelperText>}
                     </FormControl>
@@ -303,8 +307,11 @@ export default function NewRecipe()
                             required
                         >
                             <MenuItem value=""><em>Select Unit</em></MenuItem>
+                            <MenuItem value="seconds">Seconds</MenuItem>
                             <MenuItem value="minutes">Minutes</MenuItem>
                             <MenuItem value="hours">Hours</MenuItem>
+                            <MenuItem value="days">Days</MenuItem>
+                            <MenuItem value="weeks">Weeks</MenuItem>
                         </Select>
                         {cookTimeUnit.errorMsg && <FormHelperText>{cookTimeUnit.errorMsg}</FormHelperText>}
                     </FormControl>

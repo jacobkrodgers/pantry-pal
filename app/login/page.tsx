@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/Components/Forms/Login/LoginForm";
+import { Paper } from "@mui/material";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -26,5 +27,9 @@ export default function LoginPage() {
 
     if (!sessionChecked) return null;
 
-    return <LoginForm />;
+    return (
+        <Paper sx={{ m: 3, p: 2, height: '100vh' }}>
+            <LoginForm />
+        </Paper>
+    );
 }
