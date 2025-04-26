@@ -166,14 +166,15 @@ export default function SideBar({ user, children }: SideBarProps) {
                     enableColorOnDark
                 >
                     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
-                        <Link
-                            href="/"
+                        <span
                             style={{
                                 textDecoration: 'none',
                                 color: 'inherit',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 1,
+                                userSelect: 'none',
+                                pointerEvents: 'none'
                             }}
                         >
                             <Restaurant sx={{ fontSize: 36, mr:1 }} />
@@ -188,7 +189,7 @@ export default function SideBar({ user, children }: SideBarProps) {
                             >
                                 PantryPal
                             </Typography>
-                        </Link>
+                        </span>
                         {user && (
                             <IconButton color="inherit" onClick={handleModalToggle} sx={{ ml: 'auto' }}>
                                 <KitchenIcon sx={{ fontSize: 32 }} />
