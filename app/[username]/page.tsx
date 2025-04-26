@@ -14,8 +14,9 @@ import { useRouter } from "next/navigation";
 import { ActionResponse } from "@/type/Generic";
 import { ClientUser } from "@/type/User";
 import Profile from "@/Components/User/Profile";
+import theme from "../theme";
 
-export default function ProfilePage() {
+export default function Page() {
 
     const [user, setUser] = useState<ClientUser | null>(null);
     const [recipeCount, setRecipeCount] = useState(0);
@@ -186,7 +187,7 @@ export default function ProfilePage() {
                     }}
                 />
             </Tabs>
-            <Paper sx={{height: '100vh', mx: 3, mt: 3, p: 1 }}>
+            <Paper sx={{ m: 3, p: 2, minHeight: `calc(100vh - ${theme.spacing(25)})` }}>
                 {tab === 0 && 
                     (!user ? 
                         <Typography>{"Loading..."}</Typography> :

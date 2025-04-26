@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/prisma/dbClient";
 import { DisplayRecipe, Ingredient, NewRecipe, Recipe, RecipeFilterCheckboxes } from "@/type/Recipe";
 import unitConversion from "@/utils/dicts/unitConversion";
+import { ActionResponse } from "@/type/Generic";
 
 /**
  * Retrieves a recipe by its ID.
@@ -214,7 +215,7 @@ export async function create_recipe_by_user_id(userId: string, recipe: NewRecipe
     {
         const newRecipe = await prisma.recipe.create({
             data: {
-                name: recipe.name,
+                name: recipe.name.replaceAll('%20', ''),
                 instructions: recipe.instructions,
                 prepTime: recipe.prepTime,
                 cookTime: recipe.cookTime,
@@ -648,4 +649,30 @@ export function matchesMightHaveOneIngredient(
     }
   
     return false;
+}
+
+export async function get_recipe_by_name(userId: string, name: string):
+    Promise<Recipe | null>
+{
+    try
+    {
+        const recipe = await prisma.recipe.findUnique({
+            where: {
+                name_userId: {
+                    name,
+                    userId
+                }
+            },
+            include: {
+                ingredients: true,
+                dietTags: true
+            }
+        })
+
+        return recipe;
+    }
+    catch
+    {
+        return null;
+    }
 }

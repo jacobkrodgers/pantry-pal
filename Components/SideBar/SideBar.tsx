@@ -111,7 +111,7 @@ export default function SideBar({ user, children }: SideBarProps) {
             <Link key="accountIcon" href={`/${user.username}`}>
                 <SideBarItem open={open} name="Profile" icon={<AccountBoxIcon />} handleClick={() => {}} />
             </Link>,
-            <Link key="recipesIcon" href="/recipes">
+            <Link key="recipesIcon" href={`/${user.username}/recipes`}>
                 <SideBarItem open={open} name="Recipes" icon={<MenuBookIcon />} handleClick={() => {}} />
             </Link>,
             <Divider key="div" />,

@@ -3,28 +3,25 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import LoginForm from "@/Components/Forms/Login/LoginForm";
+import { Paper } from "@mui/material";
+import { checkLoginAction } from "./actions";
 
-export default function LoginPage() {
+export default function Page() {
     const router = useRouter();
     const [sessionChecked, setSessionChecked] = useState(false);
 
     useEffect(() => {
-        async function checkSession() {
-            const res = await fetch("/api/session-check");
-            if (res.ok) {
-                const data = await res.json();
-                if (data?.username) {
-                    // Redirect to the user's profile using the username 
-                    router.push(data.username);
-                    return;
-                }
-            }
-            setSessionChecked(true);
+        async function checkLogin()
+        {
+            await checkLoginAction();
         }
-        checkSession();
-    }, [router]);
+        checkLogin();
+        
+    }, []);
 
-    if (!sessionChecked) return null;
-
-    return <LoginForm />;
+    return (
+        <Paper sx={{ m: 3, p: 2, height: '100vh' }}>
+            <LoginForm />
+        </Paper>
+    );
 }

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
+import { Paper } from "@mui/material";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -26,5 +27,9 @@ export default function RegisterPage() {
 
     if (!sessionChecked) return null;
 
-    return <RegistrationForm />;
+    return (
+        <Paper sx={{ m: 3, p: 2, height: '100vh' }}>
+            <RegistrationForm />
+        </Paper>
+    );
 }
