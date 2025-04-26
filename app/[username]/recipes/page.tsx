@@ -122,7 +122,7 @@ export default function Page()
                     />
                 </Box>
             )}
-
+            <Box sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
                 <Modal open={newRecipeModalOpen} onClose={()=>setNewRecipeModalOpen(false)}>
                     <Box sx={{
                         position: 'absolute',
@@ -139,6 +139,7 @@ export default function Page()
                         <NewRecipe />
                     </Box>
                 </Modal>
+            </Box>
         </>
     );
 }

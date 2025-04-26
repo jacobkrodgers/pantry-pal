@@ -15,7 +15,7 @@ import {
         } 
     from "@/model/userModel";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
-import { PublicUser, UserControllerResponse, ClientUser } from "@/type/User";
+import { PublicUser, UserControllerResponse, ClientUser, Session } from "@/type/User";
 import { valid } from "joi";
 
 /**
@@ -172,16 +172,16 @@ export async function loginUserWithSession(
     username: string,
     password: string,
     keepMeLoggedIn: boolean
-  ): Promise<UserControllerResponse | GenericAPIResponse> {
+  ): Promise<ActionResponse<{username: string, session: Session}>> {
     // Retrieve the user record.
     const serverUser = await find_server_user_by_username(username);
     if (!serverUser) {
-      return { status: 404, payload: "Not Found" };
+      return { status: 404, message: "Not Found" };
     }
     // Verify the password.
     const valid = await argon2.verify(serverUser.passwordHash, password);
     if (!valid) {
-      return { status: 401, payload: "Unauthorized" };
+      return { status: 401, message: "Unauthorized" };
     }
   
     // Calculate session expiration.
@@ -195,10 +195,10 @@ export async function loginUserWithSession(
     // Create a new session record.
     const session = await create_session(serverUser.id, expires);
     if (!session) {
-      return { status: 500, payload: "Internal Server Error - Could not create session" };
+      return { status: 500, message: "Internal Server Error - Could not create session" };
     }
-  
-    return { status: 201, payload: { user: serverUser, session } };
+
+    return { status: 201, payload: {username: username, session: session}};
   }
 
 export async function getUserByUserId(apiKey: string, userId: string):

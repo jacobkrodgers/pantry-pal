@@ -16,7 +16,7 @@ import { ClientUser } from "@/type/User";
 import Profile from "@/Components/User/Profile";
 import theme from "../theme";
 
-export default function ProfilePage() {
+export default function Page() {
 
     const [user, setUser] = useState<ClientUser | null>(null);
     const [recipeCount, setRecipeCount] = useState(0);

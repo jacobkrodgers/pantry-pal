@@ -15,7 +15,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
 import { loginUser } from "../../../app/login/actions";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 export default function LoginForm() {
     // Local states
@@ -30,8 +30,6 @@ export default function LoginForm() {
     // Error states
     const [usernameError, setUsernameError] = useState("");
     const [passwordError, setPasswordError] = useState("");
-
-    const router = useRouter();
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -57,7 +55,7 @@ export default function LoginForm() {
             // Call the server action directly from the client component.
             const result = await loginUser(username, password, keepMeLoggedIn);
             if (result.status === 201) {
-                router.push("/");
+                return;
             } else {
                 // Display a generic error message for both fields.
                 setUsernameError("Not Found");
