@@ -176,7 +176,7 @@ export default function NewIngredientInputs({
     }
 
     return (
-        <Box sx={{ mb: 2, pr: 8 }}>
+        <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2 }}>
                  <TextField
                     name="quantity"
