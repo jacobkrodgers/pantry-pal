@@ -27,7 +27,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { diets } from "@/utils/lists/diets";
 import NewIngredientInputs from "./NewIngredientInputs";
 import { createRecipe } from "./actions";
-import { DeleteForever } from "@mui/icons-material";
 
 interface Input<T>
 {
@@ -234,6 +233,13 @@ export default function NewRecipe()
                         onChange={handleDietTagChange}
                         renderValue={(selected) => selected.join(', ')}
                         label="Diet Tags"
+                        MenuProps={{
+                            PaperProps: {
+                            style: {
+                                maxHeight: 200,
+                            },
+                            },
+                        }}
                     >
                         {diets.map((diet) => (
                         <MenuItem key={diet} value={diet}>
@@ -312,14 +318,14 @@ export default function NewRecipe()
 
                 <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Ingredients</Typography>
                 {ingredients.value.length > 0 ? (
-                    <List>
+                    <List dense={true}>
                         {ingredients.value.map((ingredient, index) => (
                             <ListItem
                                 key={`${ingredient.name}-${ingredient.form}-${index}`}
                                 secondaryAction={
-                                    <Button color="error" onClick={() => handleRemoveIngredient(index)}>
-                                        <DeleteForever/>
-                                    </Button>
+                                    <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveIngredient(index)}>
+                                        <DeleteIcon />
+                                    </IconButton>
                                 }
                             >
                                 <MuiListItemText

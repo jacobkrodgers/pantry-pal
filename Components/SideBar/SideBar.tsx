@@ -208,9 +208,14 @@ export default function SideBar({ user, children }: SideBarProps) {
                         boxShadow: 24,
                         p: 4,
                         borderRadius: 2,
-                        minWidth: 800,
-                        maxWidth: 800,
-                    }}>
+                        minWidth: '40%',
+                        maxWidth: '90%',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        width: 'auto',
+                        outline: 'none'
+                        }}
+                    >
                         <PantryTabs />
                     </Box>
                 </Modal>

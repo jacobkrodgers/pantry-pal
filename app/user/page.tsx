@@ -4,13 +4,10 @@ import React, { useEffect, useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import ProfileComponent from "@/Components/User/Profile";
-import SettingsComponent from "@/Components/User/Settings";
 import { Paper, Typography } from "@mui/material";
 import { getUser, updatePassword, updateUsername, updateEmail, deleteUser, getRecipeCount } from "./actions"
 import Settings from "@/Components/User/Settings";
 import { emailValidationSchema, loginValidationSchema, usernameValidationSchema, userUpdateSchema } from "@/validation/userValidation";
-import { useRouter } from "next/navigation";
 import { ActionResponse } from "@/type/Generic";
 import { ClientUser } from "@/type/User";
 import Profile from "@/Components/User/Profile";
