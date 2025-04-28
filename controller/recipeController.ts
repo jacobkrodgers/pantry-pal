@@ -54,7 +54,7 @@ export async function getRecipeByRecipeId(apiKey: string, recipeId: string):
  * @returns A response object with the recipe if successful,
  *          or an error response.
  */
-export async function getRecipeByRecipeName(sessionId: string, authorUsername: string, recipeName: string): 
+export async function getRecipeByRecipeName(sessionId: string, recipeName: string): 
     Promise<ActionResponse<DisplayRecipe>> 
 {
     const user = await get_public_user_by_session(sessionId);
@@ -63,7 +63,7 @@ export async function getRecipeByRecipeName(sessionId: string, authorUsername: s
         return { message: "Unauthorized", status: 401 };
     }
 
-    const author = await find_server_user_by_username(authorUsername);
+    const author = await get_client_user_by_session(sessionId);
     if (!author)
     {
         return { message: "Unauthorized", status: 401 };

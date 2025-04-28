@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Box, Typography, Button } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { registerValidationSchema } from "@/validation/userValidation";
@@ -64,7 +64,7 @@ export default function RegistrationForm() {
         try {
             const result = await registerUser(username, email, password);
             if (result.status === 201) {
-                router.push("login");
+                redirect('/login')
             } else {
                 const msg = result.payload as string;
                 if (msg.toLowerCase().includes("username")) {

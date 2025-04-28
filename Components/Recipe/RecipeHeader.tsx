@@ -21,7 +21,7 @@ export default function RecipeHeader(
         <>
             <List>
                 <Link 
-                    href={`/${username}/recipes/${name.replaceAll(" ", "%20")}`}
+                    href={`/user/recipes/${name.replaceAll(" ", "%20")}`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <Typography 
@@ -67,7 +67,7 @@ export default function RecipeHeader(
                             <MUILink 
                                 underline="none" 
                                 component={Link} 
-                                href={`/${username}`} 
+                                href={`/user`} 
                                 onClick={(e) => e.stopPropagation()}>
                                     {username}
                             </MUILink>

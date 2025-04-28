@@ -150,7 +150,8 @@ export default function Settings({user, onUpdateUsername, onUpdateEmail, onUpdat
             return;
         }
 
-        router.replace(`/${res.payload!.username}/settings`)
+        setEnableSaveUsername(false);
+        setToggleUsernameEdit(false);
     }
 
     const handleSaveEmail = async () =>

@@ -108,10 +108,10 @@ export default function SideBar({ user, children }: SideBarProps) {
     let sideBarItems;
     if (user) {
         sideBarItems = [
-            <Link key="accountIcon" href={`/${user.username}`}>
+            <Link key="accountIcon" href={`/user`}>
                 <SideBarItem open={open} name="Profile" icon={<AccountBoxIcon />} handleClick={() => {}} />
             </Link>,
-            <Link key="recipesIcon" href={`/${user.username}/recipes`}>
+            <Link key="recipesIcon" href={`/user/recipes`}>
                 <SideBarItem open={open} name="Recipes" icon={<MenuBookIcon />} handleClick={() => {}} />
             </Link>,
             <Divider key="div" />,

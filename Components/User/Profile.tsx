@@ -32,7 +32,7 @@ export default function Profile({ user, recipeCount }: ProfileProps) {
                 {user.email}
             </Typography>
             <Link
-                href={`/${user.username}/recipes`}
+                href={`/user/recipes`}
                 underline="hover"
                 sx={{ display: 'inline-block', mt: 2 }}
             >

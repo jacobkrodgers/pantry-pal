@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
 import { Paper } from "@mui/material";
+import { redirect } from "next/navigation";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -16,8 +17,7 @@ export default function RegisterPage() {
                 const data = await res.json();
                 if (data?.username) {
                     // Redirect to the user's profile 
-                    router.push(data.username);
-                    return;
+                    redirect('/user')
                 }
             }
             setSessionChecked(true);

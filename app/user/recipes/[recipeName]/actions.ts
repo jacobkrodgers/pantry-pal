@@ -8,7 +8,7 @@ import { DisplayRecipe, Ingredient, Recipe } from "@/type/Recipe";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function getRecipe(username: string, recipeName: string):
+export async function getRecipe(recipeName: string):
     Promise<DisplayRecipe | null>
 {
     // Attempt to get session ID from user cookies
@@ -25,7 +25,7 @@ export async function getRecipe(username: string, recipeName: string):
     const parsedRecipeName = recipeName.replaceAll("%20", " ",)
 
     // Attempt to get recipe from the database
-    const recipe = await getRecipeByRecipeName(sessionId, username, parsedRecipeName);
+    const recipe = await getRecipeByRecipeName(sessionId, parsedRecipeName);
 
     return recipe.payload ?? null;
 }
@@ -76,7 +76,7 @@ export async function deleteRecipe(recipeId: string)
 
     if (deletedRecipeResponse.status === 200)
     {
-        redirect(`/${user.payload.username}/recipes`)
+        redirect(`/user/recipes`)
     }
 
     return {status: 500}
