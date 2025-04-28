@@ -10,7 +10,7 @@ import { SelectChangeEvent } from '@mui/material';
 import { usePantry } from '@/Components/Providers/PantryProvider';
 import NewRecipe from '@/Components/Recipe/NewRecipe';
 
-export default function Page() 
+export default function Page()
 {
 
     const {pantryItems} = usePantry();
@@ -47,7 +47,7 @@ export default function Page()
     useEffect(() => {
         async function fetchRecipes() {
             const recipeData = await getRecipes(
-                searchString, currPageNumber, recipesPerPage, 
+                searchString, currPageNumber, recipesPerPage,
                 sortBy, sortAsc, highlight, checkboxes);
             setRecipes(recipeData.payload!.recipes);
             setTotalRecipes(recipeData.payload!.count)
@@ -68,19 +68,19 @@ export default function Page()
     {
         setSortAsc(!sortAsc)
     }
-    
+
 
     return (
         <>
-            <RecipesFilters 
-                handleSearchUpdate={handleSearchUpdate} 
-                highlight={highlight} 
-                toggleHighlight={toggleHighlight} 
-                sortBy={sortBy} 
-                changeSortBy={changeSortBy} 
-                sortAsc={sortAsc} 
-                toggleSortAsc={toggleSortAsc} 
-                checkboxes={checkboxes} 
+            <RecipesFilters
+                handleSearchUpdate={handleSearchUpdate}
+                highlight={highlight}
+                toggleHighlight={toggleHighlight}
+                sortBy={sortBy}
+                changeSortBy={changeSortBy}
+                sortAsc={sortAsc}
+                toggleSortAsc={toggleSortAsc}
+                checkboxes={checkboxes}
                 handleCheckboxChange={handleCheckboxChange}
             />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 3, pt: 2 }}>
@@ -93,21 +93,21 @@ export default function Page()
             </Box>
             <Box sx={{ p: 3 }}>
                 {recipes.map((recipe, index) => (
-                    <RecipePreview 
-                        key={index} 
-                        recipe={recipe} 
-                        pantryIngredients={pantryItems} 
-                        highlight={highlight} 
+                    <RecipePreview
+                        key={index}
+                        recipe={recipe}
+                        pantryIngredients={pantryItems}
+                        highlight={highlight}
                         username={recipe.user.username}/>
                 ))}
             </Box>
 
             {totalRecipes > recipesPerPage && (
-                <Box 
-                    sx={{ 
-                        display: "flex", 
-                        justifyContent: "center", 
-                        pb: 4 
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        pb: 4
                     }}
                 >
                     <Pagination
@@ -117,29 +117,32 @@ export default function Page()
                         color="primary"
                         shape="rounded"
                         size="large"
-                        showFirstButton 
+                        showFirstButton
                         showLastButton
                     />
                 </Box>
             )}
-            <Box sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
-                <Modal open={newRecipeModalOpen} onClose={()=>setNewRecipeModalOpen(false)}>
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                        minWidth: 800,
-                        maxWidth: 800,
+            
+            <Modal open={newRecipeModalOpen} onClose={()=>setNewRecipeModalOpen(false)}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: 4,
+                    borderRadius: 2,
+                    minWidth: '40%',
+                    maxWidth: '90%',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    width: 'auto',
+                    outline: 'none'
                     }}>
-                        <NewRecipe />
-                    </Box>
-                </Modal>
-            </Box>
+                    <NewRecipe />
+                </Box>
+            </Modal>
         </>
     );
 }
