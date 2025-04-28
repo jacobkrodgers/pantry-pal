@@ -1,5 +1,5 @@
 import { Ingredient } from "@/type/Recipe";
-import { Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import IngredientListItem from "./IngredientListItem";
 
@@ -55,15 +55,11 @@ export default function RecipeBody(
             <Divider textAlign="left">
                 <Typography variant="h5">Directions</Typography>
             </Divider>
-            <List>
-                <ListItem>
-                    <ListItemText>
-                        {directions.split('\n').map((line, index) => (
-                            <Typography key={index}>{line}</Typography>
-                        ))}
-                    </ListItemText>
-                </ListItem>
-            </List>
+            <Box sx={{pt: 2}}>
+                {directions.split('\n').map((line, index) => (
+                        <Typography key={index} sx={{wordBreak: 'break-word'}}>{line}</Typography>
+                 ))}
+            </Box>
         </>
     );
 }
