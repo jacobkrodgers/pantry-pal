@@ -29,7 +29,7 @@ export async function loginUser(username: string, password: string, keepMeLogged
             expires: session.expiration,
         });
 
-        redirect(`/${username}/`)
+        redirect(`/user`)
 
     }
     return result;
@@ -50,7 +50,7 @@ export async function checkLoginAction()
 
     if (user.payload)
     {
-        redirect(`/${user.payload.username}`)
+        redirect(`/user`)
     }
     
 }

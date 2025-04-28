@@ -23,7 +23,7 @@ export default function Page() {
 
     useEffect(() => {
         async function fetchData() {
-            const recipeData = await getRecipe(params.username, params.recipeName);
+            const recipeData = await getRecipe(params.recipeName);
             setRecipe(recipeData);
         }
 

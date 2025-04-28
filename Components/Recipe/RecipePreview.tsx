@@ -59,7 +59,7 @@ export default function RecipePreview(
                     }}
                 >
                     <Link 
-                        href={`${recipe.user.username}/recipes/${recipe.name.replaceAll(" ", "%20")}`} 
+                        href={`/user/recipes/${recipe.name.replaceAll(" ", "%20")}`} 
                         onClick={(e) => e.stopPropagation()}
                     >
                         <RecipeBody 

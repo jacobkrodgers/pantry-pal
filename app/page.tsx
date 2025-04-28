@@ -17,7 +17,7 @@ export default async function Home() {
     
         if (user.payload)
         {
-            redirect(`/${user.payload.username}`)
+            redirect(`/user`)
         }
 
         redirect(`/login`)

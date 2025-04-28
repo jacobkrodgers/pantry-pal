@@ -48,5 +48,5 @@ export async function createRecipe(newRecipe: NewRecipe):
         return {status: 500, message: "Something went wrong!"}
     }
 
-    redirect(`/${recipe.payload.user.username}/recipes/${recipe.payload.name}`.replaceAll(' ', '%20'))
+    redirect(`/user/recipes/${recipe.payload.name}`.replaceAll(' ', '%20'))
 }
