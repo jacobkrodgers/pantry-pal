@@ -17,7 +17,7 @@ export async function loginUser(username: string, password: string, keepMeLogged
     if (result.status === 201 && result.payload) {
         
         // Expect result.payload to have the shape: { user, session }
-        const { username, session } = result.payload;
+        const { session } = result.payload;
         
         const cookieStore = await cookies();
         
@@ -44,7 +44,6 @@ export async function checkLoginAction()
     {
         return;
     }
-
 
     const user = await getClientUserBySessionId(sessionId);
 
