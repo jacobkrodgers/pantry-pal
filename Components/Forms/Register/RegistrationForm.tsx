@@ -7,8 +7,8 @@ import FormInput from "@/Components/Inputs/FormInput";
 import { registerValidationSchema } from "@/validation/userValidation";
 import { registerUser } from "../../../app/register/actions";
 
-export default function RegistrationForm() {
-    const router = useRouter();
+export default function RegistrationForm() 
+{
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -61,7 +61,8 @@ export default function RegistrationForm() {
             return;
         }
 
-        try {
+        try 
+        {
             const result = await registerUser(username, email, password);
             if (result && result.status === 201) {
                 redirect('/login')
@@ -85,7 +86,9 @@ export default function RegistrationForm() {
                     setPasswordError(msg);
                 }
             }
-        } catch (error: any) {
+        } 
+        catch (error: any) 
+        {
             setPasswordError(error.message);
         }
     }

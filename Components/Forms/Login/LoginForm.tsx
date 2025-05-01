@@ -15,7 +15,6 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
 import { loginUser } from "../../../app/login/actions";
-import { redirect, useRouter } from "next/navigation";
 
 export default function LoginForm() {
     // Local states
@@ -40,7 +39,8 @@ export default function LoginForm() {
 
         // Client-side JOI validation
         const { error } = loginValidationSchema.validate({ username, password });
-        if (error) {
+        if (error) 
+        {
             const detail = error.details[0];
             if (detail.path.includes("username")) {
                 setUsernameError(detail.message);
@@ -51,7 +51,8 @@ export default function LoginForm() {
             return;
         }
 
-        try {
+        try 
+        {
             // Call the server action directly from the client component.
             const result = await loginUser(username, password, keepMeLoggedIn);
             if (result.status === 201) {
@@ -61,7 +62,9 @@ export default function LoginForm() {
                 setUsernameError("Not Found");
                 setPasswordError("Not Found");
             }
-        } catch (error: any) {
+        } 
+        catch (error: any) 
+        {
             setPasswordError(error.message);
         }
     }

@@ -4,7 +4,7 @@ import { Box, Button, FormControlLabel, FormGroup, Paper, Switch, Typography } f
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteRecipe, getRecipe } from "./actions";
-import { DisplayRecipe, Recipe } from "@/type/Recipe";
+import { DisplayRecipe } from "@/type/Recipe";
 import RecipeHeader from "@/Components/Recipe/RecipeHeader";
 import RecipeBody from "@/Components/Recipe/RecipeBody";
 import theme from "@/app/theme";

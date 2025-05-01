@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, Paper } from '@mui/material';
+import { Paper } from '@mui/material';
 import Profile from '@/Components/User/Profile';
 import { ClientUser } from '@/type/User';
 import { fetchProfileUserFromSession, getRecipeCount } from './action';

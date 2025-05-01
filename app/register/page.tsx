@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import RegistrationForm from "@/Components/Forms/Register/RegistrationForm";
 import { Paper } from "@mui/material";
 import { checkLoginAction } from "./actions";

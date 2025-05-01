@@ -2,7 +2,6 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/prisma/dbClient";
 import { DisplayRecipe, Ingredient, NewRecipe, Recipe, RecipeFilterCheckboxes } from "@/type/Recipe";
 import unitConversion from "@/utils/dicts/unitConversion";
-import { ActionResponse } from "@/type/Generic";
 
 /**
  * Retrieves a recipe by its ID.

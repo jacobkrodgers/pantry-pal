@@ -10,7 +10,7 @@ import { find_recipe_by_recipe_id,
         } 
     from "@/model/recipeModel";
 import { NewRecipe, Recipe, RecipeControllerResponse, Ingredient, DisplayRecipe, RecipeFilterCheckboxes } from "@/type/Recipe";
-import { find_server_user_by_username, get_user_by_api_key, get_public_user_by_session, get_client_user_by_session } from "@/model/userModel";
+import { get_user_by_api_key, get_public_user_by_session, get_client_user_by_session } from "@/model/userModel";
 import { ServerUser } from "@/type/User";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 import { Action } from "@prisma/client/runtime/library";
