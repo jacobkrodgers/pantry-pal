@@ -63,10 +63,16 @@ export default function RegistrationForm() {
 
         try {
             const result = await registerUser(username, email, password);
-            if (result.status === 201) {
+            if (result && result.status === 201) {
                 redirect('/login')
-            } else {
-                const msg = result.payload as string;
+            } 
+            else 
+            {
+                let msg;
+                if (result && result.payload)
+                    msg = result.payload as string;
+                else
+                    msg = "Internal Server Error"
                 if (msg.toLowerCase().includes("username")) {
                     setUsernameError(msg);
                 } else if (msg.toLowerCase().includes("email")) {
