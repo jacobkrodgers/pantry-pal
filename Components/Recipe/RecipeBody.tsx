@@ -1,5 +1,5 @@
 import { Ingredient } from "@/type/Recipe";
-import { Box, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Divider, List, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import IngredientListItem from "./IngredientListItem";
 

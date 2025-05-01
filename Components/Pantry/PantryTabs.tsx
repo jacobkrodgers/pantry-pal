@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Tabs, Tab, Box } from "@mui/material";
 import Pantry from "./Pantry";
-import { Ingredient } from "@/type/Recipe";
 import { getPantry, getShoppingList } from './actions';
 import { usePantry } from '@/Components/Providers/PantryProvider';
 

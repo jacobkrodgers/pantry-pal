@@ -1,10 +1,10 @@
 'use client'
 
 import RecipePreview from '@/Components/Recipe/RecipePreview';
-import { DisplayRecipe, Ingredient } from '@/type/Recipe';
+import { DisplayRecipe } from '@/type/Recipe';
 import { Box, Button, Modal, Pagination } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { getPantry, getRecipes } from './actions';
+import { getRecipes } from './actions';
 import RecipesFilters from '@/Components/Recipe/RecipesFilters';
 import { SelectChangeEvent } from '@mui/material';
 import { usePantry } from '@/Components/Providers/PantryProvider';

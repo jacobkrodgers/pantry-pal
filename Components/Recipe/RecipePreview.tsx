@@ -1,6 +1,6 @@
 'use client'
 
-import { DisplayRecipe, Ingredient, Recipe } from "@/type/Recipe";
+import { DisplayRecipe, Ingredient } from "@/type/Recipe";
 import { Paper, Box, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RecipeHeader from "./RecipeHeader";

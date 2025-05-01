@@ -16,7 +16,6 @@ import {
     from "@/model/userModel";
 import { ActionResponse, GenericAPIResponse } from "@/type/Generic";
 import { PublicUser, UserControllerResponse, ClientUser, Session } from "@/type/User";
-import { valid } from "joi";
 
 /**
  * Creates a new user in the database after hashing the password.

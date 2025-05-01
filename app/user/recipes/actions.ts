@@ -4,7 +4,7 @@ import { getPantryBySession } from "@/controller/pantryController";
 import { getRecipesBySession } from "@/controller/recipeController";
 import { ActionResponse } from "@/type/Generic";
 import { Pantry } from "@/type/Pantry";
-import { DisplayRecipe, Recipe, RecipeFilterCheckboxes } from "@/type/Recipe";
+import { DisplayRecipe, RecipeFilterCheckboxes } from "@/type/Recipe";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

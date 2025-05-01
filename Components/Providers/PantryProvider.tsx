@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Ingredient } from '@/type/Recipe';
-import { getPantry, getShoppingList, addPantryItem, addShoppingListItem } from './actions';
+import { getPantry, getShoppingList } from './actions';
 
 interface PantryContextType {
     pantryItems: Ingredient[];
