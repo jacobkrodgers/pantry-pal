@@ -1,96 +1,124 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Snackbar, Alert } from "@mui/material";
 import FormInput from "@/Components/Inputs/FormInput";
-import { registerValidationSchema } from "@/validation/userValidation";
+import { registerValidationSchema, usernameValidationSchema, emailValidationSchema, passwordValidationSchema } from "@/validation/userValidation";
 import { registerUser } from "../../../app/register/actions";
+
+interface Input<T>
+{
+    value: T;
+    errorMsg: string;
+}
 
 export default function RegistrationForm() 
 {
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [username, setUsername] = useState<Input<string>>({value: "", errorMsg: ""});
+    const [email, setEmail] = useState<Input<string>>({value: "", errorMsg: ""});
+    const [password, setPassword] = useState<Input<string>>({value: "", errorMsg: ""});
+    const [confirmPassword, setConfirmPassword] = useState<Input<string>>({value: "", errorMsg: ""});
 
-    // Error state for inline error messages
-    const [usernameError, setUsernameError] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+    const [disableSubmit, setDisableSubmit] = useState<boolean>(true);
+    const [submitError, setSubmitError] = useState<boolean>(false);
+
+    useEffect(()=>{
+        if (!username.errorMsg &&
+            !email.errorMsg &&
+            !password.errorMsg &&
+            !confirmPassword.errorMsg &&
+            Boolean(username.value) &&
+            Boolean(email.value) &&
+            Boolean(password.value) &&
+            Boolean(confirmPassword.value))
+        {
+            setDisableSubmit(false)
+        }
+    }, [username, email, password, confirmPassword])
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        // Reset error states
-        setUsernameError("");
-        setEmailError("");
-        setPasswordError("");
-        setConfirmPasswordError("");
-
-        // Check if password and confirmPassword match
-        if (password !== confirmPassword) {
-            setConfirmPasswordError("Passwords do not match");
-            return;
-        }
-
-        // Client-side JOI validation
-        const { error } = registerValidationSchema.validate(
-            { username, email, password },
-            { abortEarly: false }
-        );
-        if (error) {
-            error.details.forEach((detail) => {
-                if (detail.path.includes("username")) {
-                    setUsernameError((prev) =>
-                        prev ? prev + " " + detail.message : detail.message
-                    );
-                }
-                if (detail.path.includes("email")) {
-                    setEmailError((prev) =>
-                        prev ? prev + " " + detail.message : detail.message
-                    );
-                }
-                if (detail.path.includes("password")) {
-                    setPasswordError((prev) =>
-                        prev ? prev + " " + detail.message : detail.message
-                    );
-                }
-            });
-            return;
-        }
-
         try 
         {
-            const result = await registerUser(username, email, password);
-            if (result && result.status === 201) {
+            const result = await 
+                registerUser(
+                    username.value, 
+                    email.value,
+                    password.value);
+            
+            if (result && result.status === 201) 
+            {
                 redirect('/login')
             } 
             else 
             {
-                let msg;
-                if (result && result.payload)
-                    msg = result.payload as string;
-                else
-                    msg = "Internal Server Error"
-                if (msg.toLowerCase().includes("username")) {
-                    setUsernameError(msg);
-                } else if (msg.toLowerCase().includes("email")) {
-                    setEmailError(msg);
-                } else if (msg.toLowerCase().includes("password")) {
-                    setPasswordError(msg);
-                } else {
-                    setUsernameError(msg);
-                    setEmailError(msg);
-                    setPasswordError(msg);
-                }
+                setSubmitError(true);
             }
         } 
         catch (error: any) 
         {
-            setPasswordError(error.message);
+            setSubmitError(true);
         }
+    }
+
+    function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const username = e.target.value;
+        let errorMsg = '';
+
+        const {error: usernameValidationError} = usernameValidationSchema.validate(username);
+
+        if (usernameValidationError)
+        {
+            errorMsg = usernameValidationError.message;
+        }
+
+        setUsername({value: username, errorMsg: errorMsg});
+    }
+
+    function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const email = e.target.value;
+        let errorMsg = '';
+
+        const {error: emailValidationError} = emailValidationSchema.validate(email);
+
+        if (emailValidationError)
+        {
+            errorMsg = emailValidationError.message;
+        }
+
+        setEmail({value: email, errorMsg: errorMsg});
+    }
+
+    function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const password = e.target.value;
+        let errorMsg = '';
+
+        const {error: passwordValidationError} = passwordValidationSchema.validate(password);
+
+        if (passwordValidationError)
+        {
+            errorMsg = passwordValidationError.message;
+        }
+
+        setPassword({value: password, errorMsg: errorMsg});
+    }
+
+    function handleConfirmPasswordChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const confirmPassword = e.target.value;
+        let errorMsg = '';
+
+        if (confirmPassword !== password.value)
+        {
+            errorMsg = 'Passwords do not match.'
+        }
+
+        setConfirmPassword({value: confirmPassword, errorMsg: errorMsg});
     }
 
     return (
@@ -106,27 +134,27 @@ export default function RegistrationForm()
             >
                 <FormInput
                     label="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    errorMessage={usernameError}
-                    helperText={usernameError || "(Letters and numbers only)"}
+                    value={username.value}
+                    onChange={handleUsernameChange}
+                    errorMessage={username.errorMsg}
+                    helperText={username.errorMsg || "(Letters and numbers only)"}
                 />
                 <FormInput
                     label="Email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    errorMessage={emailError}
-                    helperText={emailError || "(Use a valid email address)"}
+                    value={email.value}
+                    onChange={handleEmailChange}
+                    errorMessage={email.errorMsg}
+                    helperText={email.errorMsg}
                 />
                 <FormInput
                     label="Password"
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    errorMessage={passwordError}
+                    value={password.value}
+                    onChange={handlePasswordChange}
+                    errorMessage={password.errorMsg}
                     helperText={
-                        passwordError ||
+                        password.errorMsg ||
                         "(At least 8 characters, include a special character and a number)"
                     }
                     slotProps={{
@@ -136,10 +164,10 @@ export default function RegistrationForm()
                 <FormInput
                     label="Confirm Password"
                     type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    errorMessage={confirmPasswordError}
-                    helperText={confirmPasswordError || "(Re-enter your password)"}
+                    value={confirmPassword.value}
+                    onChange={handleConfirmPasswordChange}
+                    errorMessage={confirmPassword.errorMsg}
+                    helperText={confirmPassword.errorMsg || "(Re-enter your password)"}
                     slotProps={{
                         htmlInput: { minLength: 8 },
                     }}
@@ -148,14 +176,24 @@ export default function RegistrationForm()
                     variant="contained"
                     type="submit"
                     fullWidth
-                    sx={{
-                        backgroundColor: "black",
-                        color: "white",
-                        ":hover": { backgroundColor: "#333" },
-                    }}
+                    disabled={disableSubmit}
                 >
                     Sign Up
                 </Button>
+                <Snackbar
+                    open={submitError} 
+                    autoHideDuration={3000} 
+                    onClose={() => setSubmitError(false)}
+                >
+                    <Alert
+                        onClose={() => setSubmitError(false)}
+                        severity="error"
+                        variant="outlined"
+                        sx={{ width: '100%' }}
+                    >
+                        Internal Server Error
+                    </Alert>
+                </Snackbar>
             </Box>
         </Box>
     );

@@ -135,17 +135,18 @@ export const usernameValidationSchema = Joi
         .alphanum()
         .optional()
         .messages({
-            'string.base': 'Username should be a type of text',
-            'string.empty': 'Username cannot be an empty field',
-            'string.min': 'Username must be at least 5 characters long',
-            'string.max': 'Username must not exceed 15 characters',
-            'any.required': 'Username is a required field'
+            'string.empty': 'Required',
+            'string.min': 'Usernames must be at least 5 characters',
+            'string.max': 'Usernames may not exceed 15 characters',
+            'any.required': 'Required',
+            'string.alphanum': 'Usernames may only contain letters and numbers'
         })
 
 export const emailValidationSchema = Joi
         .string()
         .email({ tlds: { allow: false } })
-        .required().messages({
+        .required()
+        .messages({
             'string.base': 'Email should be a type of text',
             'string.empty': 'Email cannot be an empty field',
             'string.email': 'Email must be a valid email',

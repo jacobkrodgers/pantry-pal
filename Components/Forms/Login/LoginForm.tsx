@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Box,
     Typography,
@@ -9,6 +9,8 @@ import {
     FormControlLabel,
     IconButton,
     InputAdornment,
+    Snackbar,
+    Alert,
 } from "@mui/material";
 import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -16,56 +18,79 @@ import FormInput from "@/Components/Inputs/FormInput";
 import { loginValidationSchema } from "@/validation/userValidation";
 import { loginUser } from "../../../app/login/actions";
 
+interface Input<T>
+{
+    value: T;
+    errorMsg: string;
+}
+
 export default function LoginForm() {
     // Local states
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState<Input<string>>({value: "", errorMsg: ""});
+    const [password, setPassword] = useState<Input<string>>({value: "", errorMsg: ""});
+    
     const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false);
+
+    const [disableSubmit, setDisableSubmit] = useState(true);
+    const [submitError, setSubmitError] = useState(false);
 
     // State for toggling password visibility
     const [showPassword, setShowPassword] = useState(false);
-    const handleToggleShowPassword = () => setShowPassword((prev) => !prev);
+    const handleToggleShowPassword = () => setShowPassword(!showPassword);
 
-    // Error states
-    const [usernameError, setUsernameError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
+    useEffect(()=>{
+        if (username.value && password.value)
+            setDisableSubmit(false)
+        else
+            setDisableSubmit(true)
+    }, [username, password])
+
+    function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const username = e.target.value;
+        let errorMsg = ''
+
+        if (!username)
+            errorMsg = "Required"
+
+        setUsername({value: username, errorMsg: errorMsg})
+    }
+
+    function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const password = e.target.value;
+        let errorMsg = ''
+
+        if (!password)
+            errorMsg = "Required"
+
+        setPassword({value: password, errorMsg: errorMsg})
+    }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        // Reset local errors
-        setUsernameError("");
-        setPasswordError("");
-
-        // Client-side JOI validation
-        const { error } = loginValidationSchema.validate({ username, password });
-        if (error) 
-        {
-            const detail = error.details[0];
-            if (detail.path.includes("username")) {
-                setUsernameError(detail.message);
-            }
-            if (detail.path.includes("password")) {
-                setPasswordError(detail.message);
-            }
-            return;
-        }
-
         try 
         {
             // Call the server action directly from the client component.
-            const result = await loginUser(username, password, keepMeLoggedIn);
-            if (result.status === 201) {
+            const result = await 
+                loginUser(
+                    username.value, 
+                    password.value, 
+                    keepMeLoggedIn);
+            
+            if (result.status === 201) 
+            {
                 return;
-            } else {
-                // Display a generic error message for both fields.
-                setUsernameError("Not Found");
-                setPasswordError("Not Found");
+            } 
+            else 
+            {
+                setSubmitError(true);
             }
         } 
         catch (error: any) 
         {
-            setPasswordError(error.message);
+            setSubmitError(true);
         }
     }
 
@@ -82,20 +107,19 @@ export default function LoginForm() {
             >
                 <FormInput
                     label="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    errorMessage={usernameError}
-                    helperText={usernameError || "(Letters and numbers only)"}
+                    value={username.value}
+                    onChange={handleUsernameChange}
+                    errorMessage={username.errorMsg}
+                    helperText={username.errorMsg}
                 />
                 <FormInput
                     label="Password"
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    errorMessage={passwordError}
+                    value={password.value}
+                    onChange={handlePasswordChange}
+                    errorMessage={password.errorMsg}
                     helperText={
-                        passwordError ||
-                        "(At least 8 characters, include a special character and a number)"
+                        password.errorMsg
                     }
                     // Using slotProps to forward both HTML input attributes and input adornments.
                     slotProps={{
@@ -124,11 +148,7 @@ export default function LoginForm() {
                     variant="contained"
                     type="submit"
                     fullWidth
-                    sx={{
-                        backgroundColor: "black",
-                        color: "white",
-                        ":hover": { backgroundColor: "#333" },
-                    }}
+                    disabled={disableSubmit}
                 >
                     Log In
                 </Button>
@@ -141,6 +161,20 @@ export default function LoginForm() {
                     </Link>
                 </Typography>
             </Box>
+            <Snackbar
+                open={submitError} 
+                autoHideDuration={3000} 
+                onClose={() => setSubmitError(false)}
+            >
+                <Alert
+                    onClose={() => setSubmitError(false)}
+                    severity="error"
+                    variant="outlined"
+                    sx={{ width: '100%' }}
+                >
+                    Internal Server Error
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
