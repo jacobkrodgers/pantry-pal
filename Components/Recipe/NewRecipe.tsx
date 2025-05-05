@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { checkExistingRecipe } from "./actions"
 import { NewIngredient } from "@/type/Recipe";
-import { dietTagSchema } from "@/validation/recipeValidation";
+import { dietTagSchema, recipeNameSchema, numberSchema, timeUnitSchema } from "@/validation/recipeValidation";
 import { ingredientsSchema } from "@/validation/ingredientValidation";
 import {
     Box,
@@ -21,12 +21,15 @@ import {
     List,
     ListItem,
     ListItemText as MuiListItemText,
-    IconButton
+    IconButton,
+    Snackbar,
+    Alert
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { diets } from "@/utils/lists/diets";
 import NewIngredientInputs from "./NewIngredientInputs";
 import { createRecipe } from "./actions";
+import FormInput from "../Inputs/FormInput";
 
 interface Input<T>
 {
@@ -46,110 +49,83 @@ export default function NewRecipe()
     const [directions, setDirections] = useState<Input<string>>({value: '', errorMsg: ''});
 
     const [showAddIngredientForm, setShowAddIngredientForm] = useState(false);
+    const [disableSubmit, setDisableSubmit] = useState(true);
+    const [submitError, setSubmitError] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        let isFormValid = true;
+        const recipeResponse = await createRecipe({
+            name: recipeName.value.trim(),
+            dietTags: dietTags.value,
+            prepTime: String(prepTimeQuantity.value) + ' ' + prepTimeUnit.value,
+            cookTime: String(cookTimeQuantity.value) + ' ' + cookTimeUnit.value,
+            ingredients: ingredients.value,
+            instructions: directions.value
+        });
 
-        if (!recipeName.value.trim()) {
-            setRecipeName(prev => ({ ...prev, errorMsg: 'Required' }));
-            isFormValid = false;
-        } else if (recipeName.errorMsg) {
-            isFormValid = false;
-        }
-
-
-        const {error: dietTagValidationError} = dietTagSchema.validate(dietTags.value);
-        if (dietTagValidationError) {
-            setDietTags((tags) => ({...tags, errorMsg: dietTagValidationError.message}));
-            isFormValid = false;
-        } else {
-            setDietTags((tags) => ({...tags, errorMsg: ''}));
-        }
-
-        const prepQtyNum = Number(prepTimeQuantity.value);
-        if (prepTimeQuantity.value === '' || isNaN(prepQtyNum) || prepQtyNum < 0) {
-            setPrepTimeQuantity(prev => ({...prev, errorMsg: 'Required and must be positive'}));
-            isFormValid = false;
-        } else {
-            setPrepTimeQuantity(prev => ({...prev, errorMsg: ''}));
-        }
-        if (!prepTimeUnit.value) {
-            setPrepTimeUnit(prev => ({...prev, errorMsg: 'Required'}));
-            isFormValid = false;
-        } else {
-             setPrepTimeUnit(prev => ({...prev, errorMsg: ''}));
-        }
-
-        const cookQtyNum = Number(cookTimeQuantity.value);
-        if (cookTimeQuantity.value === '' || isNaN(cookQtyNum) || cookQtyNum < 0) {
-            setCookTimeQuantity(prev => ({...prev, errorMsg: 'Required and must be positive'}));
-            isFormValid = false;
-        } else {
-             setCookTimeQuantity(prev => ({...prev, errorMsg: ''}));
-        }
-        if (!cookTimeUnit.value) {
-            setCookTimeUnit(prev => ({...prev, errorMsg: 'Required'}));
-            isFormValid = false;
-        } else {
-             setCookTimeUnit(prev => ({...prev, errorMsg: ''}));
-        }
-
-        const {error: ingredientValidationError} = ingredientsSchema.validate(ingredients.value);
-        if (ingredientValidationError) {
-            setIngredients(prev => ({...prev, errorMsg: ingredientValidationError.message || 'Please ensure all ingredients are valid and the list is not empty.'}));
-            isFormValid = false;
-        } else {
-             setIngredients(prev => ({...prev, errorMsg: ''}));
-        }
-
-        if (!directions.value.trim()) {
-            setDirections(prev => ({ ...prev, errorMsg: 'Required' }));
-            isFormValid = false;
-        } else {
-            setDirections(prev => ({ ...prev, errorMsg: '' }));
-        }
-
-        if (isFormValid) {
-
-            await createRecipe({
-                name: recipeName.value.trim(),
-                dietTags: dietTags.value,
-                prepTime: String(prepTimeQuantity.value) + ' ' + prepTimeUnit.value,
-                cookTime: String(cookTimeQuantity.value) + ' ' + cookTimeUnit.value,
-                ingredients: ingredients.value,
-                instructions: directions.value
-            });
-
-        } else {
-            return;
-        }
+        if (recipeResponse.status !== 201)
+            setSubmitError(true);
     };
 
     useEffect(() => {
-        const handler = setTimeout(async () => {
-            const currentName = recipeName.value.trim().toLowerCase();
+        if (
+                recipeName.value &&
+                dietTags.value &&
+                prepTimeQuantity.value &&
+                prepTimeUnit.value &&
+                cookTimeQuantity.value &&
+                cookTimeUnit.value &&
+                ingredients.value &&
+                directions.value &&
+                !recipeName.errorMsg &&
+                !dietTags.errorMsg &&
+                !prepTimeQuantity.errorMsg &&
+                !prepTimeUnit.errorMsg &&
+                !cookTimeQuantity.errorMsg &&
+                !cookTimeUnit.errorMsg &&
+                !ingredients.errorMsg &&
+                !directions.errorMsg
+            )
+            {
+                console.log(recipeName.errorMsg)
+                console.log(dietTags.errorMsg)
+                console.log(prepTimeQuantity.errorMsg)
+                console.log(prepTimeUnit.errorMsg)
+                console.log(cookTimeQuantity.errorMsg)
+                console.log(cookTimeUnit.errorMsg)
+                console.log(ingredients.errorMsg)
+                console.log(directions.errorMsg)
 
-            if (currentName) {
-                const exists = await checkExistingRecipe(currentName);
-
-                if (currentName === recipeName.value.trim().toLowerCase()) {
-                    if (exists) {
-                        setRecipeName((name) => ({ ...name, errorMsg: 'You already have a recipe with this name' }));
-                    } else {
-                        setRecipeName((name) => ({ ...name, errorMsg: '' }));
-                    }
-                }
-            } else {
-                 setRecipeName((name) => ({ ...name, errorMsg: '' }));
+                setDisableSubmit(false);
             }
-        }, 500);
+        else
+        {
+            setDisableSubmit(true);
+        }
+    }, [
+        recipeName, 
+        dietTags, 
+        prepTimeQuantity, 
+        prepTimeUnit, 
+        cookTimeQuantity, 
+        cookTimeUnit, 
+        ingredients, 
+        directions
+    ]);
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [recipeName.value]);
+    function handleNameChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const value = e.target.value.toLowerCase().trim();
+        let errorMsg = '';
+
+        const { error: nameValidationError } = recipeNameSchema.validate(value);
+
+        if (nameValidationError)
+            errorMsg = nameValidationError.message
+        
+        setRecipeName({value, errorMsg})
+    };
 
     const handleDietTagChange = (e: SelectChangeEvent<string[]>) => {
         const values = e.target.value as string[];
@@ -157,21 +133,51 @@ export default function NewRecipe()
     };
 
     const handlePrepTimeQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setPrepTimeQuantity({ value: value === '' ? '' : Number(value), errorMsg: '' });
+        const value = Number(e.target.value);
+        let errorMsg = '';
+
+        const { error: numberError } = numberSchema.validate(value);
+
+        if (numberError)
+            errorMsg = numberError.message;
+
+        setPrepTimeQuantity({value, errorMsg});
     };
 
     const handlePrepTimeUnitChange = (e: SelectChangeEvent<string>) => {
-        setPrepTimeUnit({ value: e.target.value, errorMsg: '' });
+        const value = e.target.value.toLowerCase().trim();
+        let errorMsg = '';
+
+        const { error } = timeUnitSchema.validate(value);
+
+        if (error)
+            errorMsg = error.message;
+
+        setPrepTimeUnit({value, errorMsg})
     };
 
     const handleCookTimeQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setCookTimeQuantity({ value: value === '' ? '' : Number(value), errorMsg: '' });
+        const value = Number(e.target.value);
+        let errorMsg = '';
+
+        const { error } = numberSchema.validate(value);
+
+        if (error)
+            errorMsg = error.message;
+
+        setCookTimeQuantity({value, errorMsg})
     };
 
     const handleCookTimeUnitChange = (e: SelectChangeEvent<string>) => {
-        setCookTimeUnit({ value: e.target.value, errorMsg: '' });
+        const value = e.target.value.toLowerCase().trim();
+        let errorMsg = '';
+
+        const { error } = timeUnitSchema.validate(value);
+
+        if (error)
+            errorMsg = error.message;
+
+        setCookTimeUnit({value, errorMsg})
     };
 
     const handleIngredientAdded = (newIngredient: NewIngredient) => {
@@ -214,13 +220,12 @@ export default function NewRecipe()
                 noValidate
                 sx={{ display: "flex", flexDirection: "column", gap: 2 }}
             >
-                <TextField
+                <FormInput
                     label="Recipe Name"
                     value={recipeName.value}
-                    // Modified onChange to NOT clear errorMsg here
-                    onChange={(e) => setRecipeName((n)=>({...n, value: e.target.value}))}
+                    onChange={handleNameChange}
                     helperText={recipeName.errorMsg}
-                    error={Boolean(recipeName.errorMsg)}
+                    errorMessage={recipeName.errorMsg}
                     required
                 />
 
@@ -252,16 +257,15 @@ export default function NewRecipe()
                 </FormControl>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                    <TextField
+                    <FormInput
                         label="Prep Time Quantity"
                         type="number"
-                        value={prepTimeQuantity.value}
+                        value={String(prepTimeQuantity.value)}
                         onChange={handlePrepTimeQuantityChange}
                         helperText={prepTimeQuantity.errorMsg}
-                        error={Boolean(prepTimeQuantity.errorMsg)}
+                        errorMessage={prepTimeQuantity.errorMsg}
                         sx={{ flex: 1 }}
                         required
-                        InputProps={{ inputProps: { min: 0 } }}
                     />
                     <FormControl sx={{ minWidth: 120 }} error={Boolean(prepTimeUnit.errorMsg)}>
                         <InputLabel id="prepTimeUnit">Unit *</InputLabel>
@@ -285,13 +289,13 @@ export default function NewRecipe()
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                    <TextField
+                    <FormInput
                         label="Cook Time Quantity"
                         type="number"
-                        value={cookTimeQuantity.value}
+                        value={String(cookTimeQuantity.value)}
                         onChange={handleCookTimeQuantityChange}
                         helperText={cookTimeQuantity.errorMsg}
-                        error={Boolean(cookTimeQuantity.errorMsg)}
+                        errorMessage={cookTimeQuantity.errorMsg}
                         sx={{ flex: 1 }}
                         required
                         InputProps={{ inputProps: { min: 0 } }}
@@ -375,11 +379,25 @@ export default function NewRecipe()
                     variant="contained"
                     color="primary"
                     sx={{ mt: 3 }}
+                    disabled={disableSubmit}
                 >
                     Create Recipe
                 </Button>
-
             </Box>
+            <Snackbar
+                open={submitError} 
+                autoHideDuration={3000} 
+                onClose={() => setSubmitError(false)}
+            >
+                <Alert
+                    onClose={() => setSubmitError(false)}
+                    severity="error"
+                    variant="outlined"
+                    sx={{ width: '100%' }}
+                >
+                    Internal Server Error
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
