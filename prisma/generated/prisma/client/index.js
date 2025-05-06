@@ -256,12 +256,11 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": null
+        "value": "mysql://pantrypal:WlzU8xyGBz6e0W8d@localhost:3306/pantrypal"
       }
     }
   },
