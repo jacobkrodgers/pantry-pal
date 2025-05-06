@@ -1,0 +1,97 @@
+model Pantry {
+  id          String       @id @default(uuid())
+  ingredients Ingredient[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String       @unique
+}
+
+model ShoppingList {
+  id          String       @id @default(uuid())
+  ingredients Ingredient[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String       @unique
+}
+
+// Models related to recipes
+
+model Recipe {
+  id           String       @id @default(uuid())
+  name         String
+  ingredients  Ingredient[]
+  instructions String       @db.LongText
+  prepTime     String
+  cookTime     String
+  dateAdded    DateTime     @default(now())
+  dateUpdated  DateTime     @updatedAt
+  isPublic     Boolean
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dietTags     DietTag[]
+
+  @@unique([name, userId]) // Users can't have duplicate recipes with the same name
+  @@fulltext([name])
+}
+
+model Ingredient {
+  id             String        @id @default(uuid())
+  name           String
+  quantityUnit   String
+  quantity       Float
+  form           String
+  recipes        Recipe[]
+  Pantry         Pantry?       @relation(fields: [pantryId], references: [id])
+  pantryId       String?
+  ShoppingList   ShoppingList? @relation(fields: [shoppingListId], references: [id])
+  shoppingListId String?
+
+  @@unique([name, form, pantryId])
+  @@unique([name, form, shoppingListId])
+}
+
+model DietTag {
+  name   String   @id
+  recipe Recipe[]
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Models related to the user, api access, and sessions
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  username     String        @unique
+  passwordHash String
+  ApiKey       ApiKey?
+  Recipes      Recipe[]
+  Sessions     Session[]
+  Pantry       Pantry?
+  ShoppingList ShoppingList?
+}
+
+model ApiKey {
+  apiKey String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  expiration DateTime
+}
