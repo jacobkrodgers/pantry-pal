@@ -56,12 +56,12 @@ export default function NewRecipe()
         e.preventDefault();
 
         const recipeResponse = await createRecipe({
-            name: recipeName.value.trim(),
+            name: recipeName.value.toLowerCase().trim(),
             dietTags: dietTags.value,
-            prepTime: String(prepTimeQuantity.value) + ' ' + prepTimeUnit.value,
-            cookTime: String(cookTimeQuantity.value) + ' ' + cookTimeUnit.value,
+            prepTime: String(prepTimeQuantity.value).toLowerCase().trim() + ' ' + prepTimeUnit.value,
+            cookTime: String(cookTimeQuantity.value).toLowerCase().trim() + ' ' + cookTimeUnit.value,
             ingredients: ingredients.value,
-            instructions: directions.value
+            instructions: directions.value.trim()
         });
 
         if (recipeResponse.status !== 201)
@@ -116,10 +116,10 @@ export default function NewRecipe()
 
     function handleNameChange(e: React.ChangeEvent<HTMLInputElement>)
     {
-        const value = e.target.value.toLowerCase().trim();
+        const value = e.target.value;
         let errorMsg = '';
 
-        const { error: nameValidationError } = recipeNameSchema.validate(value);
+        const { error: nameValidationError } = recipeNameSchema.validate(value.toLowerCase().trim());
 
         if (nameValidationError)
             errorMsg = nameValidationError.message
@@ -145,10 +145,10 @@ export default function NewRecipe()
     };
 
     const handlePrepTimeUnitChange = (e: SelectChangeEvent<string>) => {
-        const value = e.target.value.toLowerCase().trim();
+        const value = e.target.value;
         let errorMsg = '';
 
-        const { error } = timeUnitSchema.validate(value);
+        const { error } = timeUnitSchema.validate(value.toLowerCase().trim());
 
         if (error)
             errorMsg = error.message;
@@ -169,10 +169,10 @@ export default function NewRecipe()
     };
 
     const handleCookTimeUnitChange = (e: SelectChangeEvent<string>) => {
-        const value = e.target.value.toLowerCase().trim();
+        const value = e.target.value;
         let errorMsg = '';
 
-        const { error } = timeUnitSchema.validate(value);
+        const { error } = timeUnitSchema.validate(value.toLowerCase().trim());
 
         if (error)
             errorMsg = error.message;
